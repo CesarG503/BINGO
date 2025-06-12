@@ -82,10 +82,16 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+app.get('/home',(req,res) => {
+
+});
+
 //Colocar las rutas protegidas debajo de esta línea
 app.get('/index.html', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+
 
 //... y arriba de esta línea (crear un archivo de rutas protegidas)
 
