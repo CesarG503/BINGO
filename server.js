@@ -67,8 +67,8 @@ app.post('/login', async (req, res) => {
     const result = await pool.query('SELECT * FROM Usuarios WHERE email = $1', [email]);
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ email: user.correo }, 'secret_key', { expiresIn: '1h' });
-      res.json({ token, userId: user.id }); // Enviar el token y el id del usuario 
+      const token = jwt.sign({ email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
+      res.json({ token, userId: user.id, rol: user.rol }); // Enviar el token, ID y rol del usuario
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -87,11 +87,25 @@ app.get('/home',(req,res) => {
 });
 
 //Colocar las rutas protegidas debajo de esta línea
-app.get('/index.html', authenticateToken, (req, res) => {
+app.get('/index', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-
+app.get('/tienda', authenticateToken, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.redirect('/index');
+    }
+    if (user.rol === 0) {
+      return res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
+    } else {
+      return res.redirect('/index');
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error al verificar el rol del usuario' });
+  }
+});
 
 //... y arriba de esta línea (crear un archivo de rutas protegidas)
 

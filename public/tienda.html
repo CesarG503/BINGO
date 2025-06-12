@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Créditos - BINGO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- CSS Retro Sci-Fi -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/tienda.css">
+</head>
+<body class="bg-dark text-dark">
+
+
+    <div class="hero-section bg-secondary-neon py-5">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-coins me-3"></i>Tienda de Créditos
+            </h1>
+            <p class="lead">Administrador de creditos</p>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-1">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-search me-2"></i>Buscar Usuarios
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="searchInput" class="form-label">Buscar por texto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput" 
+                                           placeholder="Username, email, ID...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filterField" class="form-label">Filtrar por campo</label>
+                                <select class="form-select" id="filterField">
+                                    <option value="all">Todos los campos</option>
+                                    <option value="id_usuario">ID Usuario</option>
+                                    <option value="username">Username</option>
+                                    <option value="email">Email</option>
+                                    <option value="rol">Rol</option>
+                                    <option value="creditos">Créditos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortBy" class="form-label">Ordenar por</label>
+                                <select class="form-select" id="sortBy">
+                                    <option value="id_usuario">ID Usuario</option>
+                                    <option value="username">Username</option>
+                                    <option value="email">Email</option>
+                                    <option value="creditos">Créditos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-alert border-0 shadow-none  btn-efect" onclick="clearFilters()">
+                                        <i class="fas fa-times me-1"></i>Limpiar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card bg-alert-neon text-white h-100">
+                    <div class="card-body border-0 text-center pt-3">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h4 id="totalUsers">0</h4>
+                        <p class="mb-0">Total Usuarios</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-success-neon text-white h-100">
+                    <div class="card-body border-0 text-center pt-3">
+                        <i class="fas fa-coins fa-2x mb-2"></i>
+                        <h4 id="totalCredits">0</h4>
+                        <p class="mb-0">Total Créditos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-warning-neon text-white h-100">
+                    <div class="card-body border-0 text-center pt-3">
+                        <i class="fas fa-crown fa-2x mb-2"></i>
+                        <h4 id="adminUsers">0</h4>
+                        <p class="mb-0">Administradores</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-info-neon text-white h-100">
+                    <div class="card-body border-0 text-center pt-3">
+                        <i class="fas fa-user fa-2x mb-2"></i>
+                        <h4 id="regularUsers">0</h4>
+                        <p class="mb-0">Usuarios Regulares</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row" id="usersContainer">
+            <!-- card de usuarios se generan aqui -->
+        </div>
+
+        
+        <div class="text-center py-5" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando usuarios...</p>
+        </div>
+
+      
+        <div class="text-center py-5 d-none" id="noResults">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No se encontraron usuarios</h4>
+            <p class="text-muted">Intenta ajustar los filtros de búsqueda</p>
+        </div>
+    </div>
+
+    <div class="modal fade" id="creditModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-coins me-2"></i>Asignar Créditos
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4 ">
+                        
+                        <div id="avatarContainer" class="row justify-content-center"></div> 
+                        
+                        <h5 id="modalUsername">Usuario</h5>
+                        <p class="text-muted" id="modalEmail">email@example.com</p>
+                        <div class="badge bg-success fs-6">
+                            Créditos actuales: <span id="modalCurrentCredits">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="creditAmount" class="form-label">Cantidad de créditos</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-coins"></i>
+                                </span>
+                                <input type="number" class="form-control" id="creditAmount" 
+                                       min="1" max="10000" placeholder="Ingresa la cantidad">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Acciones rápidas</label>
+                            <div class="d-grid gap-2 d-md-flex">
+                                <button class="btn btn-success btn-efect shadow-sm btn-sm" onclick="setCreditAmount(100)">
+                                    +100
+                                </button>
+                                <button class="btn btn-success btn-efect shadow-sm btn-sm" onclick="setCreditAmount(500)">
+                                    +500
+                                </button>
+                                <button class="btn btn-success btn-efect shadow-sm btn-sm" onclick="setCreditAmount(1000)">
+                                    +1000
+                                </button>
+                                <button class="btn btn-danger btn-efect shadow-sm btn-sm" onclick="setCreditAmount(0, true)">
+                                    Resetear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="assignCredits()">
+                        <i class="fas fa-check me-1"></i>Asignar Créditos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/login/logout.js"></script>
+    <script src="js/tienda/tienda.js"></script>
+
+</body>
+</html>
