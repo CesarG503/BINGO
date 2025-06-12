@@ -24,7 +24,7 @@ app.use(cors({
 app.use(bodyParser.json());
 
 // Configurar el servidor para servir archivos estáticos desde el directorio public
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname,'public')));
 
 // Conexión a la base de datos
 pool.connect((err) => {
