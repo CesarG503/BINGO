@@ -7,16 +7,16 @@ const pool = new Pool({
 
   //conectar de manera local
 
-  host: process.env.LOCAL,
-  user: 'postgres',
-  password: 'admin', // Ingresa tu contraseña de PostgreSQL (cambiala loco)
-  database: 'BingoDB',
-  port: 5432
+ // host: process.env.LOCAL,
+  //user: 'postgres',
+  //password: 'admin', // Ingresa tu contraseña de PostgreSQL (cambiala loco)
+  //database: 'BingoDB',
+  //port: 5432
   
-  //connectionString: process.env.DATA_BASE_URL,
-  //ssl: {
-  //  rejectUnauthorized: false, // << ESTA LÍNEA SOLUCIONA EL ERROR
-  //},
+  connectionString: process.env.DATA_BASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // << ESTA LÍNEA SOLUCIONA EL ERROR
+  },
 });
 
 pool.connect((err) => {
