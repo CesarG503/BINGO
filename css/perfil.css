@@ -1,0 +1,171 @@
+body {
+    margin: 0;
+    background-color: #ffffff;
+}
+
+.profile-icon {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+    cursor: pointer;
+}
+.floating-avatar {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+.profile-icon img{
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--infor-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+    /* object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.2); */
+}
+
+.profile-panel {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    background-color: #4B2EA1;
+    color: white;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+    transition: right 0.4s ease;
+    z-index: 1040;
+    padding: 1rem;
+}
+
+.profile-panel.show {
+    right: 0;
+}
+
+.profile-img-container {
+    position: relative;
+}
+
+.profile-img {
+    width: 80%;
+    height: 250px;
+    /* object-fit: cover; */
+    border-radius: 1rem;
+}
+
+.edit-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    cursor: pointer;
+    color: white;
+    /* Asegura que sea visible en fondos oscuros */
+    z-index: 1051;
+    /* Por encima de todo */
+    background-color: transparent;
+    border: none;
+}
+
+.close-btn.a {
+   color: #fff;
+}
+
+.info-section {
+    margin-top: 1rem;
+}
+
+.info-section label {
+    font-weight: bold;
+    display: block;
+}
+
+.edit-btn.small-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+}
+
+.edit-inline-btn {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    padding: 0.25rem;
+    cursor: pointer;
+}
+
+input.edit-input {
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid white;
+    color: white;
+    outline: none;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.btn-light:hover {
+    background-color: #ddd;
+    transition: 0.3s;
+}
+
+.image-selector {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 250px;
+    background-color: white;
+    z-index: 1060;
+    border: 1px solid #ccc;
+}
+
+.preset-avatar {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    border: 2px solid transparent;
+}
+
+.preset-avatar:hover {
+    transform: scale(1.05);
+    border-color: #4B2EA1;
+}
