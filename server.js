@@ -37,7 +37,7 @@ pool.connect((err) => {
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token =  authHeader && authHeader.split(' ')[1];
   if (!token) return res.sendStatus(401);
 
   jwt.verify(token, 'secret_key', (err, user) => {
@@ -46,6 +46,20 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+
+function role(role) {
+  return (req, res, next) => {
+    const user = req.user;
+    if (!user) {
+      return res.sendStatus(401);
+    }
+    if (user.rol === role) {
+      next();
+    } else {
+      res.redirect('/index.html');
+    }
+  };
+}
 
 app.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
@@ -66,7 +80,8 @@ app.post('/login', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Usuarios WHERE email = $1', [email]);
     const user = result.rows[0];
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (user && await bcrypt.compare(password, user.password)) 
+      {
       const token = jwt.sign({ email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
       res.json({ token, userId: user.id, rol: user.rol }); // Enviar el token, ID y rol del usuario
     } else {
@@ -91,20 +106,12 @@ app.get('/index', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/tienda', authenticateToken, async (req, res) => {
-  try {
-    const user = req.user;
-    if (!user) {
-      return res.redirect('/index');
-    }
-    if (user.rol === 0) {
-      return res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
-    } else {
-      return res.redirect('/index');
-    }
-  } catch (err) {
-    res.status(500).json({ error: 'Error al verificar el rol del usuario' });
-  }
+app.get('/autentificado', authenticateToken, role(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'autentificado.html'));
+});
+
+app.get('/tienda', authenticateToken, role(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
 });
 
 //... y arriba de esta línea (crear un archivo de rutas protegidas)

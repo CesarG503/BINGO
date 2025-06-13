@@ -8,28 +8,36 @@ let filteredUsers = []
 let currentUser = null
 
 document.addEventListener("DOMContentLoaded", () => {
-  autenticarRol()
-  loadUsers()
-  setupEventListeners()
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "login.html";
+    return;
+  }
+  fetch("/tienda", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  .then((res) => {
+      if (res.status === 401 || res.status === 403) {
+
+        window.location.href = "index.html";
+      } else if (res.redirected) {
+        
+        window.location.href = "index.html";
+      } else {
+        
+        loadUsers();
+        setupEventListeners();
+      }
+    })
+    .catch(() => {
+      window.location.href = "login.html";
+    });
 })
 
-function autenticarRol() {
-    const token = localStorage.getItem("token")
-    if (!token) {
-        window.location.href = "login.html"
-        return
-    }
-    try {
-        const rol_usuario = JSON.parse(atob(token.split('.')[1]))
-        if (rol_usuario.rol !== 0) {
-            window.location.href = "index.html"
-            return
-        }
-    } catch (e) {
-        window.location.href = "login.html"
-        return
-    }
-}
+
 
 function setupEventListeners() {
   
