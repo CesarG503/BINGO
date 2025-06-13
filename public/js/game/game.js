@@ -8,7 +8,7 @@ document.getElementById("newNumber").addEventListener("click", (e) => {
   iniciarRuletazo();
 });
 
-iniciarRuletazo();
+// iniciarRuletazo();
 
 async function iniciarRuletazo() {
   // limpiamos el carrusel para no tener bugs
@@ -112,5 +112,28 @@ function asignarColor(numeroBola) {
     return "bg-danger-neon";
   } else if (numeroBola > 60 && numeroBola <= 75) {
     return "bg-warning-neon";
+  }
+}
+
+addBallGrid(3)
+
+function addBallGrid(numeroBola){
+  // El navegador me agregar tbody asi que F
+  const table = document.getElementById("tableBall");
+  console.log(table.children);
+  
+  const ball = document.createElement('div')
+  ball.innerText = numeroBola;
+
+  if (numeroBola > 0 && numeroBola <= 15) {
+    ball.classList.add("bola", "bg-primary-neon");
+  } else if (numeroBola > 15 && numeroBola <= 30) {
+    ball.classList.add("bola", "bg-primary-neon");
+  } else if (numeroBola > 30 && numeroBola <= 45) {
+    ball.classList.add("bola", "bg-primary-neon");
+  } else if (numeroBola > 45 && numeroBola <= 60) {
+    ball.classList.add("bola", "bg-primary-neon");
+  } else if (numeroBola > 60 && numeroBola <= 75) { 
+    ball.classList.add("bola", "bg-primary-neon");
   }
 }
