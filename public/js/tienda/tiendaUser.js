@@ -338,9 +338,9 @@ function renderUserCartones() {
   if(userCartones.length === 0) {
     container.innerHTML = `
       <div class="col-12 text-center py-4">
-        <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
-        <p class="text-muted">No tienes cartones comprados aún</p>
-        <p class="text-muted">¡Compra algunos cartones arriba para empezar a jugar!</p>
+        <i class="fas fa-shopping-bag fa-3x text-info-neon mb-3"></i>
+        <p class="text-white-neon">No tienes cartones comprados aún</p>
+        <p class="text-white-neon">¡Compra algunos cartones arriba para empezar a jugar!</p>
       </div>
     `
     return
