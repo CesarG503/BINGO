@@ -98,12 +98,11 @@ app.get('/index', authenticateToken, (req, res) => {
 });
 
 app.get('/tienda', authenticateToken, (req, res) => {
-  if(req.user.rol === 0){
-    res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
-  }
-  else{
-    res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
-  }
+  res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
+});
+
+app.get('/creditos', authenticateToken,role(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
 });
 
 
