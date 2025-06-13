@@ -1,127 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact UI</title>
+  <title>Botón Bingo</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    body {
-      background-color: #f6f6f6;
-    }
-    .floating-avatar {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-      cursor: pointer;
-      z-index: 1000;
-    }
-    .profile-card {
-      display: none;
-    }
-    .card-top {
-      background-color: #4B2EA1;
+    .bingo-button {
+      background: linear-gradient(45deg, #ffcc00, #ff6666);
       color: white;
-      border-top-left-radius: 1rem;
-      border-top-right-radius: 1rem;
-      padding: 2rem 1rem 1rem;
-      text-align: center;
-      position: relative;
+      font-weight: bold;
+      border-radius: 50px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
-    .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 1.2rem;
-      color: white;
-      cursor: pointer;
-    }
-    .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 1rem;
-    }
-    .icon-row i {
-      font-size: 1.2rem;
-      margin: 0 10px;
-      cursor: pointer;
-    }
-    .list-group-item {
-      border: none;
-      padding: 0.5rem 1rem;
-    }
-    .contact-actions {
-      padding: 1rem;
-      border-top: 1px solid #eee;
+    .bingo-button:hover {
+      background: linear-gradient(45deg, #ffdd33, #ff8888);
+      transform: scale(1.05);
     }
   </style>
 </head>
-<body>
-  <!-- Floating Avatar -->
-  <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/3" class="floating-avatar" id="toggleProfile" alt="Toggle Profile">
+<body class="text-center p-5">
 
-  <!-- Profile Card -->
-  <div class="container d-flex justify-content-center align-items-center min-vh-100 profile-card" id="profileCard">
-    <div class="card shadow rounded-4" style="width: 24rem;">
-      <div class="card-top">
-        <span class="close-btn" id="closeProfile"><i class="bi bi-x"></i></span>
-        <img src="https://i.pravatar.cc/100" alt="Avatar" class="avatar">
-        <h5>Jenny Wilson</h5>
-        <p>Sr. UI/UX Designer</p>
-        <div class="icon-row">
-          <i class="bi bi-envelope"></i>
-          <i class="bi bi-telephone"></i>
-          <i class="bi bi-whatsapp"></i>
-          <i class="bi bi-star"></i>
-        </div>
-      </div>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-          <strong>Email</strong><br>
-          <small>Official</small>: michael.mitc@example.com<br>
-          <small>Personal</small>: michoeal@example.com
-        </li>
-        <li class="list-group-item">
-          <strong>Phone number</strong><br>
-          (209) 555-0104
-        </li>
-        <li class="list-group-item">
-          <strong>Team</strong><br>
-          Project Operation Team
-        </li>
-        <li class="list-group-item">
-          <strong>Leads by</strong><br>
-          Darrell Steward
-        </li>
-      </ul>
-      <div class="contact-actions d-flex justify-content-between">
-        <button class="btn btn-outline-primary w-100 me-2">Add to contact</button>
-        <button class="btn btn-outline-secondary">Share</button>
-      </div>
-    </div>
-  </div>
+  <button class="btn bingo-button px-4 py-2">
+    <i class="bi bi-pencil-square me-2"></i> Editar Imagen
+  </button>
 
-  <script>
-    const toggleBtn = document.getElementById('toggleProfile');
-    const profileCard = document.getElementById('profileCard');
-    const closeBtn = document.getElementById('closeProfile');
-
-    toggleBtn.addEventListener('click', () => {
-      profileCard.style.display = 'flex';
-    });
-
-    closeBtn.addEventListener('click', () => {
-      profileCard.style.display = 'none';
-    });
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

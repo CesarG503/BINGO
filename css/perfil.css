@@ -3,6 +3,11 @@ body {
     background-color: #ffffff;
 }
 
+:root {
+  --primary-color: #ffcc00;
+  --infor-color: #ff6666;
+}
+
 .profile-icon {
     position: fixed;
     top: 20px;
@@ -10,36 +15,22 @@ body {
     z-index: 1050;
     cursor: pointer;
 }
-.floating-avatar {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-      cursor: pointer;
-      z-index: 1000;
-    }
 
-.profile-icon img{
+.profile-icon img {
     width: 60px;
     height: 60px;
     border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     background: linear-gradient(135deg, var(--primary-color), var(--infor-color));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    position: relative;
-    overflow: hidden;
-    /* object-fit: cover;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.2); */
+}
+
+.profile-icon img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 14px rgba(255, 102, 102, 0.6);
+    border-color: var(--infor-color);
 }
 
 .profile-panel {
@@ -49,12 +40,12 @@ body {
     width: 100%;
     max-width: 400px;
     height: 100%;
-    background-color: #4B2EA1;
-    color: white;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
     transition: right 0.4s ease;
     z-index: 1040;
     padding: 1rem;
+
+    background: linear-gradient(135deg, #fff3e0, #ffd180, #ffab91);
 }
 
 .profile-panel.show {
@@ -63,57 +54,64 @@ body {
 
 .profile-img-container {
     position: relative;
+    display: grid;
+    text-align: center;
 }
 
 .profile-img {
-    width: 80%;
-    height: 250px;
-    /* object-fit: cover; */
-    border-radius: 1rem;
-}
-
-.edit-btn {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border: none;
-    color: white;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    border: 4px solid #ffcc00;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.close-btn {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 2rem;
-    cursor: pointer;
-    color: white;
-    /* Asegura que sea visible en fondos oscuros */
-    z-index: 1051;
-    /* Por encima de todo */
-    background-color: transparent;
-    border: none;
+.profile-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(255, 102, 102, 0.6);
+    border-color: #ff6666;
 }
 
-.close-btn.a {
-   color: #fff;
+.bingo-button {
+    background: linear-gradient(45deg, #ffcc00, #ff6666);
+    color: rgb(188, 1, 1);
+    font-weight: bold;
+    border-radius: 50px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.info-section {
-    margin-top: 1rem;
+.bingo-button:hover {
+    background: linear-gradient(45deg, #ffdd33, #ff8888);
+    color: black;
+    transform: scale(1.05);
+}
+
+.editable-text {
+    font-weight: bold;
+    color: #000000;
+    font-size: 15px;
 }
 
 .info-section label {
     font-weight: bold;
-    display: block;
+    color: #ff6600;
+    margin-bottom: 5px;
 }
+
+.edit-inline-btn {
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-inline-btn i {
+    font-size: 1rem;
+}
+
+
 
 .edit-btn.small-btn {
     width: 30px;
@@ -150,12 +148,13 @@ input.edit-input {
     top: 100%;
     right: 0;
     width: 250px;
-    background-color: white;
+    background: linear-gradient(135deg, #fff3e0, #ffd180, #ffab91);
     z-index: 1060;
     border: 1px solid #ccc;
 }
 
 .preset-avatar {
+
     width: 60px;
     height: 60px;
     object-fit: cover;

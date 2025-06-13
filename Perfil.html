@@ -18,39 +18,55 @@
 
     <!-- Panel deslizante de perfil -->
     <div class="profile-panel" id="profilePanel">
-        <button class="close-btn" onclick="toggleProfilePanel()" id="botonCerrar">
-            <i class="bi bi-x-lg"></i>
-        </button>
+        <div class="row align-items-center">
+            <div class="col">
+                <button class="bingo-button px-3 py-2" id="botonTienda">
+                    <i class="bi bi-cart-fill"></i>
+                </button>
+            </div>
+            <div class="col d-flex flex-row-reverse">
+                <button class="bingo-button px-3 py-2" onclick="toggleProfilePanel()" id="botonCerrar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+
         <div class="profile-img-container">
-            <img src="" alt="" class="profile-img" id="mainProfileImg2">
-            <button class="edit-btn" onclick="toggleImageDropdown()">
-                <i class="bi bi-pencil-fill"></i>
-            </button>
+            <div class="d-flex justify-content-center">
+                <img src="" alt="" class="profile-img"
+                    id="mainProfileImg2">
+            </div>
+            <div class="text-center" style="padding-top: 5px;">
+                <button class="btn bingo-button px-4 py-2" onclick="toggleImageDropdown()">
+                    <i class="bi bi-pencil-square me-2"></i> Editar Imagen
+                </button>
+            </div>
+
 
             <div id="imageDropdown" class="image-selector shadow p-3 rounded bg-white" style="display: none;">
                 <div class="d-flex flex-wrap gap-2 justify-content-center">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/1" alt="1"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/2" alt="2"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/3" alt="3"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/4" alt="4"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/5" alt="5"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/6" alt="6"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/7" alt="7"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/8" alt="8"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/9" alt="9"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/10" alt="10"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
-                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/11" alt="11"
-                        class="preset-avatar" onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/1" alt="1" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/2" alt="2" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/3" alt="3" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/4" alt="4" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/5" alt="5" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/6" alt="6" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/7" alt="7" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/8" alt="8" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/9" alt="9" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/10" alt="10" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
+                    <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/11" alt="11" class="preset-avatar profile-img"
+                        onclick="selectPresetImage(this)" id="Avatar">
                 </div>
             </div>
 
@@ -58,39 +74,33 @@
                 onchange="updateProfileImage(event)">
         </div>
 
-        <div id="imageSelector" class="mt-3 d-flex flex-wrap gap-2 justify-content-center">
-
-            <!-- Agrega más imágenes si lo deseas -->
-        </div>
-
-
         <div class="info-section">
             <label>Créditos:</label>
-            <p id="creditos">120</p>
+            <p class="editable-text me-2" id="creditos">120</p>
         </div>
 
         <div class="info-section">
             <label>Username:</label>
             <div class="d-flex align-items-center">
                 <span id="username" class="editable-text me-2">jenny_w</span>
-                <button class="edit-inline-btn" onclick="hacerEditable('username')">
+                <button class="bingo-button edit-inline-btn" onclick="hacerEditable('username')">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
             </div>
         </div>
 
-        <div class="info-section">
+        <div class="info-section mb-3">
             <label>Email:</label>
             <div class="d-flex align-items-center">
-                <span id="email" class="editable-text me-2">jenny.wilson@example.com</span>
-                <button class="edit-inline-btn" onclick="hacerEditable('email')">
+                <span id="email" class="editable-text me-2"></span>
+                <button class="bingo-button edit-inline-btn" onclick="hacerEditable('email')">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
             </div>
         </div>
 
         <div class="text-center mt-4">
-            <button class="btn btn-light btn-lg rounded-pill px-4" onclick="guardarPerfil()">
+            <button class="btn bingo-button px-4 py-2" onclick="guardarPerfil()">
                 <i class="bi bi-save-fill me-2"></i>Guardar cambios
             </button>
         </div>
