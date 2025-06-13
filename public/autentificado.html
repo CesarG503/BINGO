@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>SOLO ADMIN</h1>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "login.html";
+                return;
+            }
+            fetch("/autentificado", {
+                method: "GET",
+                headers: {
+                Authorization: `Bearer ${token}`,
+                },
+            })
+            .then((res) => {
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = "index.html";
+                } else if (res.redirected) {  
+                    window.location.href = "index.html";
+                }
+            })
+            .catch(() => {
+                window.location.href = "login.html";
+            });
+        })
+
+    </script>
+</body>
+</html>
