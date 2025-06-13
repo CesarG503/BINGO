@@ -1,11 +1,11 @@
 const express = require('express');
 const pool = require('../db/db'); // Importar la conexión a la base de datos
-const { authenticateToken } = require('../authenthicated'); // Importar la función de autenticación
+const { authenticateToken, validateRole } = require('../authenthicated'); // Importar la función de autenticación
 
 const router = express.Router();
 
 // Obtener todos los usuarios
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateToken, validateRole(0), async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Usuarios');
     res.send(result.rows);
@@ -51,6 +51,20 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.send(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Error actualizando usuario' });
+  }
+});
+
+// Actualizar perfil de un usuario
+router.put('/perfil/:id', authenticateToken, async (req, res) => {
+  const { username, email, img_id } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE Usuarios SET username = $1, email = $2, img_id = $3 WHERE id_usuario = $4 RETURNING *`,
+      [username,email,img_id, req.params.id]
+    );
+    res.send(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Error actualizando imagen de usuario' });
   }
 });
 
