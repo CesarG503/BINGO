@@ -1,10 +1,13 @@
 const express = require('express');
+const httpServer = require("http");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); 
-const { authenticateToken } = require('./js/authenthicated'); // Importar la función de autenticación
+const { authenticateToken, authenticateSocket } = require('./js/authenthicated'); // Importar la función de autenticación
+const { Server } = require('socket.io');
+const host = require('./js/socket/host');
 const path = require('path'); // Importar path para manejar rutas de archivos
 const pool = require('./js/db/db'); // Importar la conexión a la base de datos
 const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de Entrenadores.js
@@ -13,6 +16,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+const server = httpServer.createServer(app);
 const PORT =  process.env.PORT || 3000;
 
 // Configurar CORS para aceptar cualquier origen (útil para pruebas móviles)
@@ -120,7 +124,25 @@ app.get('/home',authenticateToken,(req,res) =>{
 // Usar ruta del CRUD Entrenadores.js
 app.use('/api/usuarios', usuariosRouter);
 
-app.listen(PORT, () => {
+//Inicializar Socket.IO
+const io = new Server(server);
+
+// Configurar Socket.IO para manejar la autenticación
+io.use((socket, next) => authenticateSocket(socket, next));
+
+// Manejar eventos de conexión de Socket.IO
+io.on('connection', (socket) => {
+  console.log('Nuevo cliente conectado');
+
+  socket.on('crearSala', (data) => host.crearRoom(socket, data));
+
+  // Manejar eventos de socket aquí
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado');
+  });
+});
+
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
