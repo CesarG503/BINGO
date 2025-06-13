@@ -1,20 +1,8 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const pool = require('../db/db'); // Importar la conexión a la base de datos
+const { authenticateToken } = require('../authenthicated'); // Importar la función de autenticación
 
 const router = express.Router();
-
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, 'secret_key', (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
 
 // Obtener todos los usuarios
 router.get('/', authenticateToken, async (req, res) => {

@@ -1,0 +1,18 @@
+import jwt from 'jsonwebtoken';
+
+export const authenticateToken = (req, res, next) => {
+  let token;
+  const authHeader = req.headers['authorization'];
+  if (authHeader) {
+    token = authHeader.split(' ')[1];
+  } else if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, 'secret_key', (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};

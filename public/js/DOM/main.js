@@ -32,12 +32,7 @@ function RenderizarUsuarios() {
 let urlUsuario = `${API_BASE_URL}/api/usuarios`;
 
 function MostrarUsuarios() {
-    const token = localStorage.getItem('token');
-    fetch(urlUsuario, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
+    fetch(urlUsuario)
     .then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -54,12 +49,7 @@ function MostrarUsuarios() {
 }
 
 function MostrarUsuario(userId) {
-    const token = localStorage.getItem('token');
-    fetch(`${urlUsuario}/${userId}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
+    fetch(`${urlUsuario}/${userId}`)
     .then(response => response.json())
     .then(data => {
         document.getElementById('username').textContent = data.username;
@@ -106,12 +96,10 @@ function AgregarUsuarioModal() {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
             fetch(urlUsuario, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(result.value)
             })
@@ -162,12 +150,10 @@ function EditarUsuarioModal(index) {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
             fetch(`${urlUsuario}/${usuario.id_usuario}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(result.value)
             })
@@ -198,11 +184,9 @@ function EliminarUsuario(index) {
         confirmButtonText: 'Sí, borrarlo!'
     }).then((result) => {
         if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
             fetch(`${urlUsuario}/${usuario.id_usuario}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${token}`
                 }
             })
             .then(response => response.json())

@@ -51,11 +51,11 @@ document.getElementById('sign-in-form').addEventListener('submit', async (e) => 
   const messageElement = document.getElementById('sign-in-message');
   messageElement.textContent = '';
   if (data.token) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('userId', data.userId); // Almacenar el id del usuario
+    localStorage.setItem('userId', data.userId);
+    document.cookie = `token=${data.token}; path=/;`; // Almacenar la cookie con el token
     messageElement.textContent = 'Inicio de sesion Exitoso!';
     messageElement.style.color = 'green';
-    window.location.href = 'index.html'; // redirigir a la pagina principal con la sesion iniciada 
+    window.location.href = '/index'; // redirigir a la pagina principal con la sesion iniciada 
   } else {
     messageElement.textContent = 'Correo o contraseña Incorrectos.';
     messageElement.style.color = 'red';

@@ -7,38 +7,6 @@ let allUsers = []
 let filteredUsers = []
 let currentUser = null
 
-document.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    window.location.href = "login.html";
-    return;
-  }
-  fetch("/tienda", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  .then((res) => {
-      if (res.status === 401 || res.status === 403) {
-
-        window.location.href = "index.html";
-      } else if (res.redirected) {
-        
-        window.location.href = "index.html";
-      } else {
-        
-        loadUsers();
-        setupEventListeners();
-      }
-    })
-    .catch(() => {
-      window.location.href = "login.html";
-    });
-})
-
-
-
 function setupEventListeners() {
   
   document.getElementById("searchInput").addEventListener("input", filterUsers)
