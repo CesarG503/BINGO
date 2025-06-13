@@ -60,7 +60,7 @@ function MostrarUsuario(userId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem('uid');
     if (userId) {
         MostrarUsuario(userId);
     }

@@ -78,7 +78,7 @@ app.post('/login', async (req, res) => {
     if (user && await bcrypt.compare(password, user.password)) 
       {
       const token = jwt.sign({ email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
-      res.json({ token, userId: user.id, rol: user.rol }); // Enviar el token, ID y rol del usuario
+      res.json({ token, uid: user.id_usuario, rol: user.rol }); // Enviar el token, ID y rol del usuario
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -109,6 +109,9 @@ app.get('/creditos', authenticateToken,role(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
 });
 
+app.get('/perfil', authenticateToken, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'perfil.html'));
+});
 
 app.get('/home',authenticateToken,(req,res) =>{
   if(req.user.rol === 0){
@@ -122,7 +125,7 @@ app.get('/home',authenticateToken,(req,res) =>{
 //... y arriba de esta línea (crear un archivo de rutas protegidas)
 
 
-// Usar ruta del CRUD Entrenadores.js
+// Usar ruta del CRUD usuarios.js
 app.use('/api/usuarios', usuariosRouter);
 
 //Inicializar Socket.IO

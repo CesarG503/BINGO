@@ -24,6 +24,20 @@ export const authenticateToken = (req, res, next) => {
   });
 };
 
+export function validateRole(role) {
+  return (req, res, next) => {
+    const user = req.user;
+    if (!user) {
+      return res.sendStatus(401);
+    }
+    if (user.rol === role) {
+      next();
+    } else {
+      res.redirect('/');
+    }
+  };
+}
+
 export const authenticateSocket = (socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) return next(new Error('Authentication error'));
