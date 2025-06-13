@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
+  <script src="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/js/retrosci-fi.js" defer></script>
+  <link rel="stylesheet" href="./css/game.css">
+  <title>Bingo</title>
+</head>
+<body>
+
+<nav class="navbar bg-secondary estilo-brillo border rounded border-secondary hover-neon  position-sticky top-0 p-1">
+    <div class="navbar-header">
+        <div class="navbar-brand">
+          <!-- <img src="./img/bingoLogin.svg" alt="pelota de bingo" style="height: 40px;"> -->
+          Bingo
+        </div>
+        <button class="navbar-toggle">
+            <div class="img-menu-white"></div>
+        </button>
+    </div>
+    <div class="navbar-nav">
+        <a class="nav-item rounded-pill" href="../../index.html">Inicio</a>
+        <a class="nav-item rounded-pill" href="#">Ganadores</a>
+        <a class="nav-item rounded-pill" href="https://github.com/Mixgyt/RetroSci-Fi_library" target="_blank">Github</a>
+        <a class="nav-item rounded-pill" href="https://www.npmjs.com/package/retrosci-fi_library" target="_blank">NPM</a>
+    </div>
+</nav>
+
+<!-- <div class="canva">
+  <div class="box">
+
+  </div>
+</div> -->
+
+<div class="container mt-4  bg-info-neon mx-auto row " style="height: 850px;">
+  <div class="container col">
+    <!-- RULETAZO -->
+    <div class="canva position-relative mx-auto">
+      <div class="carrusel" id="carrusel"></div>
+    </div>
+    <!-- TUBO -->
+    <div class="row justify-content-center">
+      <div class="col-auto">
+        <img class="tubo" src="./img/tubo.png" style="width: 200px;height: auto">
+      </div>
+    </div>
+    <!-- TABLA CON LOS NUMEROS -->
+    <div class="container-md mx-auto">
+      <table>
+        <tbody>
+          <tr>
+            <td>B</td>
+            <td>1</td>
+            <td>2</td>
+            <td>3</td>
+            <td>4</td>
+            <td>5</td>
+            <td>
+              <div class="bola bg-alert-neon">6</div>
+            </td>
+            <td>7</td>
+            <td>8</td>
+            <td>9</td>
+            <td>10</td>
+            <td>11</td>
+            <td>12</td>
+            <td>13</td>
+            <td>14</td>
+            <td>15</td>
+          </tr>
+          <tr>
+            <td>I</td>
+            <td>16</td>
+            <td>17</td>
+            <td>18</td>
+            <td>19</td>
+            <td>20</td>
+            <td>21</td>
+            <td>22</td>
+            <td>23</td>
+            <td>24</td>
+            <td>25</td>
+            <td>26</td>
+            <td>27</td>
+            <td>28</td>
+            <td>29</td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>N</td>
+            <td>31</td>
+            <td>32</td>
+            <td>33</td>
+            <td>34</td>
+            <td>35</td>
+            <td>36</td>
+            <td>37</td>
+            <td>38</td>
+            <td>39</td>
+            <td>40</td>
+            <td>41</td>
+            <td>42</td>
+            <td>43</td>
+            <td>44</td>
+            <td>45</td>
+          </tr>
+          <tr>
+            <td>G</td>
+            <td>46</td>
+            <td>47</td>
+            <td>48</td>
+            <td>49</td>
+            <td>50</td>
+            <td>51</td>
+            <td>52</td>
+            <td>53</td>
+            <td>54</td>
+            <td>55</td>
+            <td>56</td>
+            <td>57</td>
+            <td>58</td>
+            <td>59</td>
+            <td>60</td>
+          </tr>
+          <tr>
+            <td>O</td>
+            <td>61</td>
+            <td>62</td>
+            <td>63</td>
+            <td>64</td>
+            <td>65</td>
+            <td>66</td>
+            <td>67</td>
+            <td>68</td>
+            <td>69</td>
+            <td>70</td>
+            <td>71</td>
+            <td>72</td>
+            <td>73</td>
+            <td>74</td>
+            <td>75</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+ <div class="div">
+  <button class="btn btn-primary" id="newNumber">NUEVO NUMERO</button>
+ </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+
+<script src="./js/game/game.js">
+
+</script>
+
+  </script>
+</div>
+</body>
+</html>
