@@ -101,13 +101,14 @@ app.get('/index', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inicio.html'));
 });
 
-app.get('/tienda', authenticateToken, role(0), (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
+app.get('/tienda', authenticateToken, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
 });
 
-app.get('/tienda', authenticateToken, role(0), (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
+app.get('/creditos', authenticateToken,role(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
 });
+
 
 app.get('/home',authenticateToken,(req,res) =>{
   if(req.user.rol === 0){
