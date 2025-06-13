@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadUserData() {
   try {
-    const userId = localStorage.getItem("userId");
+    const userId = localStorage.getItem("uid");
     if (!userId) {
       window.location.href = "/"
       return
@@ -84,6 +84,7 @@ async function loadUserData() {
 
     currentUser = await response.json()
     document.getElementById("userCredits").textContent = currentUser.creditos.toLocaleString()
+    renderOffers()
   } catch (error) {
     console.error("Error loading user data:", error)
     Swal.fire({
@@ -100,20 +101,20 @@ function renderOffers() {
   container.innerHTML = offers
     .map(
       (offer) => `
-    <div class="col-lg-3 col-md-6 mb-4">
+    <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
       <div class="offer-card border-alert border-neon-complete offer-${offer.type} h-100">
         ${offer.discount > 0 ? `<div class="discount-badge">-${offer.discount}%</div>` : ""}
         
-        <div class="text-center mb-4">
+        <div class="text-center mb-4 mt-4">
           <i class="${offer.icon} fa-3x mb-3" style="color: var(--neon-${getColorByType(offer.type)});"></i>
           <h4 class="text-white fw-bold">${offer.name}</h4>
-          <p class="text-muted pt-2">${offer.description}</p>
+          <p class="text-white-neon   pt-2">${offer.description}</p>
         </div>
 
         <div class="price-display">
           ${offer.discount > 0 ? `<div class="price-original">${offer.originalPrice} créditos</div>` : ""}
           <div class="price-current">${offer.currentPrice}</div>
-          <small class="text-muted">créditos</small>
+          <small class="text-white-neon">créditos</small>
         </div>
 
         <div class="text-center mb-4">
@@ -199,7 +200,8 @@ async function buyOffer(offerId) {
     showLoading(true)
 
     // Obtener cartones de la API
-    const cartonesResponse = await fetch(`${BINGO_API_URL}/${offer.quantity}`)
+    const cartonesResponse = await fetch(`${BINGO_API_URL}?count=${offer.quantity}`)
+    
     if (!cartonesResponse.ok) {
       throw new Error("Error al obtener cartones")
     }

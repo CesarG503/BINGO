@@ -197,10 +197,8 @@ body {
   background: linear-gradient(135deg, var(--success-color), #20c997);
   border: none;
   border-radius: 25px;
-  padding: 1rem 2rem;
   font-weight: bold;
   text-transform: uppercase;
-  letter-spacing: 1px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
