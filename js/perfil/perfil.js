@@ -1,13 +1,24 @@
+// ===============================
+// Función para cargar datos del perfil desde la API
+// ===============================
 async function cargarPerfil() {
     try {
-        const res = await fetch('http://localhost:3000/api/usuario/1'); // cambia 1 por otro ID si hace falta
+        // Realiza una petición GET a la API para obtener los datos del usuario con ID 1
+        const res = await fetch('http://localhost:3000/api/usuario/1');
         const data = await res.json();
 
+        // Asigna los datos recibidos a los elementos del DOM
         document.getElementById('username').textContent = '@' + data.username;
         document.getElementById('email').textContent = data.email;
         document.getElementById('creditos').textContent = data.creditos;
-        document.getElementById('mainProfileImg').src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${data.img_id}` || 'default.jpg';
 
+        // Carga la imagen del perfil desde un API externa usando el img_id
+        document.getElementById('mainProfileImg').src = 
+            data.img_id 
+                ? `https://bingo-api.mixg-studio.workers.dev/api/profile/${data.img_id}` 
+                : 'default.jpg';
+
+        // Aplicar clase "a" condicionalmente si img_id es '11'
         if (data.img_id === '11') {
             document.getElementById('botonCerrar').classList.add("a");
         } else {
@@ -19,18 +30,27 @@ async function cargarPerfil() {
     }
 }
 
+// Ejecutar al cargar la página
 window.onload = cargarPerfil;
 
+
+// ===============================
+// Función para guardar los cambios del perfil
+// ===============================
 async function guardarPerfil() {
-    const id = 1; // O el ID dinámico del usuario
+    const id = 1; // ID fijo o dinámico si implementas autenticación
+
+    // Obtener elementos del DOM
     const usernameElem = document.getElementById('username');
     const emailElem = document.getElementById('email');
     const img = document.getElementById('mainProfileImg2');
 
-    const username = usernameElem.textContent.replace(/^@/, '').trim();
+    // Limpiar y preparar los valores a enviar
+    const username = usernameElem.textContent.replace(/^@/, '').trim(); // Elimina el '@'
     const email = emailElem.textContent.trim();
-    const img_id = img?.alt?.trim() || '';
+    const img_id = img?.alt?.trim() || ''; // El alt contiene el ID de la imagen seleccionada
 
+    // Validaciones básicas antes de enviar
     if (username === '' || email === '') {
         alert('Por favor completa todos los campos.');
         return;
@@ -42,7 +62,8 @@ async function guardarPerfil() {
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/api/usuario/1`, {
+        // Enviar una petición PUT para actualizar el perfil
+        const response = await fetch(`http://localhost:3000/api/usuario/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -59,7 +80,5 @@ async function guardarPerfil() {
         alert('¡Perfil actualizado correctamente!');
     } catch (error) {
         console.error('Error al actualizar el perfil:', error.message, error.stack);
-        // res.status(500).json({ error: 'Error del servidor: ' + error.message });
     }
 }
-

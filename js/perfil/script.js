@@ -1,8 +1,14 @@
+// ===============================
+// Referencias a elementos del DOM
+// ===============================
+
 const miniperfil = document.getElementById("imagenPequeña");
 const img1 = document.getElementById("mainProfileImg");
 const img2 = document.getElementById("mainProfileImg2");
 
-
+// ===============================
+// Mostrar/Ocultar panel lateral de perfil
+// ===============================
 let ocultar = false;
 function toggleProfilePanel() {
     const panel = document.getElementById("profilePanel");
@@ -19,11 +25,36 @@ function toggleProfilePanel() {
     }
 }
 
+// ===============================
+// Mostrar/Ocultar el menú desplegable de imágenes
+// ===============================
 function toggleImageDropdown() {
     const dropdown = document.getElementById("imageDropdown");
     dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
 }
 
+// ===============================
+// Crea la lista de imágenes
+// ===============================
+function crearImagenes(){
+    const divImgs = document.getElementById("listImgs");
+
+    for (let i = 1; i < 12; i++) {
+        let img = document.createElement("img");
+        img.src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${i}`;
+        img.alt = i;
+        img.className = "preset-avatar profile-img";
+        img.setAttribute("onclick", "selectPresetImage(this)");
+        img.id="Avatar"
+        
+        divImgs.appendChild(img);
+    }
+}
+crearImagenes()
+
+// ===============================
+// Seleccionar una imagen preestablecida
+// ===============================
 function selectPresetImage(img) {
     const src = img.src;
     img1.src = src;
@@ -33,12 +64,17 @@ function selectPresetImage(img) {
     document.getElementById("imageDropdown").style.display = "none";
 }
 
-
+// ===============================
+// Validar formato de correo electrónico
+// ===============================
 function validarEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
 }
 
+// ===============================
+// Hacer editable un campo de texto (conversión span -> input)
+// ===============================
 function hacerEditable(id) {
     const span = document.getElementById(id);
     const currentText = span.textContent;
@@ -75,6 +111,10 @@ function hacerEditable(id) {
     });
 }
 
+// ===============================
+// Guardar el texto editado (conversión input -> span)
+// ===============================
+
 function guardarTexto(input) {
     if (input.dataset.saved === "true") return;
     input.dataset.saved = "true";
@@ -106,6 +146,9 @@ function guardarTexto(input) {
     input.replaceWith(span);
 }
 
+// ===============================
+// Acción del botón "Tienda"
+// ===============================
 const btnTienda = document.getElementById("botonTienda");
 
 btnTienda.addEventListener("click", function(event){

@@ -1,10 +1,19 @@
+
+// =======================
+// Módulos necesarios
+// =======================
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const pool = require('../db/db'); // ruta hacia db.js
 
+
 const app = express();
 const PORT = 3000;
+
+// =======================
+// Middleware
+// =======================
 
 app.use(cors());
 app.use(express.json());
@@ -12,7 +21,10 @@ app.use(express.json());
 // Servir HTML y JS desde raíz
 app.use(express.static(path.join(__dirname, '../../')));
 
-// Endpoint para obtener los datos del perfil
+// =======================
+// ENDPOINT: Obtener datos del perfil de usuario
+// GET /api/usuario/:id
+// =======================
 app.get('/api/usuario/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -38,7 +50,10 @@ app.listen(PORT, () => {
 });
 
 
-// Endpoint para actualizar datos del perfil
+// =======================
+// ENDPOINT: Actualizar datos del perfil
+// PUT /api/usuario/:id
+// =======================
 app.put('/api/usuario/:id', async (req, res) => {
     const { id } = req.params;
     const { username, email, img_id } = req.body;
