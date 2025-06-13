@@ -30,8 +30,29 @@ function toggleProfilePanel() {
 // ===============================
 function toggleImageDropdown() {
     const dropdown = document.getElementById("imageDropdown");
-    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+
+    // Alternar visibilidad
+    if (dropdown.style.display === "block") {
+        dropdown.style.display = "none";
+        document.removeEventListener("click", outsideClickListener);
+    } else {
+        dropdown.style.display = "block";
+        // Agrega el listener para detectar clics fuera
+        setTimeout(() => {
+            document.addEventListener("click", outsideClickListener);
+        }, 0);
+    }
+
+    // Función interna para detectar clic fuera
+    function outsideClickListener(event) {
+        const isClickInside = dropdown.contains(event.target) || event.target.id === "imageDropdownBtn"; // si tienes un botón
+        if (!isClickInside) {
+            dropdown.style.display = "none";
+            document.removeEventListener("click", outsideClickListener);
+        }
+    }
 }
+
 
 // ===============================
 // Crea la lista de imágenes
@@ -82,7 +103,7 @@ function hacerEditable(id) {
     const input = document.createElement("input");
     input.type = "text";
     input.value = currentText;
-    input.className = "edit-input";
+    input.className = "editable-text me-2";
     input.id = id;
 
     // Prevenir duplicados
