@@ -1,5 +1,5 @@
-import API_BASE_URL from './../util/base_url.js';
-import getCookieValue from './../util/get_cookie.js';
+import API_BASE_URL from '/js/util/base_url.js';
+import getCookieValue from '/js/util/get_cookie.js';
 
 const form_create_room = document.getElementById("create-room-form");
 

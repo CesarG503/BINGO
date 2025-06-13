@@ -112,10 +112,10 @@ app.get('/creditos', authenticateToken,role(0), (req, res) => {
 
 app.get('/home',authenticateToken,(req,res) =>{
   if(req.user.rol === 0){
-    res.sendFile(path.join(__dirname, 'public', 'admin_home.html'));
+    res.sendFile(path.join(__dirname, 'src', 'admin_home.html'));
   }
   else{
-    res.sendFile(path.join(__dirname, 'public', 'home.html'));
+    res.sendFile(path.join(__dirname, 'src', 'home.html'));
   }
 });
 
@@ -141,6 +141,14 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Cliente desconectado');
   });
+});
+
+// Redirigir cualquier otra ruta a la página de inicio
+app.use((req, res) => {
+  if (req.path === '/') {
+    return res.status(404).send('Página no encontrada');
+  }
+  res.redirect('/');
 });
 
 server.listen(PORT, () => {
