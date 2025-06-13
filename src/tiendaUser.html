@@ -15,27 +15,6 @@
     <link rel="stylesheet" href="css/tiendaUser.css">
 </head>
 <body class="bg-dark text-light">
-
-   
-    <nav class="navbar navbar-expand-lg bg-primary-neon">
-        <div class="container">
-            <a class="navbar-brand text-white fw-bold" href="/home">
-                <i class="fas fa-dice me-2"></i>BINGO STORE
-            </a>
-            <div class="d-flex align-items-center">
-                <div class="me-3 text-white">
-                    <i class="fas fa-coins me-1"></i>
-                    <span id="userCredits">0</span> Créditos
-                </div>
-                <button class="btn btn-outline-light btn-sm" onclick="logout()">
-                    <i class="fas fa-sign-out-alt me-1"></i>Salir
-                </button>
-            </div>
-        </div>
-    </nav>
-
-
-
     
     <div class="hero-section bg-secondary-neon py-5">
         <div class="container text-center">
@@ -52,6 +31,11 @@
             <div class="col-12 text-center">
                 <h2 class="text-white mb-4">
                     <i class="fas fa-fire me-2 text-warning"></i>Ofertas Especiales
+
+                     <div class="me-3 text-white-neon ">
+                        <i class="fas fa-coins me-1"></i>
+                        <span id="userCredits" class="text-warning-neon">0</span>  <span class="text-alert-neon">Créditos</span>
+                    </div>
                 </h2>
             </div>
         </div>
@@ -68,15 +52,15 @@
                 <div class="card bg-dark border-info">
                     <div class="card-header bg-info-neon text-white">
                         <h4 class="card-title mb-0">
-                            <i class="fas fa-clipboard-list me-2"></i>Mis Cartones Comprados
+                            <i class="fas fa-clipboard-list me-2"></i>Mis Cartones
                         </h4>
                     </div>
                     <div class="card-body">
                         <div class="row" id="userCartonesContainer">
                             <div class="col-12 text-center py-4">
                                 <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">No tienes cartones comprados aún</p>
-                                <p class="text-muted">¡Compra algunos cartones arriba para empezar a jugar!</p>
+                                <p class="text-white-neon">No tienes cartones comprados aún</p>
+                                <p class="text-white-neon">¡Compra algunos cartones arriba para empezar a jugar!</p>
                             </div>
                         </div>
                     </div>

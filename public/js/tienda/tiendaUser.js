@@ -8,7 +8,6 @@ const BINGO_API_URL = "https://bingo-api.mixg-studio.workers.dev/api/tablero"
 let currentUser = null
 let userCartones = []
 
-// Ofertas disponibles
 const offers = [
   {
     id: 1,
@@ -60,15 +59,15 @@ const offers = [
   },
 ]
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadUserData()
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadUserData()
   renderOffers()
-  loadUserCartones()
+  await loadUserCartones()
 })
 
 async function loadUserData() {
   try {
-    const userId = localStorage.getItem("uid");
+    const userId = localStorage.getItem("uid")
     if (!userId) {
       window.location.href = "/"
       return
@@ -85,6 +84,8 @@ async function loadUserData() {
     currentUser = await response.json()
     document.getElementById("userCredits").textContent = currentUser.creditos.toLocaleString()
     renderOffers()
+    // Cargar cartones del usuario después de obtener currentUser
+    await loadUserCartones()
   } catch (error) {
     console.error("Error loading user data:", error)
     Swal.fire({
@@ -199,14 +200,60 @@ async function buyOffer(offerId) {
   try {
     showLoading(true)
 
-    // Obtener cartones de la API
+    // Obtener cartones de la API bingo
     const cartonesResponse = await fetch(`${BINGO_API_URL}?count=${offer.quantity}`)
-    
     if (!cartonesResponse.ok) {
       throw new Error("Error al obtener cartones")
     }
 
-    const cartones = await cartonesResponse.json()
+    let cartonesData = await cartonesResponse.json()
+
+    // Normalizar cartonesData [[],[],...]
+    if (offer.quantity === 1 ) {
+      cartonesData = [cartonesData.tableros];
+    } else if (cartonesData && typeof cartonesData === "object" && !Array.isArray(cartonesData)) {
+      const arr = Object.values(cartonesData).find(v => Array.isArray(v) && Array.isArray(v[0]));
+      if (arr) cartonesData = arr;
+    }
+
+    if (!Array.isArray(cartonesData)) {
+      throw new Error("La respuesta de cartones no es un array");
+    }
+
+    
+    const cartonesDbResponse = await fetch(`${API_BASE_URL}/api/cartones/bulk`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        cartones: cartonesData.map((carton) => carton), // Enviar cada tablero como está
+      }),
+    })
+
+    if (!cartonesDbResponse.ok) {
+      throw new Error("Error al guardar cartones en la base de datos")
+    }
+
+    const savedCartones = await cartonesDbResponse.json()
+
+    // Asignar cartones al usuario
+    const cartonUsuarioResponse = await fetch(`${API_BASE_URL}/api/carton-usuario/bulk`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id_usuario: currentUser.id_usuario,
+        cartones_ids: savedCartones.map((carton) => carton.id_carton),
+      }),
+    })
+
+    if (!cartonUsuarioResponse.ok) {
+      throw new Error("Error al asignar cartones al usuario")
+    }
 
     // Actualizar créditos del usuario
     const updatedUser = {
@@ -231,22 +278,9 @@ async function buyOffer(offerId) {
     currentUser = updatedUser
     document.getElementById("userCredits").textContent = currentUser.creditos.toLocaleString()
 
-    // Agregar cartones comprados
-    const newCartones = cartones.map((carton) => ({
-      ...carton,
-      purchaseDate: new Date().toISOString(),
-      offerId: offer.id,
-      offerName: offer.name,
-    }))
-
-    userCartones = [...userCartones, ...newCartones]
-
-    // Guardar en localStorage (en una app real, esto se guardaría en la base de datos)
-    localStorage.setItem(`cartones_${currentUser.id_usuario}`, JSON.stringify(userCartones))
-
     showLoading(false)
-    renderOffers() // Re-renderizar para actualizar botones
-    renderUserCartones()
+    renderOffers()
+    loadUserCartones() 
 
     // Mostrar éxito
     await Swal.fire({
@@ -271,26 +305,37 @@ async function buyOffer(offerId) {
     Swal.fire({
       icon: "error",
       title: "Error en la Compra",
-      text: "No se pudo completar la compra. Inténtalo de nuevo.",
+      text: error.message || "No se pudo completar la compra. Inténtalo de nuevo.",
       confirmButtonText: "Entendido",
     })
   }
 }
 
-function loadUserCartones() {
+async function loadUserCartones() {
   if (!currentUser) return
 
-  const saved = localStorage.getItem(`cartones_${currentUser.id_usuario}`)
-  if (saved) {
-    userCartones = JSON.parse(saved)
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/carton-usuario/usuario/${currentUser.id_usuario}`, {
+      credentials: "include",
+    })
+
+    if (!response.ok) {
+      throw new Error("Error al cargar cartones del usuario")
+    }
+
+    userCartones = await response.json()
+    
     renderUserCartones()
+  } catch (error) {
+    console.error("Error loading user cartones:", error)
+    // No mostrar error al usuario, solo log
   }
 }
 
 function renderUserCartones() {
   const container = document.getElementById("userCartonesContainer")
 
-  if (userCartones.length === 0) {
+  if(userCartones.length === 0) {
     container.innerHTML = `
       <div class="col-12 text-center py-4">
         <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
@@ -302,13 +347,27 @@ function renderUserCartones() {
   }
 
   container.innerHTML = userCartones
-    .map(
-      (carton, index) => `
-    <div class="col-lg-4 col-md-6 mb-4">
+    .map((cartonData, index) => {
+      // Si cartonData.carton ya es un array, úsalo directamente, si es string, parsea
+      let carton;
+      if (Array.isArray(cartonData.carton)) {
+        carton = cartonData.carton;
+      } else if (typeof cartonData.carton === "string") {
+        try {
+          carton = JSON.parse(cartonData.carton);
+        } catch (e) {
+          console.error("Error parsing carton JSON:", e, cartonData.carton);
+          carton = [];
+        }
+      } else {
+        carton = [];
+      }
+      return `
+    <div class="col-lg-4 col-md-6 mb-4 pt-4">
       <div class="carton-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="text-white mb-0">Cartón #${index + 1}</h6>
-          <small class="text-muted">${carton.offerName || "Compra Individual"}</small>
+          <small class="text-muted">ID: ${cartonData.id_carton}</small>
         </div>
         
         <table class="bingo-table">
@@ -322,34 +381,32 @@ function renderUserCartones() {
             </tr>
           </thead>
           <tbody>
-            ${carton.tablero
+            ${Array.isArray(carton) ? carton
               .map(
                 (row) => `
               <tr>
-                ${row
+                ${Array.isArray(row) ? row
                   .map(
                     (cell) => `
                   <td class="bingo-cell">${cell === null ? "FREE" : cell}</td>
-                `,
-                  )
-                  .join("")}
+                `
+                  ).join("") : ""}
               </tr>
-            `,
-              )
-              .join("")}
+            `
+              ).join("") : ""}
           </tbody>
         </table>
         
         <div class="text-center mt-3">
           <small class="text-muted">
-            <i class="fas fa-calendar me-1"></i>
-            Comprado: ${new Date(carton.purchaseDate).toLocaleDateString()}
+            <i class="fas fa-user me-1"></i>
+            Propietario: ${cartonData.username}
           </small>
         </div>
       </div>
     </div>
-  `,
-    )
+  `
+    })
     .join("")
 }
 
@@ -364,13 +421,32 @@ function showLoading(show) {
   }
 }
 
-// Función para limpiar cartones (útil para testing)
-function clearCartones() {
+async function clearCartones() {
   if (!currentUser) return
-  localStorage.removeItem(`cartones_${currentUser.id_usuario}`)
-  userCartones = []
-  renderUserCartones()
-}
 
-// Exponer función globalmente para debugging
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/carton-usuario/usuario/${currentUser.id_usuario}`, {
+      method: "DELETE",
+      credentials: "include",
+    })
+
+    if (response.ok) {
+      userCartones = []
+      renderUserCartones()
+      Swal.fire({
+        icon: "success",
+        title: "Cartones eliminados",
+        text: "Todos tus cartones han sido eliminados",
+        timer: 2000,
+      })
+    }
+  } catch (error) {
+    console.error("Error clearing cartones:", error)
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "No se pudieron eliminar los cartones",
+    })
+  }
+}
 window.clearCartones = clearCartones

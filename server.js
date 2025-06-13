@@ -11,6 +11,8 @@ const host = require('./js/socket/host');
 const path = require('path'); // Importar path para manejar rutas de archivos
 const pool = require('./js/db/db'); // Importar la conexión a la base de datos
 const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de Entrenadores.js
+const cartonesRouter = require("./js/crud/cartones")
+const cartonUsuarioRouter = require("./js/crud/carton_usuario")
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -127,6 +129,10 @@ app.get('/home',authenticateToken,(req,res) =>{
 
 // Usar ruta del CRUD usuarios.js
 app.use('/api/usuarios', usuariosRouter);
+
+// CRUD cartones 
+app.use("/api/cartones", cartonesRouter)
+app.use("/api/carton-usuario", cartonUsuarioRouter)
 
 //Inicializar Socket.IO
 const io = new Server(server);
