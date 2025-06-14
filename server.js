@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); 
-const { authenticateToken, authenticateSocket } = require('./js/authenthicated'); // Importar la función de autenticación
+const { authenticateToken, authenticateSocket, validateRole } = require('./js/authenthicated'); // Importar la función de autenticación
 const { Server } = require('socket.io');
 const host = require('./js/socket/host');
 const path = require('path'); // Importar path para manejar rutas de archivos
@@ -44,19 +44,6 @@ pool.connect((err) => {
   }
 });
 
-function role(role) {
-  return (req, res, next) => {
-    const user = req.user;
-    if (!user) {
-      return res.sendStatus(401);
-    }
-    if (user.rol === role) {
-      next();
-    } else {
-      res.redirect('/');
-    }
-  };
-}
 
 app.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
@@ -107,7 +94,7 @@ app.get('/tienda', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
 });
 
-app.get('/creditos', authenticateToken,role(0), (req, res) => {
+app.get('/creditos', authenticateToken, validateRole(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
 });
 
