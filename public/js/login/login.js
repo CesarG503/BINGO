@@ -146,7 +146,7 @@ form.addEventListener('submit', async (e) => {
       const messageElement = document.getElementById('sign-up-message');
       messageElement.textContent = '';
       //mandar los datos
-      const response = await fetch(`${API_BASE_URL}/register`, {
+      const response = await fetch(`/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
