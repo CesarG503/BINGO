@@ -98,6 +98,10 @@ app.get('/creditos', authenticateToken, validateRole(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
 });
 
+app.get('/admin', authenticateToken, validateRole(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'administrador.html'));
+});
+
 app.get('/perfil', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'perfil.html'));
 });
