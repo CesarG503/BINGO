@@ -1,16 +1,9 @@
 let carrusel = document.getElementById("carrusel");
 const repeticiones = 5;
-const x = 2; //Duración de animaciones
+const x = 6; //Duración de animaciones
 
-// Iniciar ruletazo con el boton
-document.getElementById("newNumber").addEventListener("click", (e) => {
-  e.preventDefault();
-  iniciarRuletazo();
-});
 
-// iniciarRuletazo();
-
-async function iniciarRuletazo() {
+export async function iniciarRuletazo() {
   // limpiamos el carrusel para no tener bugs
   carrusel.innerHTML = null;
 
@@ -23,9 +16,9 @@ async function iniciarRuletazo() {
     bola.classList.add(asignarColor(bola.innerText));
     carrusel.appendChild(bola);
   }
-
+  const select = getRandomInteger(1, 75);
   // Agregar conjunto final con el número seleccionado en el centro
-  carrusel.append(...createSeleccionado(13));
+  carrusel.append(...createSeleccionado(select));
 
   // Creamos una nueva promesa para poder eliminar los numeros generados
   await new Promise((resolve) => {
@@ -44,15 +37,19 @@ async function iniciarRuletazo() {
         ease: "elastic.out",
       })
       .to("#seleccionado", {
+        //cae pelota
         scale: 1.2,
         y: 400,
         autoAlpha: 0,
-        duration: 3.5,
+        duration: x, //cambiar a 3.5
         ease: "power1.in",
+      })
+      .call(() => {
+        addBallGrid(select);
       })
       .to(carrusel, {
         x: "-=630",
-        duration: 5,
+        duration: x,
         delay: 2,
         ease: "power4.out",
       });
@@ -75,7 +72,12 @@ function createSeleccionado(numero) {
   for (let i = 0; i < 18; i++) {
     const bola = document.createElement("div");
     bola.classList.add("bola");
-    bola.innerText = i === 4 ? numero : getRandomInteger(1, 75);
+    if (i === 4) {
+      bola.innerText = numero;
+      // bola.classList.add('posotion-relative')
+    } else {
+      bola.innerText = getRandomInteger(1, 75);
+    }
     bola.classList.add(asignarColor(bola.innerText));
     if (i === 4) bola.setAttribute("id", "seleccionado");
     wrapper.appendChild(bola);
@@ -115,25 +117,56 @@ function asignarColor(numeroBola) {
   }
 }
 
-addBallGrid(3)
-
-function addBallGrid(numeroBola){
+async function addBallGrid(numeroBola) {
   // El navegador me agregar tbody asi que F
+  let index;
+  let indexFila;
   const table = document.getElementById("tableBall");
-  console.log(table.children);
-  
-  const ball = document.createElement('div')
+  const ball = document.createElement("div");
   ball.innerText = numeroBola;
+
+  console.log(table.children[2].children);
 
   if (numeroBola > 0 && numeroBola <= 15) {
     ball.classList.add("bola", "bg-primary-neon");
+    index = 0;
   } else if (numeroBola > 15 && numeroBola <= 30) {
-    ball.classList.add("bola", "bg-primary-neon");
+    ball.classList.add("bola", "bg-info-neon");
+    index = 1;
   } else if (numeroBola > 30 && numeroBola <= 45) {
-    ball.classList.add("bola", "bg-primary-neon");
+    ball.classList.add("bola", "bg-success-neon");
+    index = 2;
   } else if (numeroBola > 45 && numeroBola <= 60) {
-    ball.classList.add("bola", "bg-primary-neon");
-  } else if (numeroBola > 60 && numeroBola <= 75) { 
-    ball.classList.add("bola", "bg-primary-neon");
+    ball.classList.add("bola", "bg-danger-neon");
+    index = 3;
+  } else if (numeroBola > 60 && numeroBola <= 75) {
+    ball.classList.add("bola", "bg-warning-neon");
+    index = 4;
   }
+
+  indexFila = numeroBola - index * 15; //Calculamos el indice en el que tiene que entrar
+  console.log(indexFila);
+  table.children[index].children[indexFila].appendChild(ball);
+  ball.style.scale = 0;
+  await new Promise((resolve) => {
+    gsap
+      .timeline({ onComplete: resolve })
+      .to(ball, {
+        y: -20, // Se eleva un poco
+        scale: 1.2, // Se estira un poco
+        duration: 0.3, // Corto para sensación rápida
+        ease: "power2.out",
+      })
+      .to(ball, {
+        y: 0,
+        scale: 0.95, // Rebote pequeño al tocar el suelo
+        duration: 0.2,
+        ease: "bounce.out",
+      })
+      .to(ball, {
+        scale: 1,
+        duration: 0.2,
+        ease: "elastic.out(1, 0.3)",
+      });
+  });
 }

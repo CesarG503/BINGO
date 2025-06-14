@@ -13,7 +13,7 @@
 <nav class="navbar bg-secondary estilo-brillo border rounded border-secondary hover-neon  position-sticky top-0 p-1">
     <div class="navbar-header">
         <div class="navbar-brand">
-          <!-- <img src="./img/bingoLogin.svg" alt="pelota de bingo" style="height: 40px;"> -->
+          <img src="./img/bingoLogin.svg" alt="pelota de bingo" style="height: 40px;">
           Bingo
         </div>
         <button class="navbar-toggle">
@@ -28,27 +28,33 @@
     </div>
 </nav>
 
-<!-- <div class="canva">
-  <div class="box">
 
-  </div>
-</div> -->
-
-<div class="container mt-4  bg-info-neon mx-auto row " style="height: 850px;">
-  <div class="container col bg-info-subtle">
-    <!-- RULETAZO -->
-    <div class="canva position-relative mx-auto">
-      <div class="carrusel" id="carrusel"></div>
+<div class="container mx-auto grid border border-2 rounded-5 border-neon border-info p-5" style="height: auto;">
+  <div class="container g-col-10 " >
+    <!-- RULETAZO CON LOS NUMEROS-->
+    <div class="canva mx-auto rounded-5">
+      <div class="carrusel" id="carrusel">
+        <div class="bola bg-alert-neon">¡</div>
+        <div class="bola bg-alert-neon">¡</div>
+        <div class="bola bg-primary-neon">B</div>
+        <div class="bola bg-info-neon">I</div>
+        <div class="bola bg-success-neon">N</div>
+        <div class="bola bg-danger-neon">G</div>
+        <div class="bola bg-warning-neon">O</div>
+        <div class="bola bg-alert-neon">!</div>
+        <div class="bola bg-alert-neon">!</div>
+      </div>
     </div>
     <!-- TUBO -->
-    <div class="row justify-content-center">
+
+    <div class="row justify-content-center align-items-end" style="  grid-template-rows: 500px;">
       <div class="col-auto">
         <img class="tubo" src="./img/tubo.png" style="width: 200px;height: auto">
       </div>
     </div>
     <!-- TABLA CON LOS NUMEROS -->
-    <div class="container">
-      <table class="border border-3 border-neon border-success ">
+    <div class="container numeros">
+      <table class="border rounded-5 border-3 border-neon border-success ">
         <tbody id="tableBall"> <!--EL navegador me agregar el tbody :)-->
           <tr class="border border-primary">
             <td class="bg-primary-subtle">
@@ -67,7 +73,6 @@
             <td></td>
             <td></td>
             <td>
-              <div class="bola bg-primary-neon">13</div>
             </td>
             <td></td>
             <td></td>
@@ -76,94 +81,99 @@
             <td class="bg-info-subtle">
               <div class="bola bg-info-neon">I</div>
             </td>
-            <td>16</td>
-            <td>17</td>
-            <td>18</td>
-            <td>19</td>
-            <td>20</td>
-            <td>21</td>
-            <td>22</td>
-            <td>23</td>
-            <td>24</td>
-            <td>25</td>
-            <td>26</td>
-            <td>27</td>
-            <td>28</td>
-            <td>29</td>
-            <td>30</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
           </tr>
           <tr class="border border-success">
             <td class="bg-success-subtle">
               <div class="bola bg-success-neon">N</div>
             </td>
-            <td>31</td>
-            <td>32</td>
-            <td>33</td>
-            <td>34</td>
-            <td>35</td>
-            <td>36</td>
-            <td>37</td>
-            <td>38</td>
-            <td>39</td>
-            <td>40</td>
-            <td>41</td>
-            <td>42</td>
-            <td>43</td>
-            <td>44</td>
-            <td>45</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
           </tr>
           <tr class="border border-danger">
             <td class="bg-danger-subtle">
               <div class="bola bg-danger-neon">G</div>
             </td>
-            <td>46</td>
-            <td>47</td>
-            <td>48</td>
-            <td>49</td>
-            <td>50</td>
-            <td>51</td>
-            <td>52</td>
-            <td>53</td>
-            <td>54</td>
-            <td>55</td>
-            <td>56</td>
-            <td>57</td>
-            <td>58</td>
-            <td>59</td>
-            <td>60</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
           </tr>
           <tr class="border border-warning">
             <td class="bg-warning-subtle">
               <div class="bola bg-warning-neon">O</div>
             </td>
-            <td>61</td>
-            <td>62</td>
-            <td>63</td>
-            <td>64</td>
-            <td>65</td>
-            <td>66</td>
-            <td>67</td>
-            <td>68</td>
-            <td>69</td>
-            <td>70</td>
-            <td>71</td>
-            <td>72</td>
-            <td>73</td>
-            <td>74</td>
-            <td>75</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
- <div class="div">
-  <button class="btn btn-primary" id="newNumber">NUEVO NUMERO</button>
+
+ <div class="div g-col-2 position-relative">
+    <div class="botones position-absolute bottom-0 col-9">
+
+      <button class="btn btn-danger" id="newNumber">NUEVO NUMERO</button>
+
+    </div>
  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 
-<script src="./js/game/game.js">
+<script src="./js/game/app.js" type="module">
 
 </script>
 

@@ -2,16 +2,19 @@
   display: flex;
   padding-top: 20px;
   overflow: hidden;
+  min-width: 250px;
   width: 625px;
-  height: 150px;
-  background: #222;
-  border: 2px solid cyan;
+  max-height: 280px;
+  height: 220px;
+  margin: 40px;
+  border-inline: 1px solid #fff;
 }
 
 .carrusel {
   display: flex;
   flex-direction: row;
   gap: 10px;
+
 }
 
 .bola {
@@ -65,7 +68,6 @@ td {
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
   user-select: none;
-  background-color: #100a0a;
 }
 
 .bola:hover {
@@ -73,7 +75,17 @@ td {
 }
 
 td.selected {
-  background-color: #4caf50;
   font-weight: bold;
   transform: scale(1.1);
+}
+
+.contenedor{
+  display: grid;
+  height: 80vh;
+}
+
+.numeros{
+  overflow-x:auto;
+  overflow-y: none;
+  overflow: none;
 }
