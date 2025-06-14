@@ -35,3 +35,12 @@ CREATE TABLE carton_usuario (
     id_usuario INT NOT NULL REFERENCES Usuarios(id_usuario),
     id_carton INT NOT NULL REFERENCES Cartones(id_carton)
 );
+
+CREATE TABLE password_reset_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
+        token VARCHAR(255) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

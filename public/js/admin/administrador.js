@@ -290,18 +290,31 @@ async function sendPasswordReset(email) {
 
   if (result.isConfirmed) {
     try {
+      // Lógica real para enviar el email de cambio de contraseña
+      const response = await fetch(`${API_BASE_URL}/send-password-reset`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
-      await new Promise((resolve) => setTimeout(resolve, 1500)) //logica del envio de cambio de contraseña
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "No se pudo enviar el enlace de cambio de contraseña");
+      }
 
       Swal.fire({
         icon: "success",
         title: "¡Enlace Enviado!",
         html: `
-                    <p>Se ha enviado un enlace de cambio de contraseña a:</p>
-                    <strong>${email}</strong>
-                    <br><br>
-                    <small class="text-muted">El enlace expirará en 24 horas</small>
-                `,
+          <p>Se ha enviado un enlace de cambio de contraseña a:</p>
+          <strong>${email}</strong>
+          <br><br>
+          <small class="text-muted">El enlace expirará en 24 horas</small>
+        `,
         confirmButtonText: "Entendido",
       })
     } catch (error) {
@@ -309,7 +322,7 @@ async function sendPasswordReset(email) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "No se pudo enviar el enlace de cambio de contraseña",
+        text: error.message || "No se pudo enviar el enlace de cambio de contraseña",
       })
     }
   }
