@@ -1,12 +1,13 @@
 .canva {
   display: flex;
-  padding-top: 20px;
+  align-items: center;
   overflow: hidden;
   min-width: 250px;
   width: 625px;
   max-height: 280px;
   height: 220px;
   margin: 40px;
+  margin-bottom: 0;
   border-inline: 1px solid #fff;
 }
 
