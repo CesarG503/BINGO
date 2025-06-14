@@ -7,41 +7,10 @@ let allUsers = []
 let filteredUsers = []
 let currentUser = null
 
-document.addEventListener("DOMContentLoaded", () => {
-  autenticarRol()
-  loadUsers()
-  setupEventListeners()
-})
-
-function autenticarRol() {
-    const token = localStorage.getItem("token")
-    if (!token) {
-        window.location.href = "login.html"
-        return
-    }
-    try {
-        const rol_usuario = JSON.parse(atob(token.split('.')[1]))
-        if (rol_usuario.rol !== 0) {
-            window.location.href = "index.html"
-            return
-        }
-    } catch (e) {
-        window.location.href = "login.html"
-        return
-    }
-}
-
 function setupEventListeners() {
-  
   document.getElementById("searchInput").addEventListener("input", filterUsers)
-
-  
   document.getElementById("filterField").addEventListener("change", filterUsers)
-
-  
   document.getElementById("sortBy").addEventListener("change", sortUsers)
-
-  
   document.getElementById("creditAmount").addEventListener("input", function () {
     const value = Number.parseInt(this.value)
     if (value < 0) this.value = 0
@@ -49,33 +18,43 @@ function setupEventListeners() {
   })
 }
 
-async function loadUsers() {
-  try {
-    showLoading(true)
-    const token = localStorage.getItem("token")
+let urlUsuario = `${API_BASE_URL}/api/usuarios`;
 
-    const response = await fetch(`${API_BASE_URL}/api/usuarios`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+function loadUsers() {
+  showLoading(true)
+  fetch(urlUsuario, {
+    method: "GET",
+    credentials: "include" 
+  })
+    .then(response => {
+      if (response.status === 401 || response.status === 403) {
+        window.location.href = "login.html";
+        return;
+      }
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
     })
-
-    if (!response.ok) {
-      throw new Error("Error al cargar usuarios")
-    }
-
-    allUsers = await response.json()
-    filteredUsers = [...allUsers]
-
-    renderUsers()
-    updateStatistics()
-    showLoading(false)
-  } catch (error) {
-    console.error("Error loading users:", error)
-    showError("Error al cargar los usuarios")
-    showLoading(false)
-  }
+    .then(data => {
+      if (!data) return;
+      allUsers = data;
+      filteredUsers = [...allUsers];
+      renderUsers();
+      updateStatistics();
+      showLoading(false);
+    })
+    .catch(error => {
+      console.error("Error loading users:", error)
+      showError("Error al cargar los usuarios")
+      showLoading(false)
+    });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadUsers();
+  setupEventListeners();
+});
 
 function renderUsers() {
   const container = document.getElementById("usersContainer")
@@ -95,12 +74,10 @@ function renderUsers() {
         <div class="col-lg-4 col-md-6 mb-4">
             <div class="user-card fade-in">
                 <div class="d-flex align-items-center mb-3">
-
                         ${user.img_id
                           ? `<img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${user.img_id}" alt="${user.username}" class="avatar-img me-3">`
                           : `<div class="user-avatar me-3">${user.username.charAt(0).toUpperCase()}</div>`  
                           }
-                          
                     <div class="flex-grow-1">
                         <h6 class="mb-1 fw-bold">${user.username}</h6>
                         <small class="text-muted">ID: ${user.id_usuario}</small>
@@ -109,19 +86,16 @@ function renderUsers() {
                         ${user.rol === 0 ? "Admin" : "Usuario"}
                     </span>
                 </div>
-                
                 <div class="mb-3">
                     <small class="text-muted d-block">Email</small>
                     <span class="fw-medium">${user.email}</span>
                 </div>
-                
                 <div class="credit-display">
                     <div class="d-flex justify-content-between align-items-center">
                         <span>Créditos</span>
                         <span class="fs-4 fw-bold">${user.creditos.toLocaleString()}</span>
                     </div>
                 </div>
-                
                 <div class="d-grid gap-2">
                     <button class="btn btn-assign-credits" onclick="openCreditModal(${user.id_usuario})">
                         <i class="fas fa-coins me-2"></i>Asignar Créditos
@@ -157,7 +131,6 @@ function filterUsers() {
       if (filterField === "all") {
         return Object.values(user).some((value) => value && value.toString().toLowerCase().includes(searchTerm))
       } else if (filterField === "rol") {
-
         const roleText = user.rol === 0 ? "admin" : "usuario"
         return (
           user.rol.toString().includes(searchTerm) ||
@@ -181,7 +154,7 @@ function sortUsers() {
     const bValue = b[sortBy]
 
     if (typeof aValue === "number" && typeof bValue === "number") {
-      return bValue - aValue // Descending for numbers
+      return bValue - aValue 
     }
 
     return aValue.toString().localeCompare(bValue.toString())
@@ -219,8 +192,8 @@ function openCreditModal(userId) {
 
   const userAvatarDiv = document.querySelector('#avatarContainer');
   userAvatarDiv.innerHTML = user.img_id
-  ? `<img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${user.img_id}" alt="${user.username}" class="avatar-img me-3">`
-  : `<div class="user-avatar me-3">${user.username.charAt(0).toUpperCase()}</div>`;
+    ? `<img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${user.img_id}" alt="${user.username}" class="avatar-img me-3">`
+    : `<div class="user-avatar me-3">${user.username.charAt(0).toUpperCase()}</div>`;
 
   document.getElementById("modalUsername").textContent = user.username
   document.getElementById("modalEmail").textContent = user.email
@@ -233,7 +206,6 @@ function openCreditModal(userId) {
 
 function setCreditAmount(amount, isReset = false) {
   const input = document.getElementById("creditAmount")
-
   if (isReset) {
     input.value = currentUser.creditos * -1 
   } else {
@@ -243,7 +215,6 @@ function setCreditAmount(amount, isReset = false) {
 
 async function assignCredits() {
   const creditAmount = Number.parseInt(document.getElementById("creditAmount").value)
-
   if (!creditAmount || creditAmount === 0) {
     Swal.fire({
       icon: "warning",
@@ -252,22 +223,29 @@ async function assignCredits() {
     })
     return
   }
-
   if (!currentUser) return
 
-  try {
-    const token = localStorage.getItem("token")
-    const newCredits = Math.max(0, currentUser.creditos + creditAmount)
+  // Confirmación antes de asignar créditos
+  const result = await Swal.fire({
+    title: "¿Estás seguro?",
+    text: `¿Deseas ${creditAmount > 0 ? "agregar" : "restar"} ${Math.abs(creditAmount)} créditos a ${currentUser.username}?`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar"
+  });
+  if (!result.isConfirmed) return;
 
+  try {
     const response = await fetch(`${API_BASE_URL}/api/usuarios/${currentUser.id_usuario}`, {
       method: "PUT",
+      credentials: "include",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         ...currentUser,
-        creditos: newCredits,
+        creditos: Math.max(0, currentUser.creditos + creditAmount),
       }),
     })
 
@@ -277,7 +255,6 @@ async function assignCredits() {
 
     const updatedUser = await response.json()
 
-    
     const userIndex = allUsers.findIndex((u) => u.id_usuario === currentUser.id_usuario)
     if (userIndex !== -1) {
       allUsers[userIndex] = updatedUser
@@ -288,11 +265,9 @@ async function assignCredits() {
       filteredUsers[filteredIndex] = updatedUser
     }
 
-   
     const modal = bootstrap.Modal.getInstance(document.getElementById("creditModal"))
     modal.hide()
 
-    
     Swal.fire({
       icon: "success",
       title: "¡Créditos asignados!",
@@ -301,7 +276,6 @@ async function assignCredits() {
       showConfirmButton: false,
     })
 
-    
     renderUsers()
     updateStatistics()
   } catch (error) {
@@ -318,19 +292,27 @@ async function quickAssign(userId, amount) {
   const user = allUsers.find((u) => u.id_usuario === userId)
   if (!user) return
 
-  try {
-    const token = localStorage.getItem("token")
-    const newCredits = user.creditos + amount
+  // Confirmación antes de asignar créditos rápidos
+  const result = await Swal.fire({
+    title: "¿Estás seguro?",
+    text: `¿Deseas agregar ${amount} créditos a ${user.username}?`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar"
+  });
+  if (!result.isConfirmed) return;
 
+  try {
     const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`, {
       method: "PUT",
+      credentials: "include",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         ...user,
-        creditos: newCredits,
+        creditos: user.creditos + amount,
       }),
     })
 
@@ -350,7 +332,6 @@ async function quickAssign(userId, amount) {
       filteredUsers[filteredIndex] = updatedUser
     }
 
-   
     const Toast = Swal.mixin({
       toast: true,
       position: "top-end",
@@ -364,7 +345,6 @@ async function quickAssign(userId, amount) {
       title: `+${amount} créditos agregados`,
     })
 
-    
     renderUsers()
     updateStatistics()
   } catch (error) {
@@ -399,7 +379,6 @@ function showError(message) {
 
 
 function logout() {
-  localStorage.removeItem("token")
-  localStorage.removeItem("userId")
+  document.cookie = "token=; expires=Thu, 01 Jan 1970";
   window.location.href = "login.html"
 }

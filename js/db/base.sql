@@ -17,9 +17,9 @@ CREATE TABLE Cartones (
 );
 
 CREATE TABLE Partidas (
-    id_partida SERIAL PRIMARY KEY,
+    id_partida VARCHAR(20) PRIMARY KEY,
     numeros_llamados JSON DEFAULT '[]',
-    estado VARCHAR(20) DEFAULT 'esperando', 
+    estado INT DEFAULT 0, 
     host INT NOT NULL REFERENCES Usuarios(id_usuario),
     ganador INT REFERENCES Usuarios(id_usuario)
 );
@@ -27,7 +27,7 @@ CREATE TABLE Partidas (
 CREATE TABLE partida_usuario (
     id_partida_usuario SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL REFERENCES Usuarios(id_usuario),
-    id_partida INT NOT NULL REFERENCES Partidas(id_partida)
+    id_partida VARCHAR(20) NOT NULL REFERENCES Partidas(id_partida)
 );
 
 CREATE TABLE carton_usuario (

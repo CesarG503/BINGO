@@ -1,28 +1,41 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const pool = require('../db/db'); // Importar la conexión a la base de datos
+const { authenticateToken, validateRole } = require('../authenthicated'); // Importar la función de autenticación
 
 const router = express.Router();
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, 'secret_key', (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
-
 // Obtener todos los usuarios
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateToken, validateRole(0), async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Usuarios');
     res.send(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching usuarios' });
+  }
+});
+
+//Obtener informacion del usuario autenticado
+router.get('/actual', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM Usuarios WHERE id_usuario = $1', [req.user.uid]);
+    res.send(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching usuario:', err);
+    res.status(500).json({ error: 'Error fetching usuario' });
+  }
+});
+
+// Actualizar perfil del usuario autenticado
+router.put('/actual/perfil', authenticateToken, async (req, res) => {
+  const { username, email, img_id } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE Usuarios SET username = $1, email = $2, img_id = $3 WHERE id_usuario = $4 RETURNING *`,
+      [username,email,img_id, req.user.uid]
+    );
+    res.send(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Error actualizando imagen de usuario' });
   }
 });
 
@@ -52,7 +65,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Actualizar un usuario
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, validateRole(0), async (req, res) => {
   const { username, password, rol, creditos, img_id, email } = req.body;
   try {
     const result = await pool.query(
@@ -67,7 +80,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // Borrar un usuario
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, validateRole(0), async (req, res) => {
   try {
     const result = await pool.query('DELETE FROM Usuarios WHERE id_usuario = $1 RETURNING *', [req.params.id]);
     res.send(result.rows[0]);

@@ -1,10 +1,4 @@
-const token = localStorage.getItem('token');
-if (!token) {
-  window.location.href = 'login.html';
-}
-
 function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userId');
-  window.location.href = 'login.html';
+  document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  window.location.href = '/';
 }

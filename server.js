@@ -1,16 +1,24 @@
 const express = require('express');
+const httpServer = require("http");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser'); 
+const { authenticateToken, authenticateSocket, validateRole } = require('./js/authenthicated'); // Importar la función de autenticación
+const { Server } = require('socket.io');
+const host = require('./js/socket/host');
 const path = require('path'); // Importar path para manejar rutas de archivos
 const pool = require('./js/db/db'); // Importar la conexión a la base de datos
-const usuariosRouter = require('./js/crud/usuarios'); // Importar las rutas de Entrenadores.js
+const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de Entrenadores.js
+const cartonesRouter = require("./js/crud/cartones")
+const cartonUsuarioRouter = require("./js/crud/carton_usuario")
 
 const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+const server = httpServer.createServer(app);
 const PORT =  process.env.PORT || 3000;
 
 // Configurar CORS para aceptar cualquier origen (útil para pruebas móviles)
@@ -22,6 +30,7 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // Configurar el servidor para servir archivos estáticos desde el directorio public
 app.use(express.static(path.join(__dirname,'public')));
@@ -35,17 +44,6 @@ pool.connect((err) => {
   }
 });
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, 'secret_key', (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
 
 app.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
@@ -66,9 +64,10 @@ app.post('/login', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Usuarios WHERE email = $1', [email]);
     const user = result.rows[0];
-    if (user && await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
-      res.json({ token, userId: user.id, rol: user.rol }); // Enviar el token, ID y rol del usuario
+    if (user && await bcrypt.compare(password, user.password)) 
+      {
+      const token = jwt.sign({ uid:user.id_usuario,  email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
+      res.json({ token, uid: user.id_usuario, rol: user.rol }); // Enviar el token, ID y rol del usuario
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -79,37 +78,80 @@ app.post('/login', async (req, res) => {
 
 // Configurar la ruta raíz para servir login.html
 app.get('/', (req, res) => {
+  if(req.cookies.token) {
+    // Si el usuario ya tiene un token, redirigir a la página de inicio
+    return res.redirect('/index');
+  }
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 //Colocar las rutas protegidas debajo de esta línea
 app.get('/index', authenticateToken, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'inicio.html'));
 });
 
-app.get('/tienda', authenticateToken, async (req, res) => {
-  try {
-    const user = req.user;
-    if (!user) {
-      return res.redirect('/index');
-    }
-    if (user.rol === 0) {
-      return res.sendFile(path.join(__dirname, 'public', 'tienda.html'));
-    } else {
-      return res.redirect('/index');
-    }
-  } catch (err) {
-    res.status(500).json({ error: 'Error al verificar el rol del usuario' });
+app.get('/tienda', authenticateToken, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
+});
+
+app.get('/creditos', authenticateToken, validateRole(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
+});
+
+app.get('/admin', authenticateToken, validateRole(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'administrador.html'));
+});
+
+app.get('/perfil', authenticateToken, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'perfil.html'));
+});
+
+app.get('/home',authenticateToken,(req,res) =>{
+  if(req.user.rol === 0){
+    res.sendFile(path.join(__dirname, 'src', 'admin_home.html'));
+  }
+  else{
+    res.sendFile(path.join(__dirname, 'src', 'home.html'));
   }
 });
 
 //... y arriba de esta línea (crear un archivo de rutas protegidas)
 
 
-// Usar ruta del CRUD Entrenadores.js
+// Usar ruta del CRUD usuarios.js
 app.use('/api/usuarios', usuariosRouter);
 
-app.listen(PORT, () => {
+// CRUD cartones 
+app.use("/api/cartones", cartonesRouter)
+app.use("/api/carton-usuario", cartonUsuarioRouter)
+
+//Inicializar Socket.IO
+const io = new Server(server);
+
+// Configurar Socket.IO para manejar la autenticación
+io.use((socket, next) => authenticateSocket(socket, next));
+
+// Manejar eventos de conexión de Socket.IO
+io.on('connection', (socket) => {
+  console.log('Nuevo cliente conectado');
+
+  socket.on('crearSala', (data) => host.crearRoom(socket, data));
+
+  // Manejar eventos de socket aquí
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado');
+  });
+});
+
+// Redirigir cualquier otra ruta a la página de inicio
+app.use((req, res) => {
+  if (req.path === '/') {
+    return res.status(404).send('Página no encontrada');
+  }
+  res.redirect('/');
+});
+
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 

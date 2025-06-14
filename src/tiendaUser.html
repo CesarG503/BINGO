@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Cartones - BINGO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    
+    <!-- CSS Retro Sci-Fi -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/tiendaUser.css">
+</head>
+<body class="bg-dark text-light">
+    
+    <div class="hero-section bg-secondary-neon py-5">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-shopping-cart me-3"></i>Tienda de Cartones
+            </h1>
+            <p class="lead">¡Compra tus cartones de BINGO y prepárate para ganar!</p>
+        </div>
+    </div>
+
+    
+    <div class="container my-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="text-white mb-4">
+                    <i class="fas fa-fire me-2 text-warning"></i>Ofertas Especiales
+
+                     <div class="me-3 text-white-neon ">
+                        <i class="fas fa-coins me-1"></i>
+                        <span id="userCredits" class="text-warning-neon">0</span>  <span class="text-alert-neon">Créditos</span>
+                    </div>
+                </h2>
+            </div>
+        </div>
+
+        <div class="row g-4" id="offersContainer">
+            <!-- Las ofertas se generarán dinámicamente -->
+        </div>
+    </div>
+
+    
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-dark border-info">
+                    <div class="card-header bg-info-neon text-white">
+                        <h4 class="card-title mb-0">
+                            <i class="fas fa-clipboard-list me-2"></i>Mis Cartones
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="userCartonesContainer">
+                            <div class="col-12 text-center py-4">
+                                <i class="fas fa-shopping-bag fa-3x text-muted mb-3"></i>
+                                <p class="text-white-neon">No tienes cartones comprados aún</p>
+                                <p class="text-white-neon">¡Compra algunos cartones arriba para empezar a jugar!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="text-center py-5 d-none" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2 text-white">Procesando compra...</p>
+    </div>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/login/logout.js"></script>
+    <script src="/js/tienda/tiendaUser.js"></script>
+
+</body>
+</html>
