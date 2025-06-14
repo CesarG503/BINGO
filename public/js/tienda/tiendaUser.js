@@ -282,7 +282,6 @@ async function buyOffer(offerId) {
     renderOffers()
     loadUserCartones() 
 
-    // Mostrar éxito
     await Swal.fire({
       icon: "success",
       title: "¡Compra Exitosa!",
@@ -328,7 +327,6 @@ async function loadUserCartones() {
     renderUserCartones()
   } catch (error) {
     console.error("Error loading user cartones:", error)
-    // No mostrar error al usuario, solo log
   }
 }
 
@@ -348,7 +346,6 @@ function renderUserCartones() {
 
   container.innerHTML = userCartones
     .map((cartonData, index) => {
-      // Si cartonData.carton ya es un array, úsalo directamente, si es string, parsea
       let carton;
       if (Array.isArray(cartonData.carton)) {
         carton = cartonData.carton;
