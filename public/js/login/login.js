@@ -51,7 +51,6 @@ document.getElementById('sign-in-form').addEventListener('submit', async (e) => 
   const messageElement = document.getElementById('sign-in-message');
   messageElement.textContent = '';
   if (data.token) {
-    localStorage.setItem('uid', data.uid);
     document.cookie = `token=${data.token}; path=/;`; // Almacenar la cookie con el token
     messageElement.textContent = 'Inicio de sesion Exitoso!';
     messageElement.style.color = 'green';

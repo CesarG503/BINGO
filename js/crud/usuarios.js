@@ -14,6 +14,31 @@ router.get('/', authenticateToken, validateRole(0), async (req, res) => {
   }
 });
 
+//Obtener informacion del usuario autenticado
+router.get('/actual', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM Usuarios WHERE id_usuario = $1', [req.user.uid]);
+    res.send(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching usuario:', err);
+    res.status(500).json({ error: 'Error fetching usuario' });
+  }
+});
+
+// Actualizar perfil del usuario autenticado
+router.put('/actual/perfil', authenticateToken, async (req, res) => {
+  const { username, email, img_id } = req.body;
+  try {
+    const result = await pool.query(
+      `UPDATE Usuarios SET username = $1, email = $2, img_id = $3 WHERE id_usuario = $4 RETURNING *`,
+      [username,email,img_id, req.user.uid]
+    );
+    res.send(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Error actualizando imagen de usuario' });
+  }
+});
+
 // Obtener un usuario por ID
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
@@ -40,7 +65,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Actualizar un usuario
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, validateRole(0), async (req, res) => {
   const { username, password, rol, creditos, img_id, email } = req.body;
   try {
     const result = await pool.query(
@@ -54,22 +79,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Actualizar perfil de un usuario
-router.put('/perfil/:id', authenticateToken, async (req, res) => {
-  const { username, email, img_id } = req.body;
-  try {
-    const result = await pool.query(
-      `UPDATE Usuarios SET username = $1, email = $2, img_id = $3 WHERE id_usuario = $4 RETURNING *`,
-      [username,email,img_id, req.params.id]
-    );
-    res.send(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Error actualizando imagen de usuario' });
-  }
-});
-
 // Borrar un usuario
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, validateRole(0), async (req, res) => {
   try {
     const result = await pool.query('DELETE FROM Usuarios WHERE id_usuario = $1 RETURNING *', [req.params.id]);
     res.send(result.rows[0]);

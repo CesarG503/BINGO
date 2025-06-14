@@ -3,9 +3,8 @@
 // ===============================
 async function cargarPerfil() {
     try {
-        // Realiza una petición GET a la API para obtener los datos del usuario con ID 1
-        const userId = localStorage.getItem('uid');
-        const res = await fetch(`http://localhost:3000/api/usuarios/${userId}`);
+        // Realiza una petición GET a la API para obtener los datos del usuario
+        const res = await fetch(`http://localhost:3000/api/usuarios/actual`);
         const data = await res.json();
 
         // Asigna los datos recibidos a los elementos del DOM
@@ -35,8 +34,6 @@ async function cargarPerfil() {
 // Función para guardar los cambios del perfil
 // ===============================
 async function guardarPerfil() {
-    const id = localStorage.getItem('uid'); // ID fijo o dinámico si implementas autenticación
-
     // Obtener elementos del DOM
     const usernameElem = document.getElementById('username');
     const emailElem = document.getElementById('email');
@@ -59,9 +56,8 @@ async function guardarPerfil() {
     }
 
     try {
-        console.log('Enviando datos:', { username, email, img_id });
         // Enviar una petición PUT para actualizar el perfil
-        const response = await fetch(`http://localhost:3000/api/usuarios/perfil/${id}`, {
+        const response = await fetch(`http://localhost:3000/api/usuarios/actual/perfil`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

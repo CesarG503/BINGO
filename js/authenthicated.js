@@ -40,14 +40,15 @@ export function validateRole(role) {
 
 export const authenticateSocket = (socket, next) => {
   const token = socket.handshake.auth.token;
-  if (!token) return next(new Error('Authentication error'));
+  if (!token) return res.sendStatus(401);
 
   jwt.verify(token, 'secret_key', (err, user) => {
     if (err) {
       if (err.name === 'TokenExpiredError') {
-        return next(new Error('Token expired'));
+        res.clearCookie('token', { path: '/' });
+        return res.redirect('/');
       }
-      return next(new Error('Authentication error'));
+      return res.sendStatus(403);
     }
     socket.user = user;
     next();

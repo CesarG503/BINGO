@@ -67,18 +67,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function loadUserData() {
   try {
-    const userId = localStorage.getItem("uid")
-    if (!userId) {
-      window.location.href = "/"
-      return
-    }
-
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/usuarios/actual`, {
       credentials: "include",
     })
 
     if (!response.ok) {
-      throw new Error("Error al cargar datos del usuario")
+      console.error("Error fetching user data:", response.statusText);
+      window.location.href = "/"; // Redirigir a login si no se puede obtener el usuario
     }
 
     currentUser = await response.json()
