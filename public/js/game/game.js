@@ -49,7 +49,7 @@ export async function iniciarRuletazo() {
         ease: "elastic.out",
       })
       .to("#seleccionado", {
-        y: "+=200",
+        y: "+=150",
         scale: 1.2,
         autoAlpha: 0,
         duration: 1,
