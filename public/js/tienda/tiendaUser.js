@@ -266,7 +266,18 @@ async function buyOffer(offerId) {
     })
 
     if (!updateResponse.ok) {
-      throw new Error("Error al actualizar créditos")
+      await fetch(`${API_BASE_URL}/api/carton-usuario/bulk`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id_usuario: currentUser.id_usuario,
+        cartones_ids: savedCartones.map((carton) => carton.id_carton),
+      }),
+      });
+      throw new Error("Error al actualizar créditos. Los cartones asignados han sido revertidos.");
     }
 
     // Actualizar datos locales

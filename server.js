@@ -159,7 +159,7 @@ app.post("/send-password-reset", async (req, res) => {
     const resend = new Resend(process.env.RESEND_API_KEY)
 
     const emailResult = await resend.emails.send({
-      from: "BINGO Game <onboarding@resend.dev>", // dominio
+      from: "BINGO Game <noreply@ueslogin.online", // dominio
       to: [email],
       subject: "Recuperación de Contraseña - BINGO Game",
       html: Email(user, resetUrl),
