@@ -1,21 +1,12 @@
 let carrusel = document.getElementById("carrusel");
 const repeticiones = 5;
-const x = 2; //Duración de animaciones
-
+const x = 1; //Duración de animaciones
+const desplazamientoX = ((-630 * repeticiones) + 630)  + 'px'
 
 export async function iniciarRuletazo() {
   // limpiamos el carrusel para no tener bugs
   carrusel.innerHTML = null;
 
-  // Creamos las bolas aleatorias
-  for (let i = 0; i < repeticiones * 9; i++) {
-    const bola = document.createElement("div");
-    bola.classList.add("bola");
-
-    bola.innerText = getRandomInteger(1, 75);
-    bola.classList.add(asignarColor(bola.innerText));
-    carrusel.appendChild(bola);
-  }
   const select = getRandomInteger(1, 75);
   // Agregar conjunto final con el número seleccionado en el centro
   carrusel.append(...createSeleccionado(select));
@@ -25,7 +16,7 @@ export async function iniciarRuletazo() {
     gsap
       .timeline({ onComplete: resolve })
       .to(carrusel, {
-        x: "-=3150",
+        x: desplazamientoX,
         duration: x,
         ease: "power4.out",
       })
@@ -37,12 +28,11 @@ export async function iniciarRuletazo() {
         ease: "elastic.out",
       })
       .to("#seleccionado", {
-        //cae pelota
+        y: "+=200",
         scale: 1.2,
-        y: 400,
         autoAlpha: 0,
-        duration: x, //cambiar a 3.5
-        ease: "power1.in",
+        duration: x,
+        ease: "bounce.out",
       })
       .call(() => {
         addBallGrid(select);
@@ -58,35 +48,53 @@ export async function iniciarRuletazo() {
   // Reseteamos
   console.log("hola");
   await new Promise((resolve) => {
-    gsap.timeline({ onComplete: resolve }).to(carrusel, {
+    gsap.timeline({ onComplete: resolve })
+    .to(carrusel, {
       x: "0",
       duration: 0,
     });
   });
 }
 
-// Devuelve una colección con 18 bolas,
+// Devuelve una colección de bolas,
 function createSeleccionado(numero) {
   //se le pasa el numero que retorne la API
+  let bolasTotal = repeticiones * 9
   const wrapper = document.createElement("div");
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < bolasTotal; i++) {
     const bola = document.createElement("div");
     bola.classList.add("bola");
-    if (i === 4) {
+    if (i === bolasTotal-5) {
       bola.innerText = numero;
-      // bola.classList.add('posotion-relative')
       bola.style.zIndex = "2";
+      bola.setAttribute("id", "seleccionado");
     } else {
       bola.innerText = getRandomInteger(1, 75);
     }
     bola.classList.add(asignarColor(bola.innerText));
-    if (i === 4) bola.setAttribute("id", "seleccionado");
     wrapper.appendChild(bola);
   }
   console.log(wrapper.children);
 
   return wrapper.children;
 }
+
+// Devuelve una colección de bolas,
+function crearBolasExtras() {
+
+  const wrapper = document.createElement("div");
+  for (let i = 0; i < 9; i++) {
+    const bola = document.createElement("div");
+    bola.classList.add("bola");
+    bola.innerText = getRandomInteger(1, 75);
+    bola.classList.add(asignarColor(bola.innerText));
+    wrapper.appendChild(bola);
+  }
+  console.log(wrapper.children);
+
+  return wrapper.children;
+}
+
 
 // Eliminar numeros generados aleatoriamente y resete
 function eliminarNumber() {

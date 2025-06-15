@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -10,27 +10,26 @@
 </head>
 <body>
 
-<nav class="navbar bg-secondary estilo-brillo border rounded border-secondary hover-neon  position-sticky top-0 p-1">
-    <div class="navbar-header">
-        <div class="navbar-brand">
-          <img src="./img/bingoLogin.svg" alt="pelota de bingo" style="height: 40px;">
-          Bingo
-        </div>
-        <button class="navbar-toggle">
-            <div class="img-menu-white"></div>
-        </button>
+  <nav class="navbar bg-secondary estilo-brillo border border-secondary hover-neon rounded-3 px-3 py-2 d-flex justify-content-between align-items-center position-sticky top-0 z-3">
+  
+    <!-- Marca y Logo -->
+    <div class="d-flex align-items-center gap-3">
+      <span class="navbar-brand fs-4 fw-bold text-white">Bingo</span>
     </div>
-    <div class="navbar-nav">
-        <a class="nav-item rounded-pill" href="../../index.html">Inicio</a>
-        <a class="nav-item rounded-pill" href="#">Ganadores</a>
-        <a class="nav-item rounded-pill" href="https://github.com/Mixgyt/RetroSci-Fi_library" target="_blank">Github</a>
-        <a class="nav-item rounded-pill" href="https://www.npmjs.com/package/retrosci-fi_library" target="_blank">NPM</a>
+  
+    <!-- Navegación -->
+    <div class="d-flex gap-3 flex-wrap">
+      <a class="nav-item rounded-pill px-3 btn btn-outline-info py-1 text-white text-decoration-none" href="../../index.html">Inicio</a>
+      <a class="nav-item rounded-pill px-3 btn btn-outline-info py-1 text-white text-decoration-none" href="#">Ganadores</a>
+      <a class="nav-item rounded-pill px-3 btn btn-outline-info py-1 text-white text-decoration-none" href="https://github.com/Mixgyt/RetroSci-Fi_library" target="_blank">GitHub</a>
+      <a class="nav-item rounded-pill px-3 btn btn-outline-info py-1 text-white text-decoration-none" href="https://www.npmjs.com/package/retrosci-fi_library" target="_blank">NPM</a>
     </div>
-</nav>
+  </nav>
+  
 
 
-<div class="interfaz container mx-auto grid border border-2 border-neon-complete border-info p-5 mt-3" style="height: auto;">
-  <div class="container g-col-10 " >
+<div class="interfaz container mx-auto grid border border-2 border-neon-complete border-info mt-3">
+  <div class="container contenedor g-col-10 " >
     <!-- RULETAZO CON LOS NUMEROS-->
     <div class="canva mx-auto">
       <div class="carrusel" id="carrusel">
@@ -46,14 +45,12 @@
       </div>
     </div>
     <!-- TUBO -->
-    <div class="tubo row justify-content-center align-items-end" style="  grid-template-rows: 500px;">
-      <div class="col-auto">
+    <div class="tubo row">
         <div class="tubo-css"></div>
-      </div>
     </div>
     <!-- TABLA CON LOS NUMEROS -->
     <div class="container numeros">
-      <table class="tabla-numeros border border-3 mb-4 mt-4">
+      <table class="tabla-numeros border border-3 ">
         <tbody id="tableBall"> <!--EL navegador me agregar el tbody :)-->
           <tr class="">
             <td class="bg-primary-subtle">
@@ -161,8 +158,8 @@
     </div>
   </div>
 
- <div class="div g-col-2 position-relative">
-    <div class="botones position-absolute col-9 mt-5">
+ <div class="g-col-2">
+    <div class="botones">
       <div class="bola-selec bola-i" id="bola-selec">Bola</div>
       <button class="btn btn-success btn-lg" id="newNumber">NUEVA BOLA</button>
 

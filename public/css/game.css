@@ -1,12 +1,11 @@
 .canva {
   display: flex;
   align-items: center;
-  overflow: hidden;
+  /* overflow: hidden; */
   min-width: 250px;
   width: 625px;
-  max-height: 280px;
-  height: 220px;
-  margin: 40px;
+
+  margin:0;
   margin-bottom: 0;
   background: linear-gradient(135deg, #1f1f2e, #2d2d41);
 
@@ -110,16 +109,16 @@
   position: relative;
   height: 200px;
   display: flex;
-  align-items: center;
   justify-content: center;
 }
-
+ 
 .tubo-css {
   position: absolute;
   width: 130px;
-  height: 225px;
+  height: 125px;
   top: 0;
   transform: translateX(-50%);
+  transform: translateY(75%);
   margin: auto;
   background: linear-gradient(
     to right,
@@ -153,7 +152,6 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
-
 .bola:hover {
   z-index: 2;
   transform: scale(1.5);
@@ -175,6 +173,7 @@ td.selected {
   overflow-y: none;
   overflow: none;
   z-index: 2;
+
 }
 /* Tabla general */
 table {
@@ -228,7 +227,7 @@ table .bola {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  height: 78%; 
+  height: 100%; 
   padding: 1rem 0;
 }
 
@@ -259,4 +258,122 @@ table .bola {
   border: 4px solid white;
   box-sizing: border-box;
   pointer-events: none;
+}
+
+.contenedor{
+  display: grid;
+  grid-template-rows: 200px 225px 1fr;
+}
+
+@media screen and (max-width: 768px) {
+
+  /* Ajustes para tablets pequeñas y móviles grandes */
+  .interfaz {
+    scale: 1;
+    /* Quitar el escalado para mejor legibilidad */
+    padding: 1rem;
+  }
+
+  .canva {
+    width: 100%;
+    /* Hacer el carrusel de ancho completo */
+    min-width: unset;
+    height: auto;
+    /* Ajustar altura del carrusel */
+  }
+
+  .carrusel .bola {
+    height: 45px;
+    width: 45px;
+    font-size: 1em;
+  }
+
+  .contenedor {
+    grid-template-rows: auto auto auto;
+    /* Filas automáticas para que el contenido defina la altura */
+    gap: 1rem;
+  }
+
+  .tubo-css {
+    width: 100px;
+    height: 120px;
+  }
+
+  .tubo-css::before {
+    width: 120px;
+    height: 25px;
+    top: -15px;
+  }
+
+  table .bola {
+    height: 40px;
+    width: 40px;
+    font-size: 0.9em;
+  }
+
+  td {
+    padding: 0.4rem;
+    font-size: 1rem;
+  }
+
+  .bola-selec {
+    width: 120px;
+    height: 120px;
+    font-size: 2em;
+  }
+
+  .botones .btn {
+    font-size: 1rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+@media screen and (max-width: 576px) {
+
+  /* Ajustes para móviles pequeños */
+  .interfaz {
+    padding: 0.5rem;
+  }
+
+  .navbar-brand {
+    font-size: 1.2rem !important;
+    /* Ejemplo de ajuste en navbar si es necesario */
+  }
+
+  .nav-item {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem !important;
+  }
+
+  .carrusel .bola {
+    height: 35px;
+    width: 35px;
+    font-size: 0.8em;
+  }
+
+  table .bola {
+    height: 30px;
+    width: 30px;
+    font-size: 0.75em;
+  }
+
+  td {
+    padding: 0.2rem;
+    font-size: 0.85rem;
+  }
+
+  .bola-selec {
+    width: 100px;
+    height: 100px;
+    font-size: 1.8em;
+  }
+
+  .bola-selec::after {
+    border-width: 3px;
+  }
+
+  .botones .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
 }
