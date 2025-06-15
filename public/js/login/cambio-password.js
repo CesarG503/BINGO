@@ -1,11 +1,6 @@
-const API_BASE_URL =
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:3000"
-    : "https://bingo-ivxo.onrender.com"
-
 async function validateToken(token) {
   try {
-    const response = await fetch(`${API_BASE_URL}/validate-reset-token/${token}`)
+    const response = await fetch(`/validate-reset-token/${token}`)
     const data = await response.json()
 
     if (!data.valid) {
@@ -214,7 +209,7 @@ async function handlePasswordChange(e) {
       },
     })
 
-    const response = await fetch(`${API_BASE_URL}/reset-password`, {
+    const response = await fetch(`/reset-password`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

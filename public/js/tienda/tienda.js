@@ -1,8 +1,3 @@
-const API_BASE_URL =
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:3000"
-    : "https://bingo-ivxo.onrender.com"
-
 let allUsers = []
 let filteredUsers = []
 let currentUser = null
@@ -18,7 +13,7 @@ function setupEventListeners() {
   })
 }
 
-let urlUsuario = `${API_BASE_URL}/api/usuarios`;
+let urlUsuario = `/api/usuarios`;
 
 function loadUsers() {
   showLoading(true)
@@ -237,7 +232,7 @@ async function assignCredits() {
   if (!result.isConfirmed) return;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/${currentUser.id_usuario}`, {
+    const response = await fetch(`/api/usuarios/${currentUser.id_usuario}`, {
       method: "PUT",
       credentials: "include",
       headers: {
@@ -304,7 +299,7 @@ async function quickAssign(userId, amount) {
   if (!result.isConfirmed) return;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`, {
+    const response = await fetch(`/api/usuarios/${userId}`, {
       method: "PUT",
       credentials: "include",
       headers: {

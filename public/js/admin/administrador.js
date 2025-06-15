@@ -1,8 +1,3 @@
-const API_BASE_URL =
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:3000"
-    : "https://bingo-ivxo.onrender.com"
-
 let allUsers = []
 let filteredUsers = []
 
@@ -12,7 +7,7 @@ function setupEventListeners() {
   document.getElementById("sortBy").addEventListener("change", sortUsers)
 }
 
-const urlUsuario = `${API_BASE_URL}/api/usuarios`
+const urlUsuario = `/api/usuarios`
 
 function loadUsers() {
   showLoading(true)
@@ -232,7 +227,7 @@ async function editUser(userId) {
 
   if (formValues) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`, {
+      const response = await fetch(`/api/usuarios/${userId}`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -291,7 +286,7 @@ async function sendPasswordReset(email) {
   if (result.isConfirmed) {
     try {
       // Lógica real para enviar el email de cambio de contraseña
-      const response = await fetch(`${API_BASE_URL}/send-password-reset`, {
+      const response = await fetch(`/send-password-reset`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -347,7 +342,7 @@ async function deleteUser(userId) {
 
   if (result.isConfirmed) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`, {
+      const response = await fetch(`/api/usuarios/${userId}`, {
         method: "DELETE",
         credentials: "include",
       })

@@ -1,8 +1,3 @@
-const API_BASE_URL =
-  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:3000"
-    : "https://bingo-ivxo.onrender.com"
-
 const BINGO_API_URL = "https://bingo-api.mixg-studio.workers.dev/api/tablero"
 
 let currentUser = null
@@ -67,7 +62,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function loadUserData() {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/actual`, {
+    const response = await fetch(`/api/usuarios/actual`, {
       credentials: "include",
     })
 
@@ -216,7 +211,7 @@ async function buyOffer(offerId) {
     }
 
     
-    const cartonesDbResponse = await fetch(`${API_BASE_URL}/api/cartones/bulk`, {
+    const cartonesDbResponse = await fetch(`/api/cartones/bulk`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -234,7 +229,7 @@ async function buyOffer(offerId) {
     const savedCartones = await cartonesDbResponse.json()
 
     // Asignar cartones al usuario
-    const cartonUsuarioResponse = await fetch(`${API_BASE_URL}/api/carton-usuario/bulk`, {
+    const cartonUsuarioResponse = await fetch(`/api/carton-usuario/bulk`, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -256,7 +251,7 @@ async function buyOffer(offerId) {
       creditos: currentUser.creditos - offer.currentPrice,
     }
 
-    const updateResponse = await fetch(`${API_BASE_URL}/api/usuarios/${currentUser.id_usuario}`, {
+    const updateResponse = await fetch(`/api/usuarios/${currentUser.id_usuario}`, {
       method: "PUT",
       credentials: "include",
       headers: {
@@ -266,7 +261,7 @@ async function buyOffer(offerId) {
     })
 
     if (!updateResponse.ok) {
-      const revertResponse = await fetch(`${API_BASE_URL}/api/carton-usuario/bulk`, {
+      const revertResponse = await fetch(`/api/carton-usuario/bulk`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -328,7 +323,7 @@ async function loadUserCartones() {
   if (!currentUser) return
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/carton-usuario/usuario/${currentUser.id_usuario}`, {
+    const response = await fetch(`/api/carton-usuario/usuario/${currentUser.id_usuario}`, {
       credentials: "include",
     })
 
@@ -436,7 +431,7 @@ async function clearCartones() {
   if (!currentUser) return
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/carton-usuario/usuario/${currentUser.id_usuario}`, {
+    const response = await fetch(`/api/carton-usuario/usuario/${currentUser.id_usuario}`, {
       method: "DELETE",
       credentials: "include",
     })

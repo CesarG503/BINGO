@@ -1,5 +1,3 @@
-import API_BASE_URL from "../util/base_url.js";
-
 const form_create_room = document.getElementById("create-room-form");
 const btnUnirse = document.getElementById("btn-unirse");
 
@@ -16,7 +14,7 @@ async function createRoom(event) {
         return;
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/partidas/nueva`,{
+    const response = await fetch(`/api/partidas/nueva`,{
         method: "POST",
         headers: {
             "Content-Type": "application/json"},
