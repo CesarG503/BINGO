@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de juego - Host</title>
+</head>
+<body>
+    <div id="sala">
+        <h1>Eres miembro de la sala</h1>
+        <button id="btn-abandonar-sala">Abandonar Sala</button>
+        <h2 id="idRoom"><%= id_room %></h1>
+        
+        <ul id="jugadores">
+            
+        </ul>
+    </div>
+
+     <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+     <script type="module" src="/js/room/user_room.js"></script>
+</body>
+</html>

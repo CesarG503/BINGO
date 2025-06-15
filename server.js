@@ -11,6 +11,7 @@ const host = require('./js/socket/host');
 const path = require('path'); // Importar path para manejar rutas de archivos
 const pool = require('./js/db/db'); // Importar la conexión a la base de datos
 const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de Entrenadores.js
+const partidasRouter = require('./js/crud/partidas'); // Importar las rutas de Partida.js
 const cartonesRouter = require("./js/crud/cartones")
 const cartonUsuarioRouter = require("./js/crud/carton_usuario")
 
@@ -18,6 +19,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'src'));
 const server = httpServer.createServer(app);
 const PORT =  process.env.PORT || 3000;
 
@@ -124,6 +127,16 @@ app.get('/home',authenticateToken,(req,res) =>{
   }
 });
 
+app.get('/room/:roomId', authenticateToken, (req, res) => {
+  const roomId = req.params.roomId;
+  if(req.user.rol === 0){
+    res.render('host_room', { id_room: roomId});
+  }
+  else{
+    res.render('user_room', { id_room: roomId});
+  }
+});
+
 //... y arriba de esta línea (crear un archivo de rutas protegidas)
 
 
@@ -133,6 +146,9 @@ app.use('/api/usuarios', usuariosRouter);
 // CRUD cartones 
 app.use("/api/cartones", cartonesRouter)
 app.use("/api/carton-usuario", cartonUsuarioRouter)
+
+// Usar ruta del CRUD partidas.js
+app.use('/api/partidas', partidasRouter);
 
 //Inicializar Socket.IO
 const io = new Server(server);
@@ -145,6 +161,18 @@ io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado');
 
   socket.on('crearSala', (data) => host.crearRoom(socket, data));
+  socket.on('unirseSala', (id_room) => {
+    socket.join(id_room);
+  });
+
+  socket.on('nuevoUsuario', (data) => {
+    io.to(data.id_room).emit('nuevoUsuario',data);
+  });
+
+  socket.on('abandonarSala', (id_room) => {
+    socket.leave(id_room);
+    io.to(id_room).emit('usuarioAbandono');
+  });
 
   // Manejar eventos de socket aquí
   socket.on('disconnect', () => {

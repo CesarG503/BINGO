@@ -1,8 +1,7 @@
+const {API_BASE_URL} = require("../constans");
 
-export function crearRoom(socket, data){
-    if(!validarRol(socket.user)) return;
+async function crearRoom(socket, data){
 
-    console.log(data.sala);
 }
 
 function validarRol(user){
@@ -11,3 +10,7 @@ function validarRol(user){
     }
     return true;
 }
+
+module.exports = {
+    crearRoom
+};

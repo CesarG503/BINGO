@@ -17,7 +17,7 @@ router.get('/', authenticateToken, validateRole(0), async (req, res) => {
 //Obtener informacion del usuario autenticado
 router.get('/actual', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM Usuarios WHERE id_usuario = $1', [req.user.uid]);
+    const result = await pool.query('SELECT id_usuario, username, creditos, email, rol, img_id FROM Usuarios WHERE id_usuario = $1', [req.user.uid]);
     res.send(result.rows[0]);
   } catch (err) {
     console.error('Error fetching usuario:', err);
@@ -50,7 +50,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Crear un nuevo usuario
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   const { username, password, rol = 1, creditos = 0, img_id, email } = req.body;
   try {
     const result = await pool.query(

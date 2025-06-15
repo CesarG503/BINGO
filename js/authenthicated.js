@@ -17,6 +17,7 @@ export const authenticateToken = (req, res, next) => {
         res.clearCookie('token', { path: '/' });
         return res.redirect('/'); // Redirige al login
       }
+      consoole.log('User authenticated:')
       return res.sendStatus(403);
     }
     req.user = user;

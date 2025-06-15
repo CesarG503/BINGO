@@ -51,7 +51,10 @@ document.getElementById('sign-in-form').addEventListener('submit', async (e) => 
   const messageElement = document.getElementById('sign-in-message');
   messageElement.textContent = '';
   if (data.token) {
-    document.cookie = `token=${data.token}; path=/;`; // Almacenar la cookie con el token
+    const date = new Date();
+    date.setTime(date.getTime() + (1 * 60 * 60 * 1000));
+    const expires = `expires=${date.toUTCString()}`;
+    document.cookie = `token=${data.token}; ${expires} path=/;`; // Almacenar la cookie con el token
     messageElement.textContent = 'Inicio de sesion Exitoso!';
     messageElement.style.color = 'green';
     window.location.href = '/index'; // redirigir a la pagina principal con la sesion iniciada 

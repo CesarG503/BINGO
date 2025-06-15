@@ -1,10 +1,12 @@
+import API_BASE_URL from '../util/base_url.js';
+
 // ===============================
 // Función para cargar datos del perfil desde la API
 // ===============================
 async function cargarPerfil() {
     try {
         // Realiza una petición GET a la API para obtener los datos del usuario
-        const res = await fetch(`http://localhost:3000/api/usuarios/actual`);
+        const res = await fetch(`${API_BASE_URL}/api/usuarios/actual`);
         const data = await res.json();
 
         // Asigna los datos recibidos a los elementos del DOM
@@ -57,7 +59,7 @@ async function guardarPerfil() {
 
     try {
         // Enviar una petición PUT para actualizar el perfil
-        const response = await fetch(`http://localhost:3000/api/usuarios/actual/perfil`, {
+        const response = await fetch(`${API_BASE_URL}/api/usuarios/actual/perfil`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
