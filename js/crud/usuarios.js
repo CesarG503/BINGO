@@ -65,7 +65,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Actualizar un usuario
-router.put('/:id', authenticateToken, validateRole(0), async (req, res) => {
+router.put('/:id', authenticateToken, async (req, res) => {
   const { username, password, rol, creditos, img_id, email } = req.body;
   try {
     const result = await pool.query(
