@@ -266,7 +266,26 @@ async function buyOffer(offerId) {
     })
 
     if (!updateResponse.ok) {
-      throw new Error("Error al actualizar créditos")
+      const revertResponse = await fetch(`${API_BASE_URL}/api/carton-usuario/bulk`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id_usuario: currentUser.id_usuario,
+          cartones_ids: savedCartones.map((carton) => carton.id_carton),
+        }),
+      });
+
+      if (revertResponse.ok) {
+        Swal.fire({
+          icon: "info",
+          title: "Reversión exitosa",
+          text: "Los cartones asignados han sido revertidos correctamente.",
+        });
+      }
+      throw new Error("Error al actualizar créditos. Los cartones asignados han sido revertidos.");
     }
 
     // Actualizar datos locales

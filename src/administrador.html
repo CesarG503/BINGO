@@ -1,50 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Administración de Usuarios - BINGO</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- CSS Retro Sci-Fi -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/tienda.css">
 </head>
-<body>
+<body class="bg-dark text-dark">
 
-        <div class="container mt-5">
-      <button class="btn btn-danger" onclick="logout()">Logout</button>
+    <div class="hero-section bg-secondary-neon py-5">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-users-cog me-3"></i>Administración de Usuarios
+            </h1>
+            <p class="lead">Panel de control para gestionar usuarios del sistema</p>
+
+        </div>
     </div>
 
-    <div class="container mt-5">
-        <h3 class="text-center">Bienvenido, <span id="username"></span></h3>
-        <h1 class="text-center">CRUD PRUEBA ...</h1>
-    </div>
+    <div class="container my-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-1">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-search me-2"></i>Buscar Usuarios
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="searchInput" class="form-label">Buscar por texto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="searchInput" 
+                                           placeholder="Username, email, ID...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filterField" class="form-label">Filtrar por campo</label>
+                                <select class="form-select" id="filterField">
+                                    <option value="all">Todos los campos</option>
+                                    <option value="id_usuario">ID Usuario</option>
+                                    <option value="username">Username</option>
+                                    <option value="email">Email</option>
+                                    <option value="rol">Rol</option>
+                                    <option value="creditos">Créditos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortBy" class="form-label">Ordenar por</label>
+                                <select class="form-select" id="sortBy">
+                                    <option value="id_usuario">ID Usuario</option>
+                                    <option value="username">Username</option>
+                                    <option value="email">Email</option>
+                                    <option value="creditos">Créditos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button class="btn btn-alert border-0 shadow-none btn-efect" onclick="clearFilters()">
+                                        <i class="fas fa-times me-1"></i>Limpiar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="container mt-5">
-  <h1 class="text-center">Usuarios</h1>
-  <button class="btn btn-primary mb-3" onclick="AgregarUsuarioModal()">Agregar Usuario</button>
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Password</th>
-        <th>Rol</th>
-        <th>Créditos</th>
-        <th>Img ID</th>
-        <th>Acciones CRUD</th>
-      </tr>
-    </thead>
-    <tbody id="usuarioTableBody">
-      <!-- Elementos dinamicos -->
-    </tbody>
-  </table>
-</div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary-neon estilo-brillo text-white">
+                        <h5 class="card-title mb-0 ">
+                            <i class="fas fa-table me-2"></i>Lista de Usuarios
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Avatar</th>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Rol</th>
+                                        <th>Créditos</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usuarioTableBody">
+                                    <!-- Usuarios se cargan dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card bg-alert-neon text-white h-100">
+                    <div class="card-body border-0 text-center pt-3">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h4 id="totalUsers">0</h4>
+                        <p class="mb-0">Total Usuarios</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-success-neon text-white h-100">
+                    <div class="card-body border-0 text-center pt-3">
+                        <i class="fas fa-coins fa-2x mb-2"></i>
+                        <h4 id="totalCredits">0</h4>
+                        <p class="mb-0">Total Créditos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-warning-neon text-white h-100">
+                    <div class="card-body border-0 text-center pt-3">
+                        <i class="fas fa-crown fa-2x mb-2"></i>
+                        <h4 id="adminUsers">0</h4>
+                        <p class="mb-0">Administradores</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-info-neon text-white h-100">
+                    <div class="card-body border-0 text-center pt-3">
+                        <i class="fas fa-user fa-2x mb-2"></i>
+                        <h4 id="regularUsers">0</h4>
+                        <p class="mb-0">Usuarios Regulares</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="text-center py-5" id="loadingSpinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando usuarios...</p>
+        </div>
+
+        
+        <div class="text-center py-5 d-none" id="noResults">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4 class="text-white-neon">No se encontraron usuarios</h4>
+            <p class="text-white-neon">Intenta ajustar los filtros de búsqueda</p>
+        </div>
+    </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script src="/js/login/logout.js"></script>
-
     <script src="js/admin/administrador.js"></script>
 
 </body>

@@ -1,219 +1,402 @@
 const API_BASE_URL =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:3000'
-        : 'https://bingo-ivxo.onrender.com';
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:3000"
+    : "https://bingo-ivxo.onrender.com"
 
-let usuarios = [];
+let allUsers = []
+let filteredUsers = []
 
-function RenderizarUsuarios() {
-    const tbody = document.getElementById('usuarioTableBody');
-    tbody.innerHTML = '';
-    usuarios.forEach((usuario, index) => {
-        const row = `
-            <tr>
-                <td>${index + 1}</td>
-                <td>${usuario.username}</td>
-                <td>${usuario.email}</td>
-                <td>${usuario.password}</td>
-                <td>${usuario.rol}</td>
-                <td>${usuario.creditos}</td>
-                <td>${usuario.img_id || ''}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" onclick="EditarUsuarioModal(${index})">Editar</button>
-                    <button class="btn btn-danger btn-sm" onclick="EliminarUsuario(${index})">Eliminar</button>
-                </td>
-            </tr>
-        `;
-        tbody.innerHTML += row;
-    });
-    console.log('Usuarios renderizados:', usuarios);
+function setupEventListeners() {
+  document.getElementById("searchInput").addEventListener("input", filterUsers)
+  document.getElementById("filterField").addEventListener("change", filterUsers)
+  document.getElementById("sortBy").addEventListener("change", sortUsers)
 }
 
-let urlUsuario = `${API_BASE_URL}/api/usuarios`;
+const urlUsuario = `${API_BASE_URL}/api/usuarios`
 
-function MostrarUsuarios() {
-    const token = localStorage.getItem('token');
-    fetch(urlUsuario, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
+function loadUsers() {
+  showLoading(true)
+  fetch(urlUsuario, {
+    method: "GET",
+    credentials: "include",
+  })
+    .then((response) => {
+      if (response.status === 401 || response.status === 403) {
+        window.location.href = "/"
+        return
+      }
+      if (!response.ok) {
+        throw new Error("Network response was not ok")
+      }
+      return response.json()
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
+    .then((data) => {
+      if (!data) return
+      allUsers = data
+      filteredUsers = [...allUsers]
+      renderUsers()
+      updateStatistics()
+      showLoading(false)
     })
-    .then(data => {
-        usuarios = data;
-        RenderizarUsuarios();
+    .catch((error) => {
+      console.error("Error loading users:", error)
+      showError("Error al cargar los usuarios")
+      showLoading(false)
     })
-    .catch(error => {
-        console.error('Error fetching usuarios:', error);
-    });
 }
 
-function MostrarUsuario(userId) {
-    const token = localStorage.getItem('token');
-    fetch(`${urlUsuario}/${userId}`, {
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('username').textContent = data.username;
-    })
-    .catch(error => {
-        console.error('Error fetching usuario:', error);
-    });
+document.addEventListener("DOMContentLoaded", () => {
+  loadUsers()
+  setupEventListeners()
+})
+
+function renderUsers() {
+  const tbody = document.getElementById("usuarioTableBody")
+  const noResults = document.getElementById("noResults")
+
+  if (filteredUsers.length === 0) {
+    tbody.innerHTML = ""
+    noResults.classList.remove("d-none")
+    return
+  }
+
+  noResults.classList.add("d-none")
+
+  tbody.innerHTML = filteredUsers
+    .map(
+      (user) => `
+        <tr>
+            <td>
+                ${
+                  user.img_id
+                    ? `<img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${user.img_id}" 
+                            alt="${user.username}" class="rounded-circle" width="40" height="40">`
+                    : `<div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                            style="width: 40px; height: 40px; font-weight: bold;">
+                            ${user.username.charAt(0).toUpperCase()}
+                       </div>`
+                }
+            </td>
+            <td><span class="">${user.id_usuario}</span></td>
+            <td><strong>${user.username}</strong></td>
+            <td>${user.email}</td>
+            <td>
+                <span class="badge ${user.rol === 0 ? "bg-warning text-dark" : "bg-info"}">
+                    ${user.rol === 0 ? "Admin" : "Usuario"}
+                </span>
+            </td>
+            <td class="text-center"><span class="badge bg-success">${user.creditos.toLocaleString()}</span></td>
+            <td>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editUser(${user.id_usuario})" 
+                            title="Editar Usuario">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="sendPasswordReset('${user.email}')" 
+                            title="Cambiar Contraseña">
+                        <i class="fas fa-key"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id_usuario})" 
+                            title="Eliminar Usuario">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `,
+    )
+    .join("")
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-        MostrarUsuario(userId);
+function filterUsers() {
+  const searchTerm = document.getElementById("searchInput").value.toLowerCase()
+  const filterField = document.getElementById("filterField").value
+
+  if (!searchTerm) {
+    filteredUsers = [...allUsers]
+  } else {
+    filteredUsers = allUsers.filter((user) => {
+      if (filterField === "all") {
+        return Object.values(user).some((value) => value && value.toString().toLowerCase().includes(searchTerm))
+      } else if (filterField === "rol") {
+        const roleText = user.rol === 0 ? "admin" : "usuario"
+        return user.rol.toString().includes(searchTerm) || roleText.includes(searchTerm)
+      } else {
+        const fieldValue = user[filterField]
+        return fieldValue && fieldValue.toString().toLowerCase().includes(searchTerm)
+      }
+    })
+  }
+
+  sortUsers()
+}
+
+function sortUsers() {
+  const sortBy = document.getElementById("sortBy").value
+
+  filteredUsers.sort((a, b) => {
+    const aValue = a[sortBy]
+    const bValue = b[sortBy]
+
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      return bValue - aValue
     }
-});
-document.addEventListener('DOMContentLoaded', MostrarUsuarios);
 
-function AgregarUsuarioModal() {
-    Swal.fire({
-        title: 'Agregar Usuario',
-        html: `
-            <input type="text" id="usuarioUsername" class="swal2-input" placeholder="Username">
-            <input type="email" id="usuarioEmail" class="swal2-input" placeholder="Email">
-            <input type="password" id="usuarioPassword" class="swal2-input" placeholder="Contraseña">
-            <input type="number" id="usuarioRol" class="swal2-input" placeholder="Rol (0 o 1)">
-            <input type="number" id="usuarioCreditos" class="swal2-input" placeholder="Créditos">
-            <input type="text" id="usuarioImgId" class="swal2-input" placeholder="Img ID">
-        `,
-        confirmButtonText: 'Agregar',
-        showCancelButton: true,
-        cancelButtonText: 'Cancelar',
-        preConfirm: () => {
-            const username = document.getElementById('usuarioUsername').value;
-            const email = document.getElementById('usuarioEmail').value;
-            const password = document.getElementById('usuarioPassword').value;
-            const rol = document.getElementById('usuarioRol').value || 1;
-            const creditos = document.getElementById('usuarioCreditos').value || 0;
-            const img_id = document.getElementById('usuarioImgId').value;
-            if (!username || !email || !password) {
-                Swal.showValidationMessage('Por favor, completa los campos obligatorios');
-                return false;
-            }
-            return { username, email, password, rol, creditos, img_id };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
-            fetch(urlUsuario, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(result.value)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    Swal.fire('Error', data.error, 'error');
-                } else {
-                    usuarios.push(data);
-                    RenderizarUsuarios();
-                    Swal.fire('Éxito', 'Usuario agregado correctamente', 'success');
-                }
-            })
-            .catch(error => {
-                Swal.fire('Error', 'No se pudo agregar el usuario', 'error');
-            });
-        }
-    });
+    return aValue.toString().localeCompare(bValue.toString())
+  })
+
+  renderUsers()
 }
 
-function EditarUsuarioModal(index) {
-    const usuario = usuarios[index];
-    Swal.fire({
-        title: 'Editar Usuario',
-        html: `
-            <input type="text" id="usuarioUsername" class="swal2-input" placeholder="Username" value="${usuario.username}">
-            <input type="email" id="usuarioEmail" class="swal2-input" placeholder="Email" value="${usuario.email}">
-            <input type="password" id="usuarioPassword" class="swal2-input" placeholder="Contraseña">
-            <input type="number" id="usuarioRol" class="swal2-input" placeholder="Rol (0 o 1)" value="${usuario.rol}">
-            <input type="number" id="usuarioCreditos" class="swal2-input" placeholder="Créditos" value="${usuario.creditos}">
-            <input type="text" id="usuarioImgId" class="swal2-input" placeholder="Img ID" value="${usuario.img_id || ''}">
-        `,
-        confirmButtonText: 'Guardar',
-        showCancelButton: true,
-        cancelButtonText: 'Cancelar',
-        preConfirm: () => {
-            const username = document.getElementById('usuarioUsername').value;
-            const email = document.getElementById('usuarioEmail').value;
-            const password = document.getElementById('usuarioPassword').value;
-            const rol = document.getElementById('usuarioRol').value;
-            const creditos = document.getElementById('usuarioCreditos').value;
-            const img_id = document.getElementById('usuarioImgId').value;
-            if (!username || !email) {
-                Swal.showValidationMessage('Por favor, completa los campos obligatorios');
-                return false;
-            }
-            return { username, email, password, rol, creditos, img_id };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
-            fetch(`${urlUsuario}/${usuario.id_usuario}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(result.value)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    Swal.fire('Error', data.error, 'error');
-                } else {
-                    usuarios[index] = data;
-                    RenderizarUsuarios();
-                    Swal.fire('Éxito', 'Usuario actualizado correctamente', 'success');
-                }
-            })
-            .catch(error => {
-                Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
-            });
-        }
-    });
+function clearFilters() {
+  document.getElementById("searchInput").value = ""
+  document.getElementById("filterField").value = "all"
+  document.getElementById("sortBy").value = "id_usuario"
+
+  filteredUsers = [...allUsers]
+  sortUsers()
 }
 
-function EliminarUsuario(index) {
-    const usuario = usuarios[index];
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: "No puedes deshacer esta acción!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, borrarlo!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const token = localStorage.getItem('token');
-            fetch(`${urlUsuario}/${usuario.id_usuario}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                usuarios.splice(index, 1);
-                RenderizarUsuarios();
-                Swal.fire('Eliminado!', 'El usuario ha sido eliminado.', 'success');
-            })
-            .catch(error => {
-                Swal.fire('Error', 'No se pudo eliminar el usuario', 'error');
-            });
-        }
-    });
+function updateStatistics() {
+  const totalUsers = allUsers.length
+  const totalCredits = allUsers.reduce((sum, user) => sum + user.creditos, 0)
+  const adminUsers = allUsers.filter((user) => user.rol === 0).length
+  const regularUsers = allUsers.filter((user) => user.rol === 1).length
+
+  document.getElementById("totalUsers").textContent = totalUsers.toLocaleString()
+  document.getElementById("totalCredits").textContent = totalCredits.toLocaleString()
+  document.getElementById("adminUsers").textContent = adminUsers.toLocaleString()
+  document.getElementById("regularUsers").textContent = regularUsers.toLocaleString()
+}
+
+async function editUser(userId) {
+  const user = allUsers.find((u) => u.id_usuario === userId)
+  if (!user) return
+
+  const { value: formValues } = await Swal.fire({
+    title: "Editar Usuario",
+    html: `
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Username</label>
+                    <input id="swal-username" class="form-control" value="${user.username}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Rol</label>
+                    <select id="swal-rol" class="form-select">
+                        <option value="0" ${user.rol === 0 ? "selected" : ""}>Administrador</option>
+                        <option value="1" ${user.rol === 1 ? "selected" : ""}>Usuario</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Créditos</label>
+                    <input id="swal-creditos" type="number" class="form-control" value="${user.creditos}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Imagen ID</label>
+                    <input id="swal-img-id" class="form-control" value="${user.img_id || ""}" 
+                           placeholder="ID de imagen (1-11)">
+                </div>
+            </div>
+        `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: "Guardar Cambios",
+    cancelButtonText: "Cancelar",
+    preConfirm: () => {
+      const username = document.getElementById("swal-username").value
+      const rol = Number.parseInt(document.getElementById("swal-rol").value)
+      const creditos = Number.parseInt(document.getElementById("swal-creditos").value)
+      const img_id = document.getElementById("swal-img-id").value
+
+      if (!username.trim()) {
+        Swal.showValidationMessage("El username es requerido")
+        return false
+      }
+
+      if (creditos < 0) {
+        Swal.showValidationMessage("Los créditos no pueden ser negativos")
+        return false
+      }
+
+      return {
+        username: username.trim(),
+        rol,
+        creditos,
+        img_id: img_id.trim() || null,
+        email: user.email, 
+        password: user.password, 
+      }
+    },
+  })
+
+  if (formValues) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formValues),
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al actualizar usuario")
+      }
+
+      const updatedUser = await response.json()
+
+      const userIndex = allUsers.findIndex((u) => u.id_usuario === userId)
+      if (userIndex !== -1) {
+        allUsers[userIndex] = updatedUser
+      }
+
+      const filteredIndex = filteredUsers.findIndex((u) => u.id_usuario === userId)
+      if (filteredIndex !== -1) {
+        filteredUsers[filteredIndex] = updatedUser
+      }
+
+      renderUsers()
+      updateStatistics()
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Usuario Actualizado!",
+        text: "Los datos del usuario se han actualizado correctamente",
+        timer: 2000,
+        showConfirmButton: false,
+      })
+    } catch (error) {
+      console.error("Error updating user:", error)
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo actualizar el usuario",
+      })
+    }
+  }
+}
+
+async function sendPasswordReset(email) {
+  const result = await Swal.fire({
+    title: "¿Enviar cambio de contraseña?",
+    text: `Se enviará un enlace de cambio de contraseña a: ${email}`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, Enviar",
+    cancelButtonText: "Cancelar",
+  })
+
+  if (result.isConfirmed) {
+    try {
+      // Lógica real para enviar el email de cambio de contraseña
+      const response = await fetch(`${API_BASE_URL}/send-password-reset`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "No se pudo enviar el enlace de cambio de contraseña");
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Enlace Enviado!",
+        html: `
+          <p>Se ha enviado un enlace de cambio de contraseña a:</p>
+          <strong>${email}</strong>
+          <br><br>
+          <small class="text-muted">El enlace expirará en 24 horas</small>
+        `,
+        confirmButtonText: "Entendido",
+      })
+    } catch (error) {
+      console.error("Error sending password reset:", error)
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "No se pudo enviar el enlace de cambio de contraseña",
+      })
+    }
+  }
+}
+
+async function deleteUser(userId) {
+  const user = allUsers.find((u) => u.id_usuario === userId)
+  if (!user) return
+
+  const result = await Swal.fire({
+    title: "¿Estás seguro?",
+    html: `
+            <p>¿Deseas eliminar al usuario <strong>${user.username}</strong>?</p>
+            <p class="text-danger"><small>Esta acción no se puede deshacer</small></p>
+        `,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, Eliminar",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#dc3545",
+  })
+
+  if (result.isConfirmed) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/usuarios/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al eliminar usuario")
+      }
+
+      allUsers = allUsers.filter((u) => u.id_usuario !== userId)
+      filteredUsers = filteredUsers.filter((u) => u.id_usuario !== userId)
+
+      renderUsers()
+      updateStatistics()
+
+      Swal.fire({
+        icon: "success",
+        title: "¡Usuario Eliminado!",
+        text: "El usuario ha sido eliminado correctamente",
+        timer: 2000,
+        showConfirmButton: false,
+      })
+    } catch (error) {
+      console.error("Error deleting user:", error)
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo eliminar el usuario",
+      })
+    }
+  }
+}
+
+function showLoading(show) {
+  const spinner = document.getElementById("loadingSpinner")
+  const table = document.querySelector(".table-responsive")
+
+  if (show) {
+    spinner.classList.remove("d-none")
+    if (table) table.style.display = "none"
+  } else {
+    spinner.classList.add("d-none")
+    if (table) table.style.display = "block"
+  }
+}
+
+function showError(message) {
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: message,
+  })
 }

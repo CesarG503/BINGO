@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); 
-const { authenticateToken, authenticateSocket } = require('./js/authenthicated'); // Importar la función de autenticación
+const { authenticateToken, authenticateSocket, validateRole } = require('./js/authenthicated'); // Importar la función de autenticación
 const { Server } = require('socket.io');
 const host = require('./js/socket/host');
 const path = require('path'); // Importar path para manejar rutas de archivos
@@ -14,6 +14,9 @@ const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de En
 const partidasRouter = require('./js/crud/partidas'); // Importar las rutas de Partida.js
 const cartonesRouter = require("./js/crud/cartones")
 const cartonUsuarioRouter = require("./js/crud/carton_usuario")
+const { Resend } = require("resend")
+const crypto = require("crypto")
+const { Email } = require('./js/email/email');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -47,19 +50,6 @@ pool.connect((err) => {
   }
 });
 
-function role(role) {
-  return (req, res, next) => {
-    const user = req.user;
-    if (!user) {
-      return res.sendStatus(401);
-    }
-    if (user.rol === role) {
-      next();
-    } else {
-      res.redirect('/');
-    }
-  };
-}
 
 app.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
@@ -110,8 +100,12 @@ app.get('/tienda', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
 });
 
-app.get('/creditos', authenticateToken,role(0), (req, res) => {
+app.get('/creditos', authenticateToken, validateRole(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
+});
+
+app.get('/admin', authenticateToken, validateRole(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'administrador.html'));
 });
 
 app.get('/perfil', authenticateToken, (req, res) => {
@@ -136,6 +130,149 @@ app.get('/room/:roomId', authenticateToken, (req, res) => {
     res.render('user_room', { id_room: roomId});
   }
 });
+
+// ruta cambio de contraseña
+app.get("/cambio-password", (req, res) => {
+  res.sendFile(path.join(__dirname, "src", "reset.html"))
+})
+
+// Endpoint para enviar email
+app.post("/send-password-reset", async (req, res) => {
+  const { email } = req.body
+
+  if (!email) {
+    return res.status(400).json({ error: "Email es requerido" })
+  }
+  try {
+    const userResult = await pool.query("SELECT id_usuario, username FROM Usuarios WHERE email = $1", [email])
+
+    if (userResult.rows.length === 0) {
+      return res.json({
+        success: true,
+        message: "Si el email existe, se enviará un enlace de recuperación",
+      })
+    }
+
+    const user = userResult.rows[0]
+    
+    const resetToken = crypto.randomBytes(32).toString("hex") //token
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // Token expira en 24 horas
+
+    await pool.query("INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)", [
+      user.id_usuario,
+      resetToken,
+      expiresAt,
+    ])
+
+    const baseUrl = process.env.API_BASE_URL || (process.env.NODE_ENV === "production" ? "https://bingo-ivxo.onrender.com" : `http://localhost:${PORT}`)
+
+    const resetUrl = `${baseUrl}/cambio-password?token=${resetToken}`
+
+    // Configurar Resend
+    const resend = new Resend(process.env.RESEND_API_KEY)
+
+    const emailResult = await resend.emails.send({
+      from: "BINGO Game <noreply@ueslogin.online", // dominio
+      to: [email],
+      subject: "Recuperación de Contraseña - BINGO Game",
+      html: Email(user, resetUrl),
+    })
+
+    res.json({
+      success: true,
+      message: "Enlace de cambio de contraseña enviado al correo electrónico",
+    })
+  } catch (error) {
+    console.error("Error enviando email de recuperación:", error)
+    res.status(500).json({
+      error: "Error al enviar enlace de cambio de contraseña",
+    })
+  }
+})
+
+// ruta protegida con token de recuperación temporal
+app.post("/reset-password", async (req, res) => {
+  const { token, newPassword } = req.body
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: "Token y nueva contraseña son requeridos" })
+  }
+
+  try {
+    const tokenResult = await pool.query(
+      `
+      SELECT prt.*, u.id_usuario, u.email, u.username 
+      FROM password_reset_tokens prt
+      JOIN Usuarios u ON prt.user_id = u.id_usuario
+      WHERE prt.token = $1 AND prt.used = FALSE AND prt.expires_at > NOW()
+    `,
+      [token],
+    )
+
+    if (tokenResult.rows.length === 0) {
+      return res.status(400).json({
+        error: "Token inválido, expirado o ya utilizado",
+      })
+    }
+
+    const tokenData = tokenResult.rows[0]
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    await pool.query("UPDATE Usuarios SET password = $1 WHERE id_usuario = $2", [hashedPassword, tokenData.user_id])
+
+    await pool.query("UPDATE password_reset_tokens SET used = TRUE WHERE token = $1", [token])
+
+    await pool.query("DELETE FROM password_reset_tokens WHERE expires_at < NOW() OR used = TRUE")
+
+    console.log(`Contraseña cambiada exitosamente para usuario: ${tokenData.username}`)
+
+    res.json({
+      success: true,
+      message: "Contraseña actualizada correctamente",
+    })
+  } catch (error) {
+    console.error("Error al cambiar la contraseña:", error)
+    res.status(500).json({
+      error: "Error al cambiar la contraseña",
+    })
+  }
+})
+
+// Endpoint para validar token de recuperación
+app.get("/validate-reset-token/:token", async (req, res) => {
+  const { token } = req.params
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT u.username 
+      FROM password_reset_tokens prt
+      JOIN Usuarios u ON prt.user_id = u.id_usuario
+      WHERE prt.token = $1 AND prt.used = FALSE AND prt.expires_at > NOW()
+    `,
+      [token],
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({
+        valid: false,
+        error: "Token inválido o expirado",
+      })
+    }
+
+    res.json({
+      valid: true,
+      username: result.rows[0].username,
+    })
+  } catch (error) {
+    console.error("Error validando token:", error)
+    res.status(500).json({
+      valid: false,
+      error: "Error del servidor",
+    })
+  }
+})
 
 //... y arriba de esta línea (crear un archivo de rutas protegidas)
 
@@ -189,7 +326,7 @@ app.use((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on ${process.env.API_BASE_URL}`);
 });
 
 module.exports = app; // Exportar la instancia de app, para ser usada en conexion.js
