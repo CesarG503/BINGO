@@ -1,6 +1,6 @@
 let carrusel = document.getElementById("carrusel");
 const repeticiones = 5;
-const x = 6; //Duración de animaciones
+const x = 2; //Duración de animaciones
 
 
 export async function iniciarRuletazo() {
@@ -30,7 +30,7 @@ export async function iniciarRuletazo() {
         ease: "power4.out",
       })
       .to("#seleccionado", {
-        boxShadow: "0 0 25px 10px #fff",
+        //boxShadow: "0 0 25px 10px #fff",
         scale: 2.5,
         y: 20,
         duration: x,
@@ -75,6 +75,7 @@ function createSeleccionado(numero) {
     if (i === 4) {
       bola.innerText = numero;
       // bola.classList.add('posotion-relative')
+      bola.style.zIndex = "2";
     } else {
       bola.innerText = getRandomInteger(1, 75);
     }
@@ -105,17 +106,23 @@ function getRandomInteger(min, max) {
 
 function asignarColor(numeroBola) {
   if (numeroBola > 0 && numeroBola <= 15) {
-    return "bg-primary-neon";
+    return "bola-b";
   } else if (numeroBola > 15 && numeroBola <= 30) {
-    return "bg-info-neon";
+    return "bola-i";
   } else if (numeroBola > 30 && numeroBola <= 45) {
-    return "bg-success-neon";
+    return "bola-n";
   } else if (numeroBola > 45 && numeroBola <= 60) {
-    return "bg-danger-neon";
+    return "bola-g";
   } else if (numeroBola > 60 && numeroBola <= 75) {
-    return "bg-warning-neon";
+    return "bola-o";
   }
 }
+
+function limpiarClaseColor(bolaElement) {
+  const clasesColor = ["bola-b", "bola-i", "bola-n", "bola-g", "bola-o"];
+  bolaElement.classList.remove(...clasesColor);
+}
+
 
 async function addBallGrid(numeroBola) {
   // El navegador me agregar tbody asi que F
@@ -123,26 +130,39 @@ async function addBallGrid(numeroBola) {
   let indexFila;
   const table = document.getElementById("tableBall");
   const ball = document.createElement("div");
+  const bolaSelec = document.getElementById("bola-selec");
   ball.innerText = numeroBola;
+  bolaSelec.textContent = numeroBola;
 
   console.log(table.children[2].children);
 
   if (numeroBola > 0 && numeroBola <= 15) {
-    ball.classList.add("bola", "bg-primary-neon");
+    ball.classList.add("bola", "bola-b");
+    limpiarClaseColor(bolaSelec);
+    bolaSelec.classList.add("bola-selec", "bola-b");
     index = 0;
   } else if (numeroBola > 15 && numeroBola <= 30) {
-    ball.classList.add("bola", "bg-info-neon");
+    ball.classList.add("bola", "bola-i");
+    limpiarClaseColor(bolaSelec);
+    bolaSelec.classList.add("bola-selec", "bola-i");
     index = 1;
   } else if (numeroBola > 30 && numeroBola <= 45) {
-    ball.classList.add("bola", "bg-success-neon");
+    ball.classList.add("bola", "bola-n");
+    limpiarClaseColor(bolaSelec);
+    bolaSelec.classList.add("bola-selec", "bola-n");
     index = 2;
   } else if (numeroBola > 45 && numeroBola <= 60) {
-    ball.classList.add("bola", "bg-danger-neon");
+    ball.classList.add("bola", "bola-g");
+    limpiarClaseColor(bolaSelec);
+    bolaSelec.classList.add("bola-selec", "bola-g");
     index = 3;
   } else if (numeroBola > 60 && numeroBola <= 75) {
-    ball.classList.add("bola", "bg-warning-neon");
+    ball.classList.add("bola", "bola-o");
+    limpiarClaseColor(bolaSelec);
+    bolaSelec.classList.add("bola-selec", "bola-o");
     index = 4;
   }
+
 
   indexFila = numeroBola - index * 15; //Calculamos el indice en el que tiene que entrar
   console.log(indexFila);
@@ -164,6 +184,27 @@ async function addBallGrid(numeroBola) {
         ease: "bounce.out",
       })
       .to(ball, {
+        scale: 1,
+        duration: 0.2,
+        ease: "elastic.out(1, 0.3)",
+      });
+  });
+  await new Promise((resolve) => {
+    gsap
+      .timeline({ onComplete: resolve })
+      .to(bolaSelec, {
+        y: -20, // Se eleva un poco
+        scale: 1.2, // Se estira un poco
+        duration: 0.3, // Corto para sensación rápida
+        ease: "power2.out",
+      })
+      .to(bolaSelec, {
+        y: 0,
+        scale: 0.95, // Rebote pequeño al tocar el suelo
+        duration: 0.2,
+        ease: "bounce.out",
+      })
+      .to(bolaSelec, {
         scale: 1,
         duration: 0.2,
         ease: "elastic.out(1, 0.3)",
