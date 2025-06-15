@@ -14,7 +14,7 @@ const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de En
 const partidasRouter = require('./js/crud/partidas'); // Importar las rutas de Partida.js
 const cartonesRouter = require("./js/crud/cartones")
 const cartonUsuarioRouter = require("./js/crud/carton_usuario")
-const { Resend } = require("resend")
+const nodemiler = require('nodemailer');
 const crypto = require("crypto")
 const { Email } = require('./js/email/email');
 
@@ -168,15 +168,27 @@ app.post("/send-password-reset", async (req, res) => {
 
     const resetUrl = `${baseUrl}/cambio-password?token=${resetToken}`
 
-    // Configurar Resend
-    const resend = new Resend(process.env.RESEND_API_KEY)
+    const transporter = nodemiler.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'bingoappues@gmail.com',
+        pass: process.env.GOOGLE_API_KEY,
+      },
+    });
 
-    const emailResult = await resend.emails.send({
-      from: "BINGO Game <noreply@ueslogin.online", // dominio
-      to: [email],
-      subject: "Recuperación de Contraseña - BINGO Game",
+    const mailOptions = {
+      from: 'bingoappues@gmail.com',
+      to: email,
+      subject: 'Recuperación de Contraseña - BINGO Game',
       html: Email(user, resetUrl),
-    })
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return console.error('Error al enviar:', error);
+      }
+      console.log('Correo enviado:', info.response);
+    });
 
     res.json({
       success: true,
