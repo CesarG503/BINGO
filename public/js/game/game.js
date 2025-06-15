@@ -1,7 +1,9 @@
 let carrusel = document.getElementById("carrusel");
-const repeticiones = 5;
-const x = 1; //Duración de animaciones
-const desplazamientoX = ((-630 * repeticiones) + 630)  + 'px'
+let canva = document.querySelector(".canva");
+const repeticiones = 9;
+const x = 5; //Duración de animaciones
+const desplazamientoX = ((-630 * repeticiones) + 630)  + 'px' //Para calcular el desplazamiento
+
 
 export async function iniciarRuletazo() {
   // limpiamos el carrusel para no tener bugs
@@ -20,6 +22,25 @@ export async function iniciarRuletazo() {
         duration: x,
         ease: "power4.out",
       })
+    });
+    eliminarNumber()
+    console.log("hola");
+    
+    // Para que la pelota salga de su lugar
+    await new Promise((resolve) => {
+      gsap.timeline({ onComplete: resolve })
+      .to(carrusel, {
+        x: "0",
+        duration: 0,
+      })
+      .call(() => {
+        visibleCanva()
+      });
+    });
+
+      await new Promise((resolve) => {
+      gsap
+      .timeline({ onComplete: resolve })
       .to("#seleccionado", {
         //boxShadow: "0 0 25px 10px #fff",
         scale: 2.5,
@@ -31,11 +52,13 @@ export async function iniciarRuletazo() {
         y: "+=200",
         scale: 1.2,
         autoAlpha: 0,
-        duration: x,
+        duration: 1,
         ease: "bounce.out",
       })
       .call(() => {
         addBallGrid(select);
+        visibleCanva();
+        carrusel.append(...crearBolasExtras());
       })
       .to(carrusel, {
         x: "-=630",
@@ -44,16 +67,7 @@ export async function iniciarRuletazo() {
         ease: "power4.out",
       });
   });
-  eliminarNumber();
-  // Reseteamos
-  console.log("hola");
-  await new Promise((resolve) => {
-    gsap.timeline({ onComplete: resolve })
-    .to(carrusel, {
-      x: "0",
-      duration: 0,
-    });
-  });
+
 }
 
 // Devuelve una colección de bolas,
@@ -218,4 +232,9 @@ async function addBallGrid(numeroBola) {
         ease: "elastic.out(1, 0.3)",
       });
   });
+}
+
+function visibleCanva(){
+  const current = canva.style.overflow;
+  canva.style.overflow = current === "visible" ? "hidden" : "visible";
 }
