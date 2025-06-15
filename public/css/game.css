@@ -1,0 +1,262 @@
+.canva {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 250px;
+  width: 625px;
+  max-height: 280px;
+  height: 220px;
+  margin: 40px;
+  margin-bottom: 0;
+  background: linear-gradient(135deg, #1f1f2e, #2d2d41);
+
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.5), 
+              0 4px 8px rgba(0, 0, 0, 0.3);  
+
+  border-radius: 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+
+.carrusel {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+
+}
+
+.interfaz {
+  background: linear-gradient(145deg, #171720 0%, #29293d 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-radius: 18px;
+}
+
+.bola {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  height: 60px;
+  width: 60px;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-align: center;
+  color: black;
+  text-shadow: 1px 1px 2px white;
+
+  box-shadow:
+    inset -4px -4px 8px rgba(0, 0, 0, 0.6), /* sombra interna */
+    0 4px 10px rgba(0, 0, 0, 0.6); /* sombra exterior */
+
+}
+
+/* con estta colocas la linea blanca en las bolas */
+.bola::after {
+  content: "";
+  position: absolute;
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* todas estas bolas te sirven para darles el color */
+.bola-b {
+  background: radial-gradient(circle at 50% 50%, 
+              #ffffff 40%, 
+              #DCC9A9 40%);
+}
+
+.bola-i {
+  background: radial-gradient(circle at 50% 50%, 
+              #ffffff 40%, 
+              #4E6851 40%);
+}
+
+.bola-n {
+  background: radial-gradient(circle at 50% 50%, 
+              #ffffff 40%, 
+              #4B848A 40%);
+}
+
+.bola-g {
+  background: radial-gradient(circle at 50% 50%, 
+              #ffffff 40%, 
+              #FBC359 40%);
+}
+
+.bola-o {
+  background: radial-gradient(circle at 50% 50%, 
+              #ffffff 40%, 
+              #E70103 40%);
+}
+
+.bola-black {
+  background: radial-gradient(circle at 50% 50%, 
+              #ffffff 40%, 
+              #BB3A2D 40%);
+}
+
+.tubo{
+  position: relative;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tubo-css {
+  position: absolute;
+  width: 130px;
+  height: 225px;
+  top: 0;
+  transform: translateX(-50%);
+  margin: auto;
+  background: linear-gradient(
+    to right,
+    #555 0%,    
+    #999 20%,
+    #bbb 50%,   
+    #999 80%,
+    #555 100%  
+  );
+  box-shadow:
+    inset 0 5px 6px rgba(255, 255, 255, 0.3),  
+    inset 0 -5px 6px rgba(0, 0, 0, 0.4),       
+    0 8px 12px rgba(0, 0, 0, 0.4); 
+  
+    z-index: 0;
+}
+
+/* parte superior del tubo */
+.tubo-css::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -10px;
+  width: 150px;
+  height: 30px;
+  border-radius: 15px;
+  background: linear-gradient(
+    to right,
+    #444, #999, #ccc, #999, #444
+  );
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+
+.bola:hover {
+  z-index: 2;
+  transform: scale(1.5);
+}
+
+td.selected {
+  font-weight: bold;
+  transform: scale(1.1);
+}
+
+.contenedor {
+  display: grid;
+  height: 80vh;
+}
+
+.numeros {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: none;
+  overflow: none;
+  z-index: 2;
+}
+/* Tabla general */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.05),
+              0 0 20px rgba(0, 0, 0, 0.4);
+  background: transparent; /* mantiene el fondo base */
+}
+
+/* Celdas de la tabla */
+td {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.5rem;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Hover sobre celdas (opcional) */
+td:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+/* Bola pequeña dentro de tabla */
+table .bola {
+  height: 48px;
+  width: 48px;
+  font-size: 1rem;
+  scale: 0.95;
+}
+
+.tabla-numeros{
+  border-radius: 18px;
+}
+
+.botones {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 78%; 
+  padding: 1rem 0;
+}
+
+.bola-selec{
+  width: 200px;
+  height: 200px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  font-size: 3em;
+  font-weight: bold;
+  text-align: center;
+  color: black;
+  text-shadow: 1px 1px 2px white;
+
+  box-shadow:
+    inset -4px -4px 8px rgba(0, 0, 0, 0.6), /* sombra interna */
+    0 4px 10px rgba(0, 0, 0, 0.6); /* sombra exterior */
+}
+.bola-selec::after {
+  content: "";
+  position: absolute;
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-sizing: border-box;
+  pointer-events: none;
+}
