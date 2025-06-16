@@ -309,7 +309,7 @@ form.sign-in-form {
 @media (max-width: 870px) {
   
   .right-panel .content {
-    color: #ffffff;
+    color:                                                                                                            #ffffff;
   }
 
   #sign-in-btn
@@ -475,3 +475,23 @@ form.sign-in-form {
 .message.hidden {
   opacity: 0;
 }
+
+.error-message {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+
+  .valid {
+    color: green;
+  }
+  .invalid {
+    color: red;
+  }
+  .valid::before {
+    content: "✅ ";
+  }
+  .invalid::before {
+    content: "❌ ";
+  }
