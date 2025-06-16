@@ -15,7 +15,6 @@ async function unirseSala(){
         alert("Error inesperado, no posees un usuario valido.");
         return;
     }
-    socket = io({auth: {token}});
 
     const idRoom = document.getElementById('idRoom');
     const sala = await getSala(idRoom.textContent);
@@ -31,13 +30,22 @@ async function unirseSala(){
     }
 
     const usuario = await getUsuario();
+    if(!usuario){
+        console.error("No se pudo obtener el usuario actual");
+        return;
+    }
+    else if(sala.host == usuario.id_usuario){
+        window.location.href = `/room/host/${sala.id_partida}`;
+        return;
+    }
     const registro = await registrarseSala(idRoom.textContent);
 
     if(!registro){
         console.error("Error al registrarse en la sala");
         return;
     }
-
+    
+    socket = io({auth: {token}});
     socket.emit('unirseSala', idRoom.textContent);
 
     if(registro.registrado){
@@ -47,6 +55,12 @@ async function unirseSala(){
             img_id: usuario.img_id,
         });
     }
+
+    socket.on('salaEliminada', (err) => {
+        alert("La sala ha sido cerrada por el administrador.");
+        socket.disconnect();
+        window.location.href = '/';
+    });
 
     socket.on('nuevoUsuario', (data) => {
         renderUsuariosEnSala(idRoom.textContent);
@@ -64,7 +78,7 @@ async function getUsuario(){
 
     if (!response.ok) {
         console.log("Error al obtener el usuario actual");
-        return null;
+        return;
     }
 
     return await response.json();

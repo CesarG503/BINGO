@@ -121,14 +121,14 @@ app.get('/home',authenticateToken,(req,res) =>{
   }
 });
 
-app.get('/room/:roomId', authenticateToken, (req, res) => {
+app.get('/room/user/:roomId', authenticateToken, (req, res) => {
   const roomId = req.params.roomId;
-  if(req.user.rol === 0){
-    res.render('host_room', { id_room: roomId});
-  }
-  else{
-    res.render('user_room', { id_room: roomId});
-  }
+  res.render('user_room', { id_room: roomId});
+});
+
+app.get('/room/host/:roomId', authenticateToken,validateRole(0), (req, res) => {
+  const roomId = req.params.roomId;
+  res.render('host_room', { id_room: roomId});
 });
 
 // ruta cambio de contraseña
@@ -310,9 +310,7 @@ io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado');
 
   socket.on('crearSala', (data) => host.crearRoom(socket, data));
-  socket.on('unirseSala', (id_room) => {
-    socket.join(id_room);
-  });
+  socket.on('unirseSala', (id_room) => {socket.join(id_room);});
 
   socket.on('nuevoUsuario', (data) => {
     io.to(data.id_room).emit('nuevoUsuario',data);
@@ -321,6 +319,11 @@ io.on('connection', (socket) => {
   socket.on('abandonarSala', (id_room) => {
     socket.leave(id_room);
     io.to(id_room).emit('usuarioAbandono');
+  });
+
+  socket.on('salaEliminada', (id_room) => {
+    io.to(id_room).emit('salaEliminada');
+    socket.leave(id_room);
   });
 
   // Manejar eventos de socket aquí

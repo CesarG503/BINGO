@@ -1,11 +1,14 @@
 import getCookieValue from '/js/util/get_cookie.js';
 import API_BASE_URL from '/js/util/base_url.js';
 
+const btnEliminar = document.getElementById('btn-eliminar-sala');
 const idRoom = document.getElementById('id-room');
 const btnNuevo = document.getElementById('btn-new-number');
 const numeroActual = document.getElementById('numero-actual');
 const numerosLlamados = document.getElementById('numeros-llamados');
 const jugadores = document.getElementById('jugadores');
+
+let socket;
 
 /*socket.on('nuevoNumero', (data) => {
     console.log(data["extraido"]);
@@ -14,6 +17,8 @@ const jugadores = document.getElementById('jugadores');
     p.textContent = data["extraido"];
     numerosLlamados.appendChild(p);
 });*/
+
+btnEliminar.addEventListener('click', async () => eliminarSala());
 
 btnNuevo.addEventListener('click', () => {
     socket.emit('getNuevoNumero');
@@ -70,6 +75,30 @@ async function usuariosEnSala(){
     return await response.json();
 }
 
+async function eliminarSala() {
+    const response = await fetch(`${API_BASE_URL}/api/partidas/${idRoom.textContent}`,{
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    
+    if (!response.ok) {
+        console.error("Error al eliminar la sala");
+        alert("No se pudo eliminar la sala. Inténtalo de nuevo más tarde.");
+        return;
+    }
+
+    const result = await response.json();
+    if (result.success) {
+        socket.emit('salaEliminada', idRoom.textContent);
+        socket.disconnect();
+        window.location.href = '/'; // Redireccionar a la página de inicio
+    } else {
+        alert("No se pudo eliminar la sala. Inténtalo de nuevo más tarde.");
+    }
+}
+
 async function inicializar(){
     const sala = await getSala();
     const usuario = await getUsuario();
@@ -99,7 +128,7 @@ async function inicializar(){
     if(!token){
         alert("Error inesperado, no posees un usuario valido.");
     }
-    const socket = io({auth: {token}});
+    socket = io({auth: {token}});
 
     socket.emit('unirseSala', idRoom.textContent);
 
@@ -111,6 +140,8 @@ async function inicializar(){
         renderUsuariosEnSala(idRoom.textContent);
     });
 
+    const controles = document.getElementById('controles');
+    controles.removeAttribute('hidden');
 }
 
 inicializar();

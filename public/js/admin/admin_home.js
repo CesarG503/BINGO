@@ -1,8 +1,10 @@
 import API_BASE_URL from "../util/base_url.js";
 
 const form_create_room = document.getElementById("create-room-form");
+const btnUnirse = document.getElementById("btn-unirse");
 
 form_create_room.addEventListener("submit", createRoom);
+btnUnirse.addEventListener("click", unirseSala);
 
 async function createRoom(event) {
     event.preventDefault();
@@ -29,7 +31,12 @@ async function createRoom(event) {
     }
     const roomInfo = await response.json();
     console.log("Sala creada:", roomInfo);
-    window.location.href = `/room/${roomData["id"]}`;
+    window.location.href = `/room/host/${roomData["id"]}`;
 }
 
-
+async function unirseSala(event){
+    event.preventDefault();
+    const roomId = document.getElementById("room-id").value;
+    window.location.href = `/room/${roomId}`;
+    return;
+}

@@ -7,5 +7,5 @@ btnJoinRoom.addEventListener("click", () => {
         alert("Por favor, ingresa un ID de sala válido.");
         return;
     }
-    window.location.href = `/room/${id}`;
+    window.location.href = `/room/user/${id}`;
 });

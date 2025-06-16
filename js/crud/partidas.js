@@ -66,8 +66,8 @@ router.post('/:id/registrarse', authenticateToken, async (req, res) => {
         }
 
         // Verificar que la partida existe
-        const cartonCheck = await pool.query("SELECT id_partida FROM Partidas WHERE id_partida = $1", [id])
-        if (cartonCheck.rows.length === 0) {
+        const partidaCheck = await pool.query("SELECT id_partida FROM Partidas WHERE id_partida = $1", [id])
+        if (partidaCheck.rows.length === 0) {
             return res.status(404).json({ error: "Partida no encontrada" })
         }
 
@@ -98,6 +98,60 @@ router.delete('/:id/abandonar', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error('Error eliminando relación partida-usuario:', err);
         res.status(500).json({ error: 'Error eliminando relación' });
+    }
+});
+
+//Moficaciones de estado de la partida
+router.put('/:id/estado', authenticateToken, validateRole(0), async (req, res) => {
+    const { id } = req.params;
+    const { estado } = req.body;
+    try {
+        const partidaCheck = await pool.query("SELECT id_partida FROM Partidas WHERE id_partida = $1", [id])
+        if(partidaCheck.rows[0].host !== req.user.uid){
+            return res.status(403).json({ error: "No tienes permiso para modificar esta partida" });
+        }
+
+        const result = await pool.query(
+            `UPDATE Partidas SET estado = $1 WHERE id_partida = $2 RETURNING *`,
+            [estado, id]
+        );
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Partida no encontrada' });
+        }
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error('Error actualizando partida:', err);
+        res.status(500).json({ error: 'Error actualizando partida' });
+    }
+});
+
+//Eliminar partida si el host desea eliminarla
+router.delete('/:id', authenticateToken, validateRole(0), async (req, res) => {
+    const { id } = req.params;
+    try {
+        const partidaCheck = await pool.query("SELECT host FROM Partidas WHERE id_partida = $1", [id])
+        if(partidaCheck.rows[0].host !== req.user.uid){
+            return res.status(403).json({ error: "No tienes permiso para eliminar esta partida" });
+        }
+
+        //Eliminando las relaciones de la partida con los usuarios
+        await pool.query(
+            `DELETE FROM partida_usuario WHERE id_partida = $1`,
+            [id]
+        );
+        
+        //Eliminando la partida
+        const result = await pool.query(
+            `DELETE FROM Partidas WHERE id_partida = $1 RETURNING *`,
+            [id]
+        );
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Partida no encontrada' });
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error eliminando partida:', err);
+        res.status(500).json({ error: 'Error eliminando partida' });
     }
 });
 
