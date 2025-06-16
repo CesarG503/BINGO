@@ -1,56 +1,72 @@
 import getCookieValue from '/js/util/get_cookie.js';
 import API_BASE_URL from '/js/util/base_url.js';
 
-let socket;
-
 const btnAbandonar = document.getElementById('btn-abandonar-sala');
+const espera = document.getElementById('espera');
+const tablero = document.getElementById('tablero');
+const numerosLlamados = document.getElementById('numeros-llamados');
+const numeroActual = document.getElementById('numero-actual');
+
+let socket;
 
 btnAbandonar.addEventListener('click', () => {
     abandonarSala();
 });
 
 async function unirseSala(){
+    const idRoom = document.getElementById('idRoom');
     const token = getCookieValue("token");
     if(!token){
         alert("Error inesperado, no posees un usuario valido.");
         return;
     }
+    //Validaciones del usuario
+    const usuario = await getUsuario();
+    if(!usuario){
+        console.error("No se pudo obtener el usuario actual");
+        return;
+    }
 
-    const idRoom = document.getElementById('idRoom');
+    //Validaciones de la sala
     const sala = await getSala(idRoom.textContent);
 
     if(!sala){
         console.error("No se pudo obtener la sala");
         return;
     }
-    else if(sala.estado !== 0){
-        alert("La sala ya ha comenzado o ya finalizo.");
-        //Redireccionar a la pagina de inicio o a otra pagina
-        return;
-    }
 
-    const usuario = await getUsuario();
-    if(!usuario){
-        console.error("No se pudo obtener el usuario actual");
-        return;
-    }
-    else if(sala.host == usuario.id_usuario){
+    //Validacion si el usuario es el host
+    if(sala.host == usuario.id_usuario){
         window.location.href = `/room/host/${sala.id_partida}`;
         return;
     }
-    const registro = await registrarseSala(idRoom.textContent);
+
+    const registrado = await usuarioRegistrado(sala.id_partida);
+
+    //Validacion del estado de la sala
+    if(sala.estado === 1 && registrado){
+        activarControles(sala.id_partida);
+    }
+    else if(sala.estado !== 0){
+        alert("La sala ya ha comenzado o ya finalizo.");
+        window.location.href = '/';
+        return;
+    }
+
+    //Registrando al usuario en la sala si no está registrado
+    const registro = await registrarseSala(sala.id_partida);
 
     if(!registro){
         console.error("Error al registrarse en la sala");
         return;
     }
-    
+
     socket = io({auth: {token}});
-    socket.emit('unirseSala', idRoom.textContent);
+    socket.emit('unirseSala', sala.id_partida);
 
     if(registro.registrado){
         socket.emit('nuevoUsuario',{
-            id_room: idRoom.textContent,
+            id_room: sala.id_partida,
             username: usuario.username,
             img_id: usuario.img_id,
         });
@@ -63,14 +79,22 @@ async function unirseSala(){
     });
 
     socket.on('nuevoUsuario', (data) => {
-        renderUsuariosEnSala(idRoom.textContent);
+        renderUsuariosEnSala(sala.id_partida);
     });
 
     socket.on('usuarioAbandono', () => {
-        renderUsuariosEnSala(idRoom.textContent);
+        renderUsuariosEnSala(sala.id_partida);
     });
 
-    renderUsuariosEnSala(idRoom.textContent);
+    socket.on('inicioSala', () => {
+        activarControles(sala.id_partida);
+    });
+
+    socket.on('nuevoNumero',(numero) =>{
+        renderNuevoNumero(numero);
+    });
+
+    renderUsuariosEnSala(sala.id_partida);
 }
 
 async function getUsuario(){
@@ -93,6 +117,19 @@ async function getSala(id_room){
     }
 
     return await response.json();
+}
+
+//Valida que el usuario esté registrado en la sala
+async function usuarioRegistrado(id_room){
+    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}/registrado`);
+
+    if (!response.ok) {
+        console.error("Error al verificar si el usuario es miembro de la sala");
+        return false;
+    }
+
+    const data = await response.json();
+    return data.registrado;
 }
 
 async function registrarseSala(id_room){
@@ -147,6 +184,30 @@ async function renderUsuariosEnSala(id_room){
     });
 }
 
+async function renderNumerosLlamados(id_room) {
+    const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}`);
+    if (!response.ok) {
+        console.error("Error al obtener los números llamados");
+        return;
+    }
+    const data = await response.json();
+    numerosLlamados.innerHTML = ''; // Limpiar la lista antes de renderizar
+    data.partida.numbers.forEach(numero => {
+        const p = document.createElement('span');
+        p.textContent = numero+" ";
+        numerosLlamados.appendChild(p);
+    });
+}
+
+async function renderNuevoNumero(numero) {
+    numeroActual.textContent = numero;
+
+    // Agregar el nuevo número a la lista de números llamados
+    const p = document.createElement('span');
+    p.textContent = numero+" ";
+    numerosLlamados.appendChild(p);
+}
+
 async function abandonarSala() {
     const idRoom = document.getElementById('idRoom');
     const response = await fetch(`${API_BASE_URL}/api/partidas/${idRoom.textContent}/abandonar`, {
@@ -170,6 +231,13 @@ async function abandonarSala() {
     } else {
         console.error("No se pudo abandonar la sala");
     }
+}
+
+async function activarControles(id_partida) {
+    espera.setAttribute('hidden', '');
+    tablero.removeAttribute('hidden');
+
+    renderNumerosLlamados(id_partida);
 }
 
 unirseSala();

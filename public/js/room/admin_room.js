@@ -2,11 +2,14 @@ import getCookieValue from '/js/util/get_cookie.js';
 import API_BASE_URL from '/js/util/base_url.js';
 
 const btnEliminar = document.getElementById('btn-eliminar-sala');
+const btnIniciar = document.getElementById('btn-iniciar-sala');
 const idRoom = document.getElementById('id-room');
 const btnNuevo = document.getElementById('btn-new-number');
 const numeroActual = document.getElementById('numero-actual');
 const numerosLlamados = document.getElementById('numeros-llamados');
 const jugadores = document.getElementById('jugadores');
+const controles = document.getElementById('controles');
+const lobby = document.getElementById('espera');
 
 let socket;
 
@@ -17,12 +20,6 @@ let socket;
     p.textContent = data["extraido"];
     numerosLlamados.appendChild(p);
 });*/
-
-btnEliminar.addEventListener('click', async () => eliminarSala());
-
-btnNuevo.addEventListener('click', () => {
-    socket.emit('getNuevoNumero');
-});
 
 async function getSala(){
     const response = await fetch(`${API_BASE_URL}/api/partidas/${idRoom.textContent}`);
@@ -40,6 +37,40 @@ async function getUsuario(){
         return null;
     }
     return await response.json();
+}
+
+async function getNuevoNumero(id_room, id_host) {
+    const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}/extraer`);
+    if (!response.ok) {
+        console.error("Error al obtener un nuevo número");
+        return;
+    }
+    const data = await response.json();
+    socket.emit('getNuevoNumero',{extraido: data.extraido, id_room: id_room, host: id_host});
+}
+
+async function renderNumerosLlamados(id_room) {
+    const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}`);
+    if (!response.ok) {
+        console.error("Error al obtener los números llamados");
+        return;
+    }
+    const data = await response.json();
+    numerosLlamados.innerHTML = ''; // Limpiar la lista antes de renderizar
+    data.partida.numbers.forEach(numero => {
+        const p = document.createElement('span');
+        p.textContent = numero+" ";
+        numerosLlamados.appendChild(p);
+    });
+}
+
+function renderNuevoNumero(numero){
+    numeroActual.textContent = numero;
+
+    // Agregar el nuevo número a la lista de números llamados
+    const p = document.createElement('span');
+    p.textContent = numero+" ";
+    numerosLlamados.appendChild(p);
 }
 
 async function renderUsuariosEnSala() {
@@ -75,8 +106,8 @@ async function usuariosEnSala(){
     return await response.json();
 }
 
-async function eliminarSala() {
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${idRoom.textContent}`,{
+async function eliminarSala(id_room, id_usuario) {
+    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}`,{
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -85,18 +116,55 @@ async function eliminarSala() {
     
     if (!response.ok) {
         console.error("Error al eliminar la sala");
-        alert("No se pudo eliminar la sala. Inténtalo de nuevo más tarde.");
+        alert("No se obtuvo una respuesta valida del servidor.");
         return;
     }
 
     const result = await response.json();
     if (result.success) {
-        socket.emit('salaEliminada', idRoom.textContent);
+        socket.emit('salaEliminada', {
+            id_room: id_room,
+            host: id_usuario
+        });
         socket.disconnect();
         window.location.href = '/'; // Redireccionar a la página de inicio
     } else {
-        alert("No se pudo eliminar la sala. Inténtalo de nuevo más tarde.");
+        alert("No se pudo eliminar la sala. Inteténtalo de nuevo más tarde.");
     }
+}
+
+async function iniciarSala(id_room, id_usuario) {
+    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}/estado`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ estado: 1 }) // Cambiar el estado a 1 (iniciado)
+    });
+
+    if (!response.ok) {
+        console.error("Error al iniciar la sala");
+        alert("No se pudo iniciar la sala. Inténtalo de nuevo.");
+        console.log(await response.text());
+        return;
+    }
+
+
+    socket.emit('iniciarSala', { 
+            id_room: id_room, 
+            host: id_usuario 
+    });
+}
+
+async function activarControles(id_room, id_host){
+    controles.removeAttribute('hidden');
+    lobby.setAttribute('hidden', '');
+
+    renderNumerosLlamados(id_room);
+
+    btnNuevo.addEventListener('click', () => {
+        getNuevoNumero(id_room, id_host);
+    });
 }
 
 async function inicializar(){
@@ -111,14 +179,20 @@ async function inicializar(){
         console.error("No se pudo obtener la sala");
         return;
     }
-    else if(sala.estado !== 0){
-        alert("La sala ya ha comenzado o ya finalizo.");
-        //Redireccionar a la pagina de inicio o a otra pagina
+
+    //Validacion de host
+    if(sala.host !== usuario.id_usuario){
+        alert("No tienes permiso para administrar esta sala.");
+        window.location.href = '/';
         return;
     }
-    else if(sala.host !== usuario.id_usuario){
-        alert("No tienes permiso para administrar esta sala.");
-        //Redireccionar a la pagina de inicio o a otra pagina
+    //Validacion de estado
+    else if(sala.estado === 1){
+        activarControles(sala.id_partida, usuario.id_usuario);
+    }
+    else if(sala.estado !== 0){
+        alert("La sala ya finalizo.");
+        window.location.href = '/';
         return;
     }
     
@@ -130,18 +204,31 @@ async function inicializar(){
     }
     socket = io({auth: {token}});
 
-    socket.emit('unirseSala', idRoom.textContent);
+    socket.emit('unirseSala', sala.id_partida);
 
     socket.on('nuevoUsuario', (data) => {
         renderUsuariosEnSala();
     });
 
     socket.on('usuarioAbandono', () => {
-        renderUsuariosEnSala(idRoom.textContent);
+        renderUsuariosEnSala(sala.id_partida);
     });
 
-    const controles = document.getElementById('controles');
-    controles.removeAttribute('hidden');
+    socket.on('inicioSala', () => {
+        activarControles(sala.id_partida, usuario.id_usuario);
+    });
+
+    socket.on('nuevoNumero',(numero) =>{
+        renderNuevoNumero(numero);
+    });
+
+    btnIniciar.addEventListener('click', () => {
+        iniciarSala(sala.id_partida, usuario.id_usuario);
+    });
+
+    btnEliminar.addEventListener('click', async () => eliminarSala(sala.id_partida, usuario.id_usuario));
+
+
 }
 
 inicializar();

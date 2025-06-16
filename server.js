@@ -309,7 +309,6 @@ io.use((socket, next) => authenticateSocket(socket, next));
 io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado');
 
-  socket.on('crearSala', (data) => host.crearRoom(socket, data));
   socket.on('unirseSala', (id_room) => {socket.join(id_room);});
 
   socket.on('nuevoUsuario', (data) => {
@@ -321,12 +320,33 @@ io.on('connection', (socket) => {
     io.to(id_room).emit('usuarioAbandono');
   });
 
-  socket.on('salaEliminada', (id_room) => {
-    io.to(id_room).emit('salaEliminada');
-    socket.leave(id_room);
+  socket.on('salaEliminada', (data) => {
+    if(socket.user.rol !== 0 || socket.user.uid !== data.host) {
+      console.log(`Usuario sin permiso accedio para eliminar la sala ${data.id_room}`);
+      return socket.emit('error', 'No tienes permiso para eliminar la sala');
+    }
+    io.to(data.id_room).emit('salaEliminada');
+    socket.leave(data.id_room);
   });
 
-  // Manejar eventos de socket aquí
+  socket.on('iniciarSala', (data) => {
+    if(socket.user.rol !== 0 || socket.user.uid !== data.host) {
+      console.log(`Usuario sin permiso accedio para iniciar la sala ${data.id_room}`);
+      return socket.emit('error', 'No tienes permiso para iniciar la sala');
+    }
+    io.to(data.id_room).emit('inicioSala');
+  });
+
+  socket.on('getNuevoNumero', (data) => {
+    if(socket.user.rol !== 0 || socket.user.uid !== data.host) {
+      console.log(`Usuario sin permiso accedio para enviar un nuevo numero en la sala ${data.id_room}`);
+      return socket.emit('error', 'No tienes permiso para enviar un nuevo número');
+    }
+
+    io.to(data.id_room).emit('nuevoNumero', data.extraido);
+  });
+
+  // Manejar eventos de desconexion
   socket.on('disconnect', () => {
     console.log('Cliente desconectado');
   });

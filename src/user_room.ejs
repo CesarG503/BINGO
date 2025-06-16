@@ -6,14 +6,29 @@
     <title>Sala de juego - Host</title>
 </head>
 <body>
-    <div id="sala">
+    <div id="espera">
         <h1>Eres miembro de la sala</h1>
         <button id="btn-abandonar-sala">Abandonar Sala</button>
-        <h2 id="idRoom"><%= id_room %></h1>
+        <p id="idRoom"><%= id_room %></p>
+        <h1>ID Sala: <%= id_room %></h1>
         
         <ul id="jugadores">
             
         </ul>
+    </div>
+    <div id="tablero" hidden>
+        <h1>Partida de Bingo</h1>
+        <section>
+            <h2>Numero Actual</h2>
+            <h2 id="numero-actual"></h2>
+        </section>
+        <section>
+            <h3>Aqui van los tableros....</h3>
+        </section>
+        <section>
+            <h3>Números llamados</h3>
+            <div id="numeros-llamados"></div>
+        </section>
     </div>
 
      <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>

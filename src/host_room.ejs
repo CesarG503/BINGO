@@ -6,11 +6,12 @@
     <title>Sala de juego - Host</title>
 </head>
 <body>
+    <button id="btn-eliminar-sala">Cerrar sala</button>
     <div id="espera">
         <h1>Esperando a que se unan jugadores...</h1>
-        <button id="btn-eliminar-sala">Cerrar sala</button>
         <p id="id-room" hidden><%= id_room%></p>
         <h2>ID Sala: <%= id_room %></h1>
+         <button id="btn-iniciar-sala">Iniciar partida</button>
         
         <ul id="jugadores">
 
@@ -19,12 +20,14 @@
 
     <div id="controles" hidden>
         <section>
+            <h2>Partida de Bingo</h2>
         <button id="btn-new-number">Sacar nuevo numero</button>
         </section>
         <section>
             <h1 id="numero-actual"></h1>
         </section>
         <section>
+            <h3>Números llamados</h3>
             <div id="numeros-llamados"></div>
         </section>
     </div>

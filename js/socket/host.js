@@ -1,7 +1,6 @@
 const {API_BASE_URL} = require("../constans");
 
 async function crearRoom(socket, data){
-
 }
 
 function validarRol(user){

@@ -106,7 +106,7 @@ router.put('/:id/estado', authenticateToken, validateRole(0), async (req, res) =
     const { id } = req.params;
     const { estado } = req.body;
     try {
-        const partidaCheck = await pool.query("SELECT id_partida FROM Partidas WHERE id_partida = $1", [id])
+        const partidaCheck = await pool.query("SELECT host FROM Partidas WHERE id_partida = $1", [id])
         if(partidaCheck.rows[0].host !== req.user.uid){
             return res.status(403).json({ error: "No tienes permiso para modificar esta partida" });
         }
@@ -122,6 +122,25 @@ router.put('/:id/estado', authenticateToken, validateRole(0), async (req, res) =
     } catch (err) {
         console.error('Error actualizando partida:', err);
         res.status(500).json({ error: 'Error actualizando partida' });
+    }
+});
+
+//Obtener si un usuario está registrado en una partida
+router.get('/:id/registrado', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query(
+            `SELECT * FROM partida_usuario WHERE id_partida = $1 AND id_usuario = $2`,
+            [id, req.user.uid]
+        );
+        if (result.rows.length > 0) {
+            return res.status(200).json({ registrado: true });
+        } else {
+            return res.status(200).json({ registrado: false });
+        }
+    } catch (err) {
+        console.error('Error verificando registro en partida:', err);
+        res.status(500).json({ error: 'Error verificando registro en partida' });
     }
 });
 
