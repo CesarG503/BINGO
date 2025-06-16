@@ -1,7 +1,7 @@
 .canva {
   display: flex;
   align-items: center;
-  /* overflow: hidden; */
+  overflow: hidden;
   min-width: 250px;
   width: 625px;
 
@@ -115,7 +115,7 @@
 .tubo-css {
   position: absolute;
   width: 130px;
-  height: 125px;
+  height: 70px;
   top: 0;
   transform: translateX(-50%);
   transform: translateY(75%);
@@ -262,7 +262,7 @@ table .bola {
 
 .contenedor{
   display: grid;
-  grid-template-rows: 200px 225px 1fr;
+  grid-template-rows: 200px minmax(85px, 120px) 1fr;
 }
 
 @media screen and (max-width: 768px) {
