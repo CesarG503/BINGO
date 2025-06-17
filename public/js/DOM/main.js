@@ -29,7 +29,7 @@ function RenderizarUsuarios() {
     console.log('Usuarios renderizados:', usuarios);
 }
 
-let urlUsuario = `${API_BASE_URL}/api/usuarios`;
+let urlUsuario = `/api/usuarios`;
 
 function MostrarUsuarios() {
     fetch(urlUsuario)

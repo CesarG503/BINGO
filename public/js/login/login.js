@@ -39,7 +39,7 @@ document.getElementById('sign-in-form').addEventListener('submit', async (e) => 
   const email = e.target.email.value;
   const password = e.target.password.value;
 
-  const response = await fetch(`${API_BASE_URL}/login`, {
+  const response = await fetch(`/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
