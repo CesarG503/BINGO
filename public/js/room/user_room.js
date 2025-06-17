@@ -1,5 +1,4 @@
 import getCookieValue from '/js/util/get_cookie.js';
-import API_BASE_URL from '/js/util/base_url.js';
 
 const btnAbandonar = document.getElementById('btn-abandonar-sala');
 const espera = document.getElementById('espera');
@@ -108,7 +107,7 @@ async function unirseSala(){
 }
 
 async function getUsuario(){
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/actual`);
+    const response = await fetch(`/api/usuarios/actual`);
 
     if (!response.ok) {
         console.log("Error al obtener el usuario actual");
@@ -119,7 +118,7 @@ async function getUsuario(){
 }
 
 async function getSala(id_room){
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}`);
+    const response = await fetch(`/api/partidas/${id_room}`);
 
     if (!response.ok) {
         console.error("Error al obtener la sala");
@@ -131,7 +130,7 @@ async function getSala(id_room){
 
 //Valida que el usuario esté registrado en la sala
 async function usuarioRegistrado(id_room){
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}/registrado`);
+    const response = await fetch(`/api/partidas/${id_room}/registrado`);
 
     if (!response.ok) {
         console.error("Error al verificar si el usuario es miembro de la sala");
@@ -143,7 +142,7 @@ async function usuarioRegistrado(id_room){
 }
 
 async function registrarseSala(id_room){
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}/registrarse`, {
+    const response = await fetch(`/api/partidas/${id_room}/registrarse`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -159,7 +158,7 @@ async function registrarseSala(id_room){
 }
 
 async function getUsuariosEnSala(id_room){
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}/usuarios`);
+    const response = await fetch(`/api/partidas/${id_room}/usuarios`);
     if (!response.ok) {
         console.error("Error al obtener los usuarios en la sala");
         return null;
@@ -220,7 +219,7 @@ async function renderNuevoNumero(numero) {
 
 async function abandonarSala() {
     const idRoom = document.getElementById('idRoom');
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${idRoom.textContent}/abandonar`, {
+    const response = await fetch(`/api/partidas/${idRoom.textContent}/abandonar`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',

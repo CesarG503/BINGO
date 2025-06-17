@@ -1,5 +1,3 @@
-import API_BASE_URL from '../util/base_url.js';
-
 // ===============================
 // Función para cargar datos del perfil desde la API
 // ===============================

@@ -1,5 +1,4 @@
 import getCookieValue from '/js/util/get_cookie.js';
-import API_BASE_URL from '/js/util/base_url.js';
 
 const btnEliminar = document.getElementById('btn-eliminar-sala');
 const btnIniciar = document.getElementById('btn-iniciar-sala');
@@ -14,7 +13,7 @@ const lobby = document.getElementById('espera');
 let socket;
 
 async function getSala(){
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${idRoom.textContent}`);
+    const response = await fetch(`/api/partidas/${idRoom.textContent}`);
     if (!response.ok) {
         console.error("Error al obtener la sala");
         return response;
@@ -23,7 +22,7 @@ async function getSala(){
 }
 
 async function getUsuario(){
-    const response = await fetch(`${API_BASE_URL}/api/usuarios/actual`);
+    const response = await fetch(`/api/usuarios/actual`);
     if (!response.ok) {
         console.log("Error al obtener el usuario actual");
         return null;
@@ -90,7 +89,7 @@ async function renderUsuariosEnSala() {
 }
 
 async function usuariosEnSala(){
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${idRoom.textContent}/usuarios`);
+    const response = await fetch(`/api/partidas/${idRoom.textContent}/usuarios`);
     if (!response.ok) {
         console.error("Error al obtener los usuarios en la sala");
         return;
@@ -99,7 +98,7 @@ async function usuariosEnSala(){
 }
 
 async function eliminarSala(id_room, id_usuario) {
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}`,{
+    const response = await fetch(`/api/partidas/${id_room}`,{
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -126,7 +125,7 @@ async function eliminarSala(id_room, id_usuario) {
 }
 
 async function iniciarSala(id_room, id_usuario) {
-    const response = await fetch(`${API_BASE_URL}/api/partidas/${id_room}/estado`, {
+    const response = await fetch(`/api/partidas/${id_room}/estado`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

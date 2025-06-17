@@ -7,7 +7,6 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); 
 const { authenticateToken, authenticateSocket, validateRole } = require('./js/authenthicated'); // Importar la función de autenticación
 const { Server } = require('socket.io');
-const host = require('./js/socket/host');
 const path = require('path'); // Importar path para manejar rutas de archivos
 const pool = require('./js/db/db'); // Importar la conexión a la base de datos
 const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de Entrenadores.js
