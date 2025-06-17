@@ -1,7 +1,15 @@
+import {slide} from "./slide.js";
 // const wrapper = document.getElementById("wrapper");
 let posicion = 0
 const cardList = document.getElementById("cardList");
 const bolasSeleccionadas = []; //bolas seleccionadas por el usuario
+const fondo = [
+  "bg-primary-subtle",
+  "bg-success-subtle",
+  "bg-info-subtle",
+  "bg-warning-subtle",
+  "bg-danger-subtle",
+];
 
 let tarjeta = [
   [
@@ -66,7 +74,7 @@ function renderCard(arreglo) {
   const trHead = document.createElement("tr");
 
   const letras = ["b", "i", "n", "g", "o"];
-  const fondo = ['bg-primary-subtle', 'bg-success-subtle', 'bg-info-subtle', 'bg-warning-subtle', 'bg-danger-subtle'];
+  
   for (let i = 0; i < letras.length; i++) {
     const th = document.createElement("th");
     th.className =  fondo[i];
@@ -108,37 +116,3 @@ function colorBolita(numero){
   
 
 }
-
-
-
-new Swiper(".card-wrapper", {
-  loop: false,
-  // centeredSlides: true, Pinche linea pedorra que me hizo ver todo el css como mil veces
-
-  // If we need pagination
-  pagination: {
-    el: ".swiper-pagination",
-    clickable: true,
-    dynamicBullets: true,
-  },
-
-  // Navigation arrows
-  navigation: {
-    nextEl: ".swiper-button-next",
-    prevEl: ".swiper-button-prev",
-  },
-
-  // Reponsive
-  breakpoints: {
-    0: {
-      slidesPerView: 1,
-    },
-    700: {
-      slidesPerView: 2,
-    },
-    1000: {
-      slidesPerView: 3,
-    },
-  },
-});
-
