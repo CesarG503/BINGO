@@ -13,6 +13,15 @@ btnAbandonar.addEventListener('click', () => {
     abandonarSala();
 });
 
+document.addEventListener("DOMContentLoaded", async (event) => {
+    const sala = await getSala(idRoom.textContent);
+    if(!sala){
+        console.error("No se pudo obtener la salaaaaa");
+        window.location.href = '/';
+        return;
+    }
+});
+
 async function unirseSala(){
     const idRoom = document.getElementById('idRoom');
     const token = getCookieValue("token");
@@ -32,6 +41,7 @@ async function unirseSala(){
 
     if(!sala){
         console.error("No se pudo obtener la sala");
+        window.location.href = '/';
         return;
     }
 
@@ -113,7 +123,7 @@ async function getSala(id_room){
 
     if (!response.ok) {
         console.error("Error al obtener la sala");
-        return null;
+        return;
     }
 
     return await response.json();

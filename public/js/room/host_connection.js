@@ -1,15 +1,15 @@
 import getCookieValue from '/js/util/get_cookie.js';
 import API_BASE_URL from '/js/util/base_url.js';
+import {iniciarRuletazo, addBallGrid} from '/js/game/game.js';
 
 const btnEliminar = document.getElementById('btn-eliminar-sala');
+const btnCerrar = document.getElementById('btn-cerrar-sala');
 const btnIniciar = document.getElementById('btn-iniciar-sala');
 const idRoom = document.getElementById('id-room');
-const btnNuevo = document.getElementById('btn-new-number');
-const numeroActual = document.getElementById('numero-actual');
-const numerosLlamados = document.getElementById('numeros-llamados');
-const jugadores = document.getElementById('jugadores');
-const controles = document.getElementById('controles');
-const lobby = document.getElementById('espera');
+export const btnNuevoNumero = document.getElementById('btn-new-number');
+const jugadores = document.getElementById('n-jugadores');
+const controles = document.getElementById('game-controls');
+const lobby = document.getElementById('waiting-room');
 
 let socket;
 
@@ -17,7 +17,7 @@ async function getSala(){
     const response = await fetch(`${API_BASE_URL}/api/partidas/${idRoom.textContent}`);
     if (!response.ok) {
         console.error("Error al obtener la sala");
-        return response;
+        return;
     }
     return await response.json();
 }
@@ -38,7 +38,11 @@ async function getNuevoNumero(id_room, id_host) {
         return;
     }
     const data = await response.json();
-    socket.emit('getNuevoNumero',{extraido: data.extraido, id_room: id_room, host: id_host});
+    iniciarRuletazo(data.extraido, id_room, id_host);
+}
+
+export function emitirNumeroNuevo(numero, id_room, id_host) {
+    socket.emit('getNuevoNumero',{extraido: numero, id_room: id_room, host: id_host});
 }
 
 async function renderNumerosLlamados(id_room) {
@@ -47,22 +51,11 @@ async function renderNumerosLlamados(id_room) {
         console.error("Error al obtener los números llamados");
         return;
     }
+
     const data = await response.json();
-    numerosLlamados.innerHTML = ''; // Limpiar la lista antes de renderizar
     data.partida.numbers.forEach(numero => {
-        const p = document.createElement('span');
-        p.textContent = numero+" ";
-        numerosLlamados.appendChild(p);
+        addBallGrid(numero);
     });
-}
-
-function renderNuevoNumero(numero){
-    numeroActual.textContent = numero;
-
-    // Agregar el nuevo número a la lista de números llamados
-    const p = document.createElement('span');
-    p.textContent = numero+" ";
-    numerosLlamados.appendChild(p);
 }
 
 async function renderUsuariosEnSala() {
@@ -71,22 +64,7 @@ async function renderUsuariosEnSala() {
         console.error("No se pudieron obtener los usuarios en la sala");
         return;
     }
-    jugadores.innerHTML = ''; // Limpiar la lista antes de renderizar
-    usuarios.forEach(usuario => {
-        const li = document.createElement('li');
-        const div = document.createElement('div');
-        const img = document.createElement('img');
-        const p = document.createElement('p');
-
-        img.src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`;
-        img.width = '50';
-        img.height = '50';
-        p.textContent = usuario.username;
-        div.appendChild(img);
-        div.appendChild(p);
-        li.appendChild(div);
-        jugadores.appendChild(li);
-    });
+    jugadores.innerHTML = usuarios.length;
 }
 
 async function usuariosEnSala(){
@@ -149,13 +127,14 @@ async function iniciarSala(id_room, id_usuario) {
 }
 
 async function activarControles(id_room, id_host){
-    controles.removeAttribute('hidden');
-    lobby.setAttribute('hidden', '');
+    lobby.classList.add('visually-hidden');
+    controles.classList.remove('visually-hidden');
 
     renderNumerosLlamados(id_room);
 
-    btnNuevo.addEventListener('click', () => {
-        getNuevoNumero(id_room, id_host);
+    btnNuevoNumero.addEventListener('click', async () => {
+        btnNuevoNumero.disabled = true;
+        await getNuevoNumero(id_room, id_host);
     });
 }
 
@@ -169,6 +148,7 @@ async function inicializar(){
 
     if(!sala){
         console.error("No se pudo obtener la sala");
+        window.location.href = '/';
         return;
     }
 
@@ -210,17 +190,12 @@ async function inicializar(){
         activarControles(sala.id_partida, usuario.id_usuario);
     });
 
-    socket.on('nuevoNumero',(numero) =>{
-        renderNuevoNumero(numero);
-    });
-
     btnIniciar.addEventListener('click', () => {
         iniciarSala(sala.id_partida, usuario.id_usuario);
     });
 
     btnEliminar.addEventListener('click', async () => eliminarSala(sala.id_partida, usuario.id_usuario));
-
-
+    btnCerrar.addEventListener('click', () => eliminarSala(sala.id_partida, usuario.id_usuario));
 }
 
 inicializar();

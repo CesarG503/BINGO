@@ -1,15 +1,17 @@
+import { emitirNumeroNuevo, btnNuevoNumero } from '/js/room/host_connection.js';
+
 let carrusel = document.getElementById("carrusel");
 let canva = document.querySelector(".canva");
 const repeticiones = 9;
-const x = 5; //Duración de animaciones
+const x = 3; //Duración de animaciones
 const desplazamientoX = ((-630 * repeticiones) + 630)  + 'px' //Para calcular el desplazamiento
+let numerosLlamados = new Set(); // Array para almacenar los números llamados
 
-
-export async function iniciarRuletazo() {
+//Se recibe el numero seleccionado por el host
+export async function iniciarRuletazo(select, id_room, id_host) {
   // limpiamos el carrusel para no tener bugs
   carrusel.innerHTML = null;
 
-  const select = getRandomInteger(1, 75);
   // Agregar conjunto final con el número seleccionado en el centro
   carrusel.append(...createSeleccionado(select));
 
@@ -23,8 +25,7 @@ export async function iniciarRuletazo() {
         ease: "power4.out",
       })
     });
-    eliminarNumber()
-    console.log("hola");
+    eliminarNumber();
     
     // Para que la pelota salga de su lugar
     await new Promise((resolve) => {
@@ -37,6 +38,8 @@ export async function iniciarRuletazo() {
         visibleCanva()
       });
     });
+
+      emitirNumeroNuevo(select, id_room, id_host);
 
       await new Promise((resolve) => {
       gsap
@@ -67,7 +70,7 @@ export async function iniciarRuletazo() {
         ease: "power4.out",
       });
   });
-
+  btnNuevoNumero.disabled = false; // Habilitar el botón de nuevo número
 }
 
 // Devuelve una colección de bolas,
@@ -88,7 +91,6 @@ function createSeleccionado(numero) {
     bola.classList.add(asignarColor(bola.innerText));
     wrapper.appendChild(bola);
   }
-  console.log(wrapper.children);
 
   return wrapper.children;
 }
@@ -104,7 +106,6 @@ function crearBolasExtras() {
     bola.classList.add(asignarColor(bola.innerText));
     wrapper.appendChild(bola);
   }
-  console.log(wrapper.children);
 
   return wrapper.children;
 }
@@ -114,7 +115,6 @@ function crearBolasExtras() {
 function eliminarNumber() {
   const carrusel = document.getElementById("carrusel");
   const hijos = [...carrusel.children];
-  console.log(hijos.length);
 
   for (let i = 0; i < hijos.length - 9; i++) {
     carrusel.removeChild(hijos[i]);
@@ -146,7 +146,7 @@ function limpiarClaseColor(bolaElement) {
 }
 
 
-async function addBallGrid(numeroBola) {
+export async function addBallGrid(numeroBola) {
   // El navegador me agregar tbody asi que F
   let index;
   let indexFila;
@@ -155,8 +155,6 @@ async function addBallGrid(numeroBola) {
   const bolaSelec = document.getElementById("bola-selec");
   ball.innerText = numeroBola;
   bolaSelec.textContent = numeroBola;
-
-  console.log(table.children[2].children);
 
   if (numeroBola > 0 && numeroBola <= 15) {
     ball.classList.add("bola", "bola-b");
@@ -232,6 +230,7 @@ async function addBallGrid(numeroBola) {
         ease: "elastic.out(1, 0.3)",
       });
   });
+  numerosLlamados.add(numeroBola); 
 }
 
 function visibleCanva(){

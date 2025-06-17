@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
   <script src="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/js/retrosci-fi.js" defer></script>
   <link rel="stylesheet" href="./css/game.css">
+  <link rel="stylesheet" href="/css/panel_espera.css">
   <title>Bingo</title>
 </head>
 <body>
@@ -26,145 +27,154 @@
     </div>
   </nav>
   
-
-
-<div class="interfaz container mx-auto grid border border-2 border-neon-complete border-info mt-3">
-  <div class="container contenedor g-col-10 " >
-    <!-- RULETAZO CON LOS NUMEROS-->
-    <div class="canva mx-auto">
-      <div class="carrusel" id="carrusel">
-        <div class="bola bola-o ">¡</div>
-        <div class="bola bola-g ">¡</div>
-        <div class="bola bola-b ">B</div>
-        <div class="bola bola-i ">I</div>
-        <div class="bola bola-n ">N</div>
-        <div class="bola bola-g ">G</div>
-        <div class="bola bola-o ">O</div>
-        <div class="bola bola-i">!</div>
-        <div class="bola bola-b">!</div>
-      </div>
-    </div>
-    <!-- TUBO -->
-    <div class="tubo row">
-        <div class="tubo-css"></div>
-    </div>
-    <!-- TABLA CON LOS NUMEROS -->
-    <div class="container numeros">
-      <table class="tabla-numeros border border-3 ">
-        <tbody id="tableBall"> <!--EL navegador me agregar el tbody :)-->
-          <tr class="">
-            <td class="bg-primary-subtle">
-              <div class="bola bola-b">B</div>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>
-            </td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr class="">
-            <td class="bg-success-subtle">
-              <div class="bola bola-i">I</div>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr class="">
-            <td class="bg-info-subtle">
-              <div class="bola bola-n">N</div>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr class="">
-            <td class="bg-warning-subtle">
-              <div class="bola bola-g">G</div>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr class="">
-            <td class="bg-danger-subtle">
-              <div class="bola bola-o">O</div>
-            </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+<!-- Pantalla de lobby -->
+  <div id="esperando">
+    <p>Esperando que jugadores se unan a la partida...</p>
+    <p id="id-room"><%= id_room %></p>
+    <p>Jugadores: 0</p>
+    <button class="btn btn-success" id="btn-iniciar-sala">Iniciar Partida</button>
   </div>
 
- <div class="g-col-2">
-    <div class="botones">
-      <div class="bola-selec bola-i" id="bola-selec">Bola</div>
-      <button class="btn btn-success btn-lg" id="newNumber">NUEVA BOLA</button>
-
+<!-- Pantalla de juego -->
+<div id="controles">
+  <div class="interfaz container mx-auto grid border border-2 border-neon-complete border-info mt-3">
+    <div class="container contenedor g-col-10 " >
+      <!-- RULETAZO CON LOS NUMEROS-->
+      <div class="canva mx-auto">
+        <div class="carrusel" id="carrusel">
+          <div class="bola bola-o ">¡</div>
+          <div class="bola bola-g ">¡</div>
+          <div class="bola bola-b ">B</div>
+          <div class="bola bola-i ">I</div>
+          <div class="bola bola-n ">N</div>
+          <div class="bola bola-g ">G</div>
+          <div class="bola bola-o ">O</div>
+          <div class="bola bola-i">!</div>
+          <div class="bola bola-b">!</div>
+        </div>
+      </div>
+      <!-- TUBO -->
+      <div class="tubo row">
+          <div class="tubo-css"></div>
+      </div>
+      <!-- TABLA CON LOS NUMEROS -->
+      <div class="container numeros">
+        <table class="tabla-numeros border border-3 ">
+          <tbody id="tableBall"> <!--EL navegador me agregar el tbody :)-->
+            <tr class="">
+              <td class="bg-primary-subtle">
+                <div class="bola bola-b">B</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="">
+              <td class="bg-success-subtle">
+                <div class="bola bola-i">I</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="">
+              <td class="bg-info-subtle">
+                <div class="bola bola-n">N</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="">
+              <td class="bg-warning-subtle">
+                <div class="bola bola-g">G</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="">
+              <td class="bg-danger-subtle">
+                <div class="bola bola-o">O</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
- </div>
+  
+   <div class="g-col-2">
+      <div class="botones">
+        <div class="bola-selec bola-i" id="bola-selec">Bola</div>
+        <button class="btn btn-success btn-lg" id="newNumber">NUEVA BOLA</button>
+  
+      </div>
+   </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>

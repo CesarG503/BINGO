@@ -21,6 +21,9 @@ router.post('/nueva', authenticateToken, validateRole(0), async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM Partidas WHERE id_partida = $1', [req.params.id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Partida no encontrada' });
+        }
         res.send(result.rows[0]);
     } catch (err) {
         console.error('Error obteniendo partida:', err);
@@ -166,6 +169,10 @@ router.delete('/:id', authenticateToken, validateRole(0), async (req, res) => {
         );
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Partida no encontrada' });
+        }
+        const apiDelete = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id}/eliminar`);
+        if (!apiDelete.ok) {
+            console.error("Error al eliminar la partida en la API externa");
         }
         res.json({ success: true });
     } catch (err) {

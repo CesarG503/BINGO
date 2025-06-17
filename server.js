@@ -121,12 +121,12 @@ app.get('/home',authenticateToken,(req,res) =>{
   }
 });
 
-app.get('/room/user/:roomId', authenticateToken, (req, res) => {
+app.get('/room/user/:roomId', authenticateToken, async (req, res) => {
   const roomId = req.params.roomId;
   res.render('user_room', { id_room: roomId});
 });
 
-app.get('/room/host/:roomId', authenticateToken,validateRole(0), (req, res) => {
+app.get('/room/host/:roomId', authenticateToken,validateRole(0), async (req, res) => {
   const roomId = req.params.roomId;
   res.render('host_room', { id_room: roomId});
 });
