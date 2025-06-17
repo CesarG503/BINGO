@@ -32,6 +32,8 @@ body {
 .card-wrapper {
   max-width: 1024px;
   margin: 0;
+  overflow: hidden;
+  padding: 40px 0;
 
 }
 
@@ -200,5 +202,15 @@ table .bola {
   .card-wrapper .swiper-slide-button{
     display: none;
   }
+
+}
+
+/* container-fluid */
+
+@media screen and (max-width: 300px) {
+  .container-fluid{
+    padding: 0; 
+  }
+
 
 }
