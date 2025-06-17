@@ -107,6 +107,7 @@ function renderCard(arreglo) {
     for (let j = 0; j < arreglo[i].length; j++) {
       const td = document.createElement("td");
       td.textContent = arreglo[i][j];
+      td.className = "seleccionable";
       tr.appendChild(td);
     }
     tbody.appendChild(tr);
@@ -124,6 +125,7 @@ document.getElementById("cardList").addEventListener("click", (e) => {
   const target = e.target;
   console.log(target);
 
+  if(!e.target.classList.contains("seleccionable"))return;
   
 
   if (bolasSeleccionadas.includes(parseInt(target.innerText))) {
