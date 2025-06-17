@@ -245,51 +245,56 @@ async function buyOffer(offerId) {
       throw new Error("Error al asignar cartones al usuario")
     }
 
-    // Actualizar créditos del usuario
-    const updatedUser = {
-      ...currentUser,
-      creditos: currentUser.creditos - offer.currentPrice,
-    }
-
-    const updateResponse = await fetch(`/api/usuarios/${currentUser.id_usuario}`, {
+      // Actualizar créditos del usuario usando el nuevo endpoint específico
+    const newCredits = currentUser.creditos - offer.currentPrice
+    const updateResponse = await fetch(`/api/usuarios/actual/creditos`, {
       method: "PUT",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updatedUser),
+      body: JSON.stringify({
+        creditos: newCredits,
+      }),
     })
 
     if (!updateResponse.ok) {
-      const revertResponse = await fetch(`/api/carton-usuario/bulk`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id_usuario: currentUser.id_usuario,
-          cartones_ids: savedCartones.map((carton) => carton.id_carton),
-        }),
-      });
+      // Si falla la actualización de créditos, revertir toda la operación
+      try {
+        // Eliminar cada cartón (esto automáticamente elimina las relaciones carton_usuario)
+        const deletePromises = savedCartones.map((carton) =>
+          fetch(`/api/cartones/${carton.id_carton}`, {
+            method: "DELETE",
+            credentials: "include",
+          }),
+        )
 
-      if (revertResponse.ok) {
+        await Promise.all(deletePromises)
+
         Swal.fire({
-          icon: "info",
-          title: "Reversión exitosa",
-          text: "Los cartones asignados han sido revertidos correctamente.",
-        });
+          icon: "warning",
+          title: "Compra Revertida",
+          text: "Error al actualizar créditos. La compra ha sido revertida completamente y no se realizaron cargos.",
+          confirmButtonText: "Entendido",
+        })
+      } catch (revertError) {
+        console.error("Error al revertir la compra:", revertError)
+        Swal.fire({
+          icon: "error",
+          title: "Error Crítico",
+          text: "Error al actualizar créditos y al revertir la compra. Por favor contacta al soporte.",
+          confirmButtonText: "Entendido",
+        })
       }
-      throw new Error("Error al actualizar créditos. Los cartones asignados han sido revertidos.");
+      throw new Error("Error al actualizar créditos. La compra ha sido revertida.")
     }
 
-    // Actualizar datos locales
-    currentUser = updatedUser
-    document.getElementById("userCredits").textContent = currentUser.creditos.toLocaleString()
+    // Refrescar datos del usuario y UI
+    await loadUserData()
 
     showLoading(false)
     renderOffers()
-    loadUserCartones() 
+    loadUserCartones()
 
     await Swal.fire({
       icon: "success",

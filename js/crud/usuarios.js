@@ -39,6 +39,31 @@ router.put('/actual/perfil', authenticateToken, async (req, res) => {
   }
 });
 
+// actualizar creditos
+router.put("/actual/creditos", authenticateToken, async (req, res) => {
+  const { creditos } = req.body
+
+  if (typeof creditos !== "number" || creditos < 0) {
+    return res.status(400).json({ error: "Los créditos deben ser un número válido mayor o igual a 0" })
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE Usuarios SET creditos = $1 WHERE id_usuario = $2 RETURNING id_usuario, username, creditos, email, rol, img_id`,
+      [creditos, req.user.uid],
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" })
+    }
+
+    res.send(result.rows[0])
+  } catch (err) {
+    console.error("Error actualizando créditos:", err)
+    res.status(500).json({ error: "Error actualizando créditos del usuario" })
+  }
+})
+
 // Obtener un usuario por ID
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
