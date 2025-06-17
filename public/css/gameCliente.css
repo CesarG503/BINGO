@@ -1,0 +1,143 @@
+/* Tabla general */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.05),
+    0 0 20px rgba(0, 0, 0, 0.4);
+  background: transparent;
+  /* mantiene el fondo base */
+}
+
+
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  align-self: center;
+  justify-content: center;
+  min-height: 100vh;
+
+}
+
+
+.card-wrapper {
+  max-width: 1024px;
+  margin: 0;
+
+}
+
+.card-item {
+  list-style: none;
+  align-self: center;
+  justify-items: center;
+  user-select: none ;
+}
+
+
+.swiper-pagination-bullet {
+  height: 12px;
+  width: 12px;
+  opacity: 0.5;
+  background: #96f;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1;
+
+}
+
+.tabla-numeros{
+  width: 300px;
+  padding: 18px;
+  justify-content: center;
+}
+
+/* Celdas de la tabla */
+td,th {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0.5rem;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+
+.tabla-numeros th,
+.tabla-numeros td {
+  border: 1px solid #888;
+  text-align: center;
+  padding: 0.5rem;
+  
+}
+
+.bola {
+  font-weight: bold;
+}
+
+
+/* todas estas bolas te sirven para darles el color */
+.bola-b {
+  background: radial-gradient(circle at 50% 50%,
+      #ffffff 40%,
+      #DCC9A9 40%);
+}
+
+.bola-i {
+  background: radial-gradient(circle at 50% 50%,
+      #ffffff 40%,
+      #4E6851 40%);
+}
+
+.bola-n {
+  background: radial-gradient(circle at 50% 50%,
+      #ffffff 40%,
+      #4B848A 40%);
+}
+
+.bola-g {
+  background: radial-gradient(circle at 50% 50%,
+      #ffffff 40%,
+      #FBC359 40%);
+}
+
+.bola-o {
+  background: radial-gradient(circle at 50% 50%,
+      #ffffff 40%,
+      #E70103 40%);
+}
+
+.bola-black {
+  background: radial-gradient(circle at 50% 50%,
+      #ffffff 40%,
+      #BB3A2D 40%);
+}
+
+.bola:hover {
+  z-index: 2;
+  transform: scale(1.5);
+}
+
+@media screen and (max-width: 768px) {
+
+  .card-wrapper{
+    margin: 0;
+  }
+
+  .card-wrapper .swiper-slide-button{
+    display: none;
+  }
+
+}
