@@ -47,7 +47,7 @@ body {
   height: 12px;
   width: 12px;
   opacity: 0.5;
-  background: #96f;
+  background: #4B848A;
 }
 
 .swiper-pagination-bullet-active {
@@ -59,7 +59,11 @@ body {
   width: 300px;
   padding: 18px;
   justify-content: center;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0;
 }
+
 
 /* Celdas de la tabla */
 td,th {
@@ -84,9 +88,34 @@ td,th {
 }
 
 .bola {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  height: 50px;
+  width: 50px;
+  font-size: 1em;
   font-weight: bold;
+  text-align: center;
+  color: black;
+  text-shadow: 1px 1px 2px white;
+  margin: 0 auto;
+  box-shadow:
+    inset -4px -4px 8px rgba(0, 0, 0, 0.6),
+    /* sombra interna */
+    0 4px 10px rgba(0, 0, 0, 0.6);
+  /* sombra exterior */
+
 }
 
+
+
+table .bola {
+  height: 30px;
+  width: 30px;
+  font-size: 0.75em;
+}
 
 /* todas estas bolas te sirven para darles el color */
 .bola-b {
@@ -125,10 +154,42 @@ td,th {
       #BB3A2D 40%);
 }
 
-.bola:hover {
-  z-index: 2;
-  transform: scale(1.5);
+/* con estta colocas la linea blanca en las bolas */
+.bola::after {
+  content: "";
+  position: absolute;
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-sizing: border-box;
+  pointer-events: none;
 }
+
+.swiper-button-prev,
+.swiper-button-next{
+  position: relative;
+  width: 100px;
+}
+
+.swiper-pagination{
+  position: relative;
+  left: 0 !important;; 
+  transform: translateX(0) !important; 
+
+}
+
+
+
+.buttons-paginacion{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  gap: 20px;
+}
+
+
 
 @media screen and (max-width: 768px) {
 

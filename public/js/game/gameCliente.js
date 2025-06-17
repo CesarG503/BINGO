@@ -1,6 +1,7 @@
 // const wrapper = document.getElementById("wrapper");
 let posicion = 0
 const cardList = document.getElementById("cardList");
+const bolasSeleccionadas = []; //bolas seleccionadas por el usuario
 
 let tarjeta = [
   [
@@ -25,53 +26,88 @@ let tarjeta = [
     [66, 67, 68, 69, 70],
   ],
   [
-    [11, 12, 13, 14, 15],
-    [26, 27, 28, 29, 30],
-    [41, 42, "FREE", 44, 45],
-    [56, 57, 58, 59, 60],
-    [71, 72, 73, 74, 75],
-  ],
-  [
-    [11, 12, 13, 14, 15],
-    [26, 27, 28, 29, 30],
-    [41, 42, "FREE", 44, 45],
-    [56, 57, 58, 59, 60],
-    [71, 72, 73, 74, 75],
+    [6, 7, 8, 9, 10],
+    [21, 22, 23, 24, 25],
+    [36, 37, "FREE", 39, 40],
+    [51, 52, 53, 54, 55],
+    [66, 67, 68, 69, 70],
   ],
 ];
 
-tarjeta.forEach((arreglo) => {
-  renderCard(arreglo);
+for (let i = 0; i < tarjeta.length; i++) {
+  renderCard(tarjeta[i]);
   posicion++;
-});
+}
 
 function renderCard(arreglo) {
   const li = document.createElement("li");
   li.className = "card-item swiper-slide";
-  li.innerHTML = `
-    <div class="tablas-numeros text-center">
-      <h2 class="badge">Carton ${posicion + 1}</h2>
-      <div class="carton visible g-col-12 g-col-md-6 g-col-xl-4">
-        <table class="">
-          <thead>
-            <tr>
-              <th class="bola bola-b">B</th>
-              <th class="bola bola-i">I</th>
-              <th class="bola bola-n">N</th>
-              <th class="bola bola-g">G</th>
-              <th class="bola bola-o">O</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${arreglo.map(row => `<tr>${row.map(num => `<td>${num}</td>`).join('')}</tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
+
+  // contenedor general
+  const container = document.createElement("div");
+  container.className = "tablas-numeros text-center";
+
+  // título
+  const h2 = document.createElement("h2");
+  h2.className = "badge my-3";
+  h2.textContent = "Carton #" + (posicion + 1);
+  container.appendChild(h2);
+
+  // cartón visual
+  const carton = document.createElement("div");
+  carton.className = "carton visible g-col-12 g-col-md-6 g-col-xl-4";
+
+  // tabla
+  const table = document.createElement("table");
+  table.className = "tabla-numeros";
+
+  // THEAD
+  const thead = document.createElement("thead");
+  const trHead = document.createElement("tr");
+
+  const letras = ["b", "i", "n", "g", "o"];
+  const fondo = ['bg-primary-subtle', 'bg-success-subtle', 'bg-info-subtle', 'bg-warning-subtle', 'bg-danger-subtle'];
+  for (let i = 0; i < letras.length; i++) {
+    const th = document.createElement("th");
+    th.className =  fondo[i];
+    const div = document.createElement("div");
+    div.className = "bola bola-" + letras[i];
+
+    div.textContent = letras[i].toUpperCase();
+    th.appendChild(div);
+    trHead.appendChild(th);
+  }
+
+  thead.appendChild(trHead);
+  table.appendChild(thead);
+
+  // TBODY
+  const tbody = document.createElement("tbody");
+
+  for (let i = 0; i < arreglo.length; i++) {
+    const tr = document.createElement("tr");
+    for (let j = 0; j < arreglo[i].length; j++) {
+      const td = document.createElement("td");
+      const div = document.createElement("div");
+      div.className = "bola bola-g"; // puedes personalizar según columna
+      div.textContent = arreglo[i][j];
+      td.appendChild(div);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  carton.appendChild(table);
+  container.appendChild(carton);
+  li.appendChild(container);
   cardList.appendChild(li);
 }
 
+function colorBolita(numero){
+  
+
+}
 
 
 
@@ -97,7 +133,7 @@ new Swiper(".card-wrapper", {
     0: {
       slidesPerView: 1,
     },
-    790: {
+    700: {
       slidesPerView: 2,
     },
     1000: {
