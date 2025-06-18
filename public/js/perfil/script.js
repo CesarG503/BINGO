@@ -167,14 +167,4 @@ function guardarTexto(input) {
     input.replaceWith(span);
 }
 
-// ===============================
-// Acción del botón "Tienda"
-// ===============================
-const btnTienda = document.getElementById("botonTienda");
-
-btnTienda.addEventListener("click", function(event){
-    alert("la tienda va aqui");
-});
-
-
 

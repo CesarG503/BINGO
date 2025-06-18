@@ -1,19 +1,47 @@
 body {
+    height: 100vh;
     margin: 0;
-    background-color: #ffffff;
+    box-sizing: border-box;
 }
 
 :root {
-  --primary-color: #ffcc00;
-  --infor-color: #ff6666;
+  --primary-color: #FBC359;
+  --infor-color: #4B848A;
 }
 
 .profile-icon {
     position: fixed;
-    top: 20px;
+    top: 30px;
     right: 20px;
     z-index: 1050;
     cursor: pointer;
+}
+
+.logout {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1050;
+    cursor: pointer;
+
+    border: 0;
+    background-color: transparent;
+}
+
+.btn-custom.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+
+.logout-img{
+    width: 50px;
+    height: 50px;
+}
+
+.logout-img:hover{
+    transform: scale(1.1);
 }
 
 .profile-icon img {
@@ -29,8 +57,7 @@ body {
 
 .profile-icon img:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 14px rgba(255, 102, 102, 0.6);
-    border-color: var(--infor-color);
+    box-shadow: 0 10px 30px #FBC359;
 }
 
 .profile-panel {
@@ -45,7 +72,7 @@ body {
     z-index: 1040;
     padding: 1rem;
 
-    background: linear-gradient(135deg, #fff3e0, #ffd180, #ffab91);
+    background: linear-gradient(135deg, #17171f, #2d2d41);
 }
 
 .profile-panel.show {
@@ -63,40 +90,39 @@ body {
     height: 150px;
     object-fit: cover;
     border-radius: 50%;
-    border: 4px solid #ffcc00;
+    border: 4px solid var(--primary-color);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .profile-img:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(255, 102, 102, 0.6);
-    border-color: #ff6666;
+    box-shadow: 0 10px 30px #FBC359;
 }
 
 .bingo-button {
-    background: linear-gradient(45deg, #ffcc00, #ff6666);
-    color: rgb(188, 1, 1);
+    background: linear-gradient(135deg, #4E6851, #4B848A);
+    color: black;
     font-weight: bold;
     border-radius: 50px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .bingo-button:hover {
-    background: linear-gradient(45deg, #ffdd33, #ff8888);
-    color: black;
+        background: linear-gradient(135deg, #6a8d6e, #5fa7af);
+    color: white;
     transform: scale(1.05);
 }
 
 .editable-text {
     font-weight: bold;
-    color: #000000;
+    color: white;
     font-size: 15px;
 }
 
 .info-section label {
     font-weight: bold;
-    color: #ff6600;
+    color: #4B848A;
     margin-bottom: 5px;
 }
 
@@ -148,7 +174,7 @@ input.edit-input {
     top: 100%;
     right: 0;
     width: 250px;
-    background: linear-gradient(135deg, #fff3e0, #ffd180, #ffab91);
+    background: linear-gradient(135deg, #52526d, #2d2d41);
     z-index: 1060;
     border: 1px solid #ccc;
 }
@@ -167,4 +193,66 @@ input.edit-input {
 .preset-avatar:hover {
     transform: scale(1.05);
     border-color: #4B2EA1;
+}
+
+.layout-btn{
+    display: grid;
+    align-items: center ;
+    height: 100vh;
+}
+
+.btn-custom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1; /* cuadrado */
+  padding: 10px;
+  background: linear-gradient(135deg, #1f1f2e, #2d2d41);
+  color: white;
+  border-radius: 20px;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease-in-out;
+}
+
+.btn-custom:hover {
+  transform: scale(1.05);
+  color: rgb(255, 255, 255);
+}
+
+.btn-custom img {
+  width: 60%;
+  max-width: 100px;
+  height: auto;
+}
+
+.btn-custom span {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+  word-wrap: break-word;
+}
+
+.home:hover{
+    box-shadow: 0 10px 30px #FBC359;
+}
+.perfil:hover{
+    box-shadow: 0 10px 30px #4E6851;
+}
+.tienda:hover{
+    box-shadow: 0 10px 30px #4B848A;
+}
+.creditos:hover{
+    box-shadow: 0 10px 30px #bb3a2d;
+}
+.admin:hover{
+    box-shadow: 0 10px 30px #ffffff;
+}
+.logout:hover{
+    box-shadow: 0 10px 30px #E70103;
+}
+.cerrar:hover{
+    box-shadow: 0 10px 30px #E70103;
 }
