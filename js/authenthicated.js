@@ -8,7 +8,7 @@ export const authenticateToken = (req, res, next) => {
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
-  if (!token) return res.sendStatus(401);
+  if (!token) return res.redirect("/");
 
   jwt.verify(token, 'secret_key', (err, user) => {
     if (err){ 
@@ -18,7 +18,7 @@ export const authenticateToken = (req, res, next) => {
         return res.redirect('/'); // Redirige al login
       }
       consoole.log('User authenticated:')
-      return res.sendStatus(403);
+      return res.redirect('/');
     }
     req.user = user;
     next();

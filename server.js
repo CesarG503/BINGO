@@ -87,12 +87,17 @@ app.get('/', (req, res) => {
     // Si el usuario ya tiene un token, redirigir a la página de inicio
     return res.redirect('/index');
   }
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  res.sendFile(path.join(__dirname, 'src', 'login.html'));
 });
 
 //Colocar las rutas protegidas debajo de esta línea
 app.get('/index', authenticateToken, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'inicio.html'));
+  if(req.user.rol === 0){
+    res.sendFile(path.join(__dirname, 'src', 'admin_menu.html'));
+  }
+  else if(req.user.rol === 1){
+    res.sendFile(path.join(__dirname, 'src', 'home.html'));
+  }
 });
 
 app.get('/tienda', authenticateToken, (req, res) => {
