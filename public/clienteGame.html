@@ -3,9 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BINGO</title>
+
+  <!-- CDN SWRIPER -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library@master/dist/css/sci-fi.css">
+  <link rel="stylesheet" href="./css/gameCliente.css">
+  <title>Document</title>
 </head>
 <body>
-   
+
+  <nav class=" navbar bg-secondary-subtle-neon estilo-brillo border-1" >
+    <div class="navbar-header justify-content-between">
+        <div class="navbar-brand">
+          Retro Sci-Fi
+        </div>
+        <div>
+          <h2 class="badge">329-213</h2>
+        </div>
+    </div>
+
+</nav>
+<!-- 
+  <nav class="navbar bg-secondary estilo-brillo border border-secondary hover-neon rounded-3 px-3 py-2 d-flex justify-content-between align-items-center position-sticky top-0 z-3">
+  
+    Marca y Logo 
+    <div class="row align-items-center justify-content-around gap-3">
+      <span class="navbar-brand fs-4 fw-bold text-white">Bingo</span>
+      <h2 class="badge">329-213</h2>
+    </div>
+  </nav> -->
+
+  <div class="container-fluid mt-3" style="padding: 0;">
+    <div class=" swiper ">
+      <div class="card-wrapper mx-auto border border-info border-neon-complete ">
+        <ul class="card-list swiper-wrapper " id="cardList">
+  
+        </ul>
+      </div>
+      
+    </div>
+    <div class="buttons-paginacion">
+        <!-- If we need pagination -->
+     <div class="swiper-pagination"></div>
+    </div>
+     <!-- If we need navigation buttons -->
+    <div class="buttons-paginacion">
+
+  <!-- If we need navigation buttons -->
+  <div class="swiper-button-prev"></div>
+  <div class="swiper-button-next"></div>
+    </div>
+          
+  </div>
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <script src="./js/game/gameCliente.js" type="module"></script>
 </body>
 </html>
