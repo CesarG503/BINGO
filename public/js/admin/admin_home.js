@@ -1,7 +1,7 @@
-const form_create_room = document.getElementById("create-room-form");
+const form_create_room = document.getElementById("btn-create-room");
 const btnUnirse = document.getElementById("btn-unirse");
 
-form_create_room.addEventListener("submit", createRoom);
+form_create_room.addEventListener("click", createRoom);
 btnUnirse.addEventListener("click", unirseSala);
 
 async function createRoom(event) {

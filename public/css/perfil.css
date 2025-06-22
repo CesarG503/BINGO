@@ -260,7 +260,6 @@ input.edit-input {
 /*--------- Aqui voy a colocar el diseño de la sala para unirse al game para usar los mismos diseños ------ */
 
 .sala {
-  height: 100vh;
   padding: 20px;
   display: flex;
   flex-direction: column;
