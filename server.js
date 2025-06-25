@@ -16,6 +16,7 @@ const cartonUsuarioRouter = require("./js/crud/carton_usuario")
 const nodemiler = require('nodemailer');
 const crypto = require("crypto")
 const { Email } = require('./js/email/email');
+const {validarCarton} = require('./js/bingo_validate');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -348,6 +349,16 @@ io.on('connection', (socket) => {
     }
 
     io.to(data.id_room).emit('nuevoNumero', data.extraido);
+  });
+
+  socket.on('callBingo', (data) => {
+    // Validar el cartón del usuario
+    const isValid = validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
+    if (!isValid) {
+      return socket.emit('errorCarton', 'Cartón inválido o no hay bingo');
+    }
+
+    io.to(data.id_room).emit('bingoLlamado', data);
   });
 
   // Manejar eventos de desconexion
