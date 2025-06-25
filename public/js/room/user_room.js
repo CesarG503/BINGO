@@ -353,8 +353,6 @@ async function renderUsuariosEnSala(id_room) {
   const jugadores_content = document.getElementById("jugadores_content");
   jugadores_content.innerHTML = "" // Limpiar la lista antes de renderizar
 
-  const clasesHover = ["home", "perfil", "tienda", "creditos", "admin", "logout", "cerrar"];
-
   usuarios.forEach((usuario) => {
 
     const cuadro_jugador = document.createElement("div");
@@ -362,10 +360,8 @@ async function renderUsuariosEnSala(id_room) {
     const img = document.createElement("img");
     const span = document.createElement("span");
 
-    const claseAleatoria = clasesHover[Math.floor(Math.random() * clasesHover.length)];
-
     cuadro_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2");
-    datos_jugador.classList.add("btn-custom", "w-100", "home", claseAleatoria);
+    datos_jugador.classList.add("btn-custom", "w-100", "perfil");
     
 
     img.src=`https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`
@@ -375,6 +371,8 @@ async function renderUsuariosEnSala(id_room) {
     datos_jugador.appendChild(span);
     cuadro_jugador.appendChild(datos_jugador);
     jugadores_content.appendChild(cuadro_jugador);
+
+    
   })
 }
 
