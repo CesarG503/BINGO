@@ -9,6 +9,13 @@ export const btnNuevoNumero = document.getElementById("btn-new-number")
 const jugadores = document.getElementById("n-jugadores")
 const controles = document.getElementById("game-controls")
 const lobby = document.getElementById("waiting-room")
+const fondo = [
+  "bg-primary",
+  "bg-success",
+  "bg-info",
+  "bg-warning",
+  "bg-danger",
+];
 
 let socket
 
@@ -200,4 +207,153 @@ async function inicializar() {
   }
 }
 
+// Escuchar el botón
+// Evento principal
+document.getElementById('btnGanador').addEventListener('click', () => {
+  // Datos de ejemplo
+  const arreglo = [
+    [11, 26, 41, 56, 71],
+    [12, 27, 42, 57, 72],
+    [13, 28, "FREE", 58, 73],
+    [14, 29, 44, 59, 74],
+    [15, 30, 45, 60, 75],
+  ];
+  const numerosSeleccionados = [13, 28, 58, 74, 75, 11, 73, 26, 27, 29, 30];
+  const numerosGanadores = [15,29,57,71];
+
+  jugadorGanador('Juan', arreglo, numerosSeleccionados, numerosGanadores);
+});
+
+
+// Mostrar alerta de ganador
+function jugadorGanador(nombre, carton, numerosSeleccionados, numerosGanadores = []) {
+  Swal.fire({
+    title: "<strong>🎉 ¡Bingo! 🎉</strong>",
+    width: 700,
+    padding: "2.5em",
+    background: "#1A1A1A",
+    color: "#fff",
+    html: `
+      <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
+        <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/3"
+             alt="Ganador"
+             style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
+        <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>
+        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${nombre}</h1>
+        <div id="carton-render"></div>
+      </div>
+    `,
+    showCloseButton: true,
+    showConfirmButton: false,
+    didOpen: () => {
+      const contenedor = document.getElementById("carton-render");
+      // Pintar el cartón del ganador
+      const cartonHTML = generarCartonHTML(carton, 0, numerosSeleccionados, numerosGanadores);
+      contenedor.appendChild(cartonHTML);
+    },
+  });
+}
+
+
+// Crear el HTML del cartón
+function generarCartonHTML(cartonData, index = 0, numerosSeleccionados = [], numerosGanadores = []) {
+  const container = document.createElement("div");
+  container.className = "tablas-numeros text-center";
+  container.id = "carton-" + (index + 1);
+
+  const carton = document.createElement("div");
+  carton.className = "carton visible g-col-12 g-col-md-6 g-col-xl-4";
+  carton.style.width = "100%";
+
+  const table = document.createElement("table");
+  table.className = "tabla-numeros";
+  table.style.width = "100%";
+
+  const letras = ["b", "i", "n", "g", "o"];
+
+  // Encabezado
+  const thead = document.createElement("thead");
+  const trHead = document.createElement("tr");
+
+  for (let i = 0; i < letras.length; i++) {
+    const th = document.createElement("th");
+    th.className = fondo[i] || ""; // Por si fondo[i] no existe
+    const div = document.createElement("div");
+    div.className = "bola bola-" + letras[i];
+    div.textContent = letras[i].toUpperCase();
+    th.appendChild(div);
+    trHead.appendChild(th);
+  }
+
+  thead.appendChild(trHead);
+  table.appendChild(thead);
+
+  // Cuerpo de tabla
+  const tbody = document.createElement("tbody");
+  for (let i = 0; i < cartonData.length; i++) {
+    const tr = document.createElement("tr");
+    for (let j = 0; j < cartonData[i].length; j++) {
+      const td = document.createElement("td");
+      const valor = cartonData[i][j];
+      td.textContent = valor;
+      td.setAttribute("data-valor", valor);
+      td.className = "seleccionable";
+
+      // Estilo si fue seleccionado
+      if (numerosSeleccionados.includes(valor)) {
+        td.style.backgroundColor = "#F9F2F2";
+        td.style.color = "black";
+        td.style.fontWeight = "bold";
+      }
+
+      // Pintar "FREE" al centro (3,3)
+      if (valor === "FREE") {
+        td.style.backgroundColor = "#F9F2F2";
+        td.style.color = "black";
+        td.style.fontWeight = "bold";
+      }
+
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+
+  table.appendChild(tbody);
+  carton.appendChild(table);
+  container.appendChild(carton);
+
+  // Pintar ganadores
+  pintarGanadores(container, numerosGanadores);
+
+  return container;
+}
+
+
+function pintarGanadores(cartonElement, numerosGanadores = []) {
+  const celdas = cartonElement.querySelectorAll("td[data-valor]");
+
+  celdas.forEach((td) => {
+    const valor = td.getAttribute("data-valor");
+
+    // Pintar si el valor está en los ganadores
+    if (valor !== "FREE" && numerosGanadores.includes(Number(valor))) {
+      td.style.backgroundColor = "orange";
+      td.style.color = "black";
+      td.style.fontWeight = "bold";
+      td.style.border = "2px solid #333";
+    }
+
+    // Pintar "FREE" solo si hay 4 ganadores (FREE completa la línea)
+    if (valor === "FREE" && numerosGanadores.length === 4) {
+      td.style.backgroundColor = "orange";
+      td.style.color = "black";
+      td.style.fontWeight = "bold";
+      td.style.border = "2px solid #333";
+    }
+  });
+}
+
+
+    
+    
 inicializar()
