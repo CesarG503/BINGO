@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
     <script src="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/js/retrosci-fi.js" defer></script>
     <link rel="stylesheet" href="/css/perfil.css">
+    <link rel="stylesheet" href="/css/tienda.css">
 
 </head>
 
@@ -18,11 +19,6 @@
 
     <button class="btn-custom logout" onclick="logout()" style="max-width: 75px;"><img src="/img/logout.png"
             alt="Logout"></button>
-
-    <!-- Imagen de perfil flotante -->
-    <div class="profile-icon" onclick="toggleProfilePanel()" id="imagenPequeña">
-        <img src="" alt="Perfil" id="mainProfileImg">
-    </div>
 
     <div class="container layout-btn">
         <div class="row g-2 justify-content-center">
@@ -47,7 +43,9 @@
 
 
 
-        <!-- Panel deslizante de perfil -->
+    <!--BORON PERFIL -->
+    <div class="profile-icon" onclick="toggleProfilePanel()" id="imagenPequeña"></div>
+     <!--FIN DE PERFIL-->
     <div class="profile-panel" id="profilePanel">
         <div class="row align-items-center">
             <div class="col">
@@ -64,8 +62,8 @@
         </div>
 
         <div class="profile-img-container">
-            <div class="d-flex justify-content-center">
-                <img src="" alt="" class="profile-img" id="mainProfileImg2">
+            <div class="d-flex justify-content-center" id="imgUse">
+                <!-- La imagen se carga dinámicamente -->
             </div>
             <div class="text-center" style="padding-top: 5px;">
                 <button class="btn bingo-button px-4 py-2 estilo-brillo" onclick="toggleImageDropdown()">
@@ -73,10 +71,9 @@
                 </button>
             </div>
 
-            <!-- donde se crea el menu de imagenes -->
             <div id="imageDropdown" class="image-selector shadow p-3 rounded bg-white" style="display: none;">
                 <div class="d-flex flex-wrap gap-2 justify-content-center" id="listImgs">
-
+                    <!-- Las imágenes se generan dinámicamente -->
                 </div>
             </div>
 
@@ -92,7 +89,7 @@
         <div class="info-section">
             <label>Username:</label>
             <div class="d-flex align-items-center">
-                <span id="username" class="editable-text me-2">jenny_w</span>
+                <span id="username" class="editable-text me-2">U</span>
                 <button class="bingo-button edit-inline-btn estilo-brillo" onclick="hacerEditable('username')">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
@@ -114,8 +111,8 @@
                 <i class="bi bi-save-fill me-2"></i>Guardar cambios
             </button>
         </div>
-
     </div>
+    <!--FIN DE PERFIL-->
 
     <script type="module" src="./js/admin/admin_home.js"></script>
     <script src="/js/perfil/script.js" defer></script>
