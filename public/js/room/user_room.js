@@ -1,5 +1,5 @@
 import getCookieValue from "/js/util/get_cookie.js"
-import { io } from "socket.io-client"
+
 
 const btnAbandonar = document.getElementById("btn-abandonar-sala")
 const espera = document.getElementById("espera")
@@ -348,20 +348,33 @@ async function renderUsuariosEnSala(id_room) {
     return
   }
 
+
   const jugadores = document.getElementById("jugadores")
-  jugadores.innerHTML = "" // Limpiar la lista antes de renderizar
+  const jugadores_content = document.getElementById("jugadores_content");
+  jugadores_content.innerHTML = "" // Limpiar la lista antes de renderizar
+
+  const clasesHover = ["home", "perfil", "tienda", "creditos", "admin", "logout", "cerrar"];
 
   usuarios.forEach((usuario) => {
-    const playerDiv = document.createElement("div")
-    playerDiv.className = "player-item fade-in"
 
-    playerDiv.innerHTML = `
-            <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}" 
-                 alt="${usuario.username}" class="player-avatar">
-            <p class="player-name">${usuario.username}</p>
-        `
+    const cuadro_jugador = document.createElement("div");
+    const datos_jugador = document.createElement("a");
+    const img = document.createElement("img");
+    const span = document.createElement("span");
 
-    jugadores.appendChild(playerDiv)
+    const claseAleatoria = clasesHover[Math.floor(Math.random() * clasesHover.length)];
+
+    cuadro_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2");
+    datos_jugador.classList.add("btn-custom", "w-100", "home", claseAleatoria);
+    
+
+    img.src=`https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`
+    span.textContent = usuario.username;
+
+    datos_jugador.appendChild(img);
+    datos_jugador.appendChild(span);
+    cuadro_jugador.appendChild(datos_jugador);
+    jugadores_content.appendChild(cuadro_jugador);
   })
 }
 

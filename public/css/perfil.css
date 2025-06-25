@@ -1,7 +1,10 @@
 body {
-  height: 100vh;
-  margin: 0;
-  box-sizing: border-box;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+    height: 100vh;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 :root {
