@@ -1,6 +1,4 @@
 import getCookieValue from "/js/util/get_cookie.js"
-
-
 const btnAbandonar = document.getElementById("btn-abandonar-sala")
 const espera = document.getElementById("espera")
 const tablero = document.getElementById("tablero")
@@ -23,6 +21,51 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     return
   }
 })
+
+// Agregar esta función después de loadSelectedCartones
+async function saveCartonesToPartida(id_room) {
+  if (selectedCartones.length === 0) return
+
+  try {
+    const response = await fetch(`/api/partidas/${id_room}/usuario/cartones`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id_cartones: selectedCartones,
+      }),
+    })
+
+    if (response.ok) {
+      console.log("Cartones guardados en la partida")
+    }
+  } catch (error) {
+    console.error("Error guardando cartones en la partida:", error)
+  }
+}
+
+// Agregar esta función para cargar cartones desde la partida
+async function loadCartonesFromPartida(id_room) {
+  try {
+    const response = await fetch(`/api/partidas/${id_room}/usuario/cartones`, {
+      credentials: "include",
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.id_cartones && data.id_cartones.length > 0) {
+        selectedCartones = data.id_cartones
+        await displaySelectedCartones()
+        return true
+      }
+    }
+  } catch (error) {
+    console.error("Error cargando cartones de la partida:", error)
+  }
+  return false
+}
 
 async function unirseSala() {
   const token = getCookieValue("token")
@@ -51,13 +94,21 @@ async function unirseSala() {
 
   const registrado = await usuarioRegistrado(sala.id_partida)
 
-
   if (sala.estado === 1 && registrado) {
+    // Si la partida ya comenzó, cargar cartones desde la BD
+    const cartonesLoaded = await loadCartonesFromPartida(sala.id_partida)
+    if (!cartonesLoaded) {
+      // Si no hay cartones guardados, cargar desde localStorage
+      await loadSelectedCartones()
+    }
     activarControles(sala.id_partida)
   } else if (sala.estado !== 0) {
     alert("La sala ya ha comenzado o ya finalizo.")
     window.location.href = "/"
     return
+  } else {
+    // Cargar cartones desde localStorage para sala en espera
+    await loadSelectedCartones()
   }
 
   const registro = await registrarseSala(sala.id_partida)
@@ -67,7 +118,7 @@ async function unirseSala() {
     return
   }
 
-  socket = io({ auth: { token } }) 
+  socket = io({ auth: { token } }) // Usar la variable global
   socket.emit("unirseSala", sala.id_partida)
 
   if (registro.registrado) {
@@ -92,7 +143,9 @@ async function unirseSala() {
     renderUsuariosEnSala(sala.id_partida)
   })
 
-  socket.on("inicioSala", () => {
+  socket.on("inicioSala", async () => {
+    // Guardar cartones en la BD cuando inicie la partida
+    await saveCartonesToPartida(sala.id_partida)
     activarControles(sala.id_partida)
   })
 
@@ -100,7 +153,6 @@ async function unirseSala() {
     renderNuevoNumero(numero)
   })
 
-  await loadSelectedCartones()
   renderUsuariosEnSala(sala.id_partida)
 }
 
@@ -348,31 +400,33 @@ async function renderUsuariosEnSala(id_room) {
     return
   }
 
+  console.log("Usuarios recibidos para renderizar:", usuarios)
 
-  const jugadores = document.getElementById("jugadores")
-  const jugadores_content = document.getElementById("jugadores_content");
+  // Usar el contenedor correcto para los jugadores
+  const jugadores_content = document.getElementById("jugadores_content")
+  if (!jugadores_content) {
+    console.error('No se encontró el contenedor con id "jugadores_content" en el DOM.')
+    return
+  }
   jugadores_content.innerHTML = "" // Limpiar la lista antes de renderizar
 
   usuarios.forEach((usuario) => {
+    const cuadro_jugador = document.createElement("div")
+    const datos_jugador = document.createElement("a")
+    const img = document.createElement("img")
+    const span = document.createElement("span")
 
-    const cuadro_jugador = document.createElement("div");
-    const datos_jugador = document.createElement("a");
-    const img = document.createElement("img");
-    const span = document.createElement("span");
+    cuadro_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2")
+    datos_jugador.classList.add("btn-custom", "w-100", "perfil")
 
-    cuadro_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2");
-    datos_jugador.classList.add("btn-custom", "w-100", "perfil");
-    
+    img.src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`
+    img.alt = usuario.username
+    span.textContent = usuario.username
 
-    img.src=`https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`
-    span.textContent = usuario.username;
-
-    datos_jugador.appendChild(img);
-    datos_jugador.appendChild(span);
-    cuadro_jugador.appendChild(datos_jugador);
-    jugadores_content.appendChild(cuadro_jugador);
-
-    
+    datos_jugador.appendChild(img)
+    datos_jugador.appendChild(span)
+    cuadro_jugador.appendChild(datos_jugador)
+    jugadores_content.appendChild(cuadro_jugador)
   })
 }
 
@@ -393,7 +447,6 @@ async function renderNumerosLlamados(id_room) {
 
 async function renderNuevoNumero(numero) {
   numeroActual.textContent = numero
-
 
   const span = document.createElement("span")
   span.className = "called-number"
@@ -419,7 +472,7 @@ async function abandonarSala() {
     socket.emit("abandonarSala", idRoom.textContent)
     socket.disconnect()
     alert("Has abandonado la sala.")
-    window.location.href = "/index" 
+    window.location.href = "/index"
   } else {
     console.error("No se pudo abandonar la sala")
   }

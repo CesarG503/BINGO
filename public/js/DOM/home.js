@@ -1,5 +1,79 @@
+let activeGames = []
+
+// Función para cargar partidas activas
+async function loadActiveGames() {
+  try {
+    const response = await fetch("/api/partidas/usuario/activas", {
+      credentials: "include",
+    })
+
+    if (response.ok) {
+      activeGames = await response.json()
+      renderActiveGamesButton()
+    }
+  } catch (error) {
+    console.error("Error loading active games:", error)
+  }
+}
+
+function renderActiveGamesButton() {
+  const container = document.querySelector(".layout-btn .row")
+
+  const existingBtn = document.getElementById("resume-game-btn")
+  if (existingBtn) {
+    existingBtn.remove()
+  }
+
+  if (activeGames.length > 0) {
+    const resumeBtn = document.createElement("div")
+    resumeBtn.id = "resume-game-btn"
+    resumeBtn.className = "col-6 col-sm-4 col-md-3 col-lg-2"
+    resumeBtn.innerHTML = `
+            <a class="btn-custom w-100 admin" onclick="showActiveGames()">
+                <img src="./img/iniciar.png" alt="Reanudar">
+                <span>Reanudar Partida</span>
+            </a>
+        `
+    const tiendaBtn = container.children[1] 
+    container.insertBefore(resumeBtn, tiendaBtn.nextSibling)
+  }
+}
+
+async function showActiveGames() {
+  if (activeGames.length === 1) {
+    resumeGame(activeGames[0].id_partida)
+    return
+  }
+  const options = activeGames.map((game) => ({
+    text: `Partida ${game.id_partida}`,
+    value: game.id_partida,
+  }))
+
+  const { value: selectedGame } = await Swal.fire({
+    title: "Selecciona una partida",
+    input: "select",
+    inputOptions: options.reduce((obj, option) => {
+      obj[option.value] = option.text
+      return obj
+    }, {}),
+    inputPlaceholder: "Selecciona una partida",
+    showCancelButton: true,
+    confirmButtonText: "Reanudar",
+    cancelButtonText: "Cancelar",
+  })
+
+  if (selectedGame) {
+    resumeGame(selectedGame)
+  }
+}
+
+function resumeGame(gameId) {
+  localStorage.removeItem("selectedCartones")
+  window.location.href = `/room/user/${gameId}`
+}
+
 const roomId = document.getElementById("room-id")
-const btnJoinRoom = document.getElementById("btn-unirse")
+const btnJoinRoom = document.getElementById("joinRoomBtn") 
 const cartonesSection = document.getElementById("cartonesSection")
 const layoutBtn = document.querySelector(".layout-btn")
 
@@ -240,5 +314,12 @@ function updateSelectedCount() {
   }
 }
 
-// Hacer las funciones globales para que puedan ser llamadas desde el HTML
+// Cargar partidas activas cuando se carga la página
+document.addEventListener("DOMContentLoaded", () => {
+  loadActiveGames()
+})
+
+// Hacer las funciones globales
 window.toggleCartonSelection = toggleCartonSelection
+window.showActiveGames = showActiveGames
+window.resumeGame = resumeGame

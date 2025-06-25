@@ -32,10 +32,10 @@
                 <input type="text" class="room-id" id="room-id" placeholder="Ingrese ID de la sala">
             </div>
             <div id="btn-unirse" class="col-6 col-sm-4 col-md-3 col-lg-2 btn-unirse">
-                <a type="button" class="btn-custom w-100 home" id="joinRoomBtn">
+                <button type="button" class="btn-custom w-100 home" id="joinRoomBtn">
                     <img src="./img/home.png" alt="Home">
                     <span>Unirme</span>
-                </a>
+                </button>
             </div>
             <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                 <a href="/tienda" class="btn-custom w-100 tienda">
@@ -145,6 +145,15 @@
         </div>
 
     </div>
+    <script>
+document.addEventListener('DOMContentLoaded', async () => {
+    setTimeout(async () => {
+        if (typeof loadActiveGames === 'function') {
+            await loadActiveGames();
+        }
+    }, 1000);
+});
+</script>
     <script type="module" src="/js/DOM/home.js"></script>
     <script src="/js/perfil/script.js" defer></script>
     <script src="/js/perfil/perfil.js"></script>

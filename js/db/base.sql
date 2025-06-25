@@ -29,6 +29,7 @@ CREATE TABLE partida_usuario (
     id_usuario INT NOT NULL REFERENCES Usuarios(id_usuario),
     id_partida VARCHAR(20) NOT NULL REFERENCES Partidas(id_partida)
 );
+ALTER TABLE partida_usuario ADD COLUMN id_cartones JSON DEFAULT '[]';
 
 CREATE TABLE carton_usuario (
     id_carton_usuario SERIAL PRIMARY KEY,
