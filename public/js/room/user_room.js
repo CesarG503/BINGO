@@ -1,252 +1,423 @@
-import getCookieValue from '/js/util/get_cookie.js';
+import getCookieValue from "/js/util/get_cookie.js"
+import { io } from "socket.io-client"
 
-const btnAbandonar = document.getElementById('btn-abandonar-sala');
-const espera = document.getElementById('espera');
-const tablero = document.getElementById('tablero');
-const numerosLlamados = document.getElementById('numeros-llamados');
-const numeroActual = document.getElementById('numero-actual');
+const btnAbandonar = document.getElementById("btn-abandonar-sala")
+const espera = document.getElementById("espera")
+const tablero = document.getElementById("tablero")
+const numerosLlamados = document.getElementById("numeros-llamados")
+const numeroActual = document.getElementById("numero-actual")
+const idRoom = document.getElementById("idRoom")
 
-let socket;
+let socket
+let selectedCartones = []
 
-btnAbandonar.addEventListener('click', () => {
-    abandonarSala();
-});
+btnAbandonar.addEventListener("click", () => {
+  abandonarSala()
+})
 
 document.addEventListener("DOMContentLoaded", async (event) => {
-    const sala = await getSala(idRoom.textContent);
-    if(!sala){
-        console.error("No se pudo obtener la salaaaaa");
-        window.location.href = '/';
-        return;
-    }
-});
+  const sala = await getSala(idRoom.textContent)
+  if (!sala) {
+    console.error("No se pudo obtener la sala")
+    window.location.href = "/"
+    return
+  }
+})
 
-async function unirseSala(){
-    const idRoom = document.getElementById('idRoom');
-    const token = getCookieValue("token");
-    if(!token){
-        alert("Error inesperado, no posees un usuario valido.");
-        return;
-    }
-    //Validaciones del usuario
-    const usuario = await getUsuario();
-    if(!usuario){
-        console.error("No se pudo obtener el usuario actual");
-        return;
-    }
+async function unirseSala() {
+  const token = getCookieValue("token")
+  if (!token) {
+    alert("Error inesperado, no posees un usuario valido.")
+    return
+  }
+  const usuario = await getUsuario()
+  if (!usuario) {
+    console.error("No se pudo obtener el usuario actual")
+    return
+  }
 
-    //Validaciones de la sala
-    const sala = await getSala(idRoom.textContent);
+  const sala = await getSala(idRoom.textContent)
 
-    if(!sala){
-        console.error("No se pudo obtener la sala");
-        window.location.href = '/';
-        return;
-    }
+  if (!sala) {
+    console.error("No se pudo obtener la sala")
+    window.location.href = "/"
+    return
+  }
 
-    //Validacion si el usuario es el host
-    if(sala.host == usuario.id_usuario){
-        window.location.href = `/room/host/${sala.id_partida}`;
-        return;
-    }
+  if (sala.host == usuario.id_usuario) {
+    window.location.href = `/room/host/${sala.id_partida}`
+    return
+  }
 
-    const registrado = await usuarioRegistrado(sala.id_partida);
+  const registrado = await usuarioRegistrado(sala.id_partida)
 
-    //Validacion del estado de la sala
-    if(sala.estado === 1 && registrado){
-        activarControles(sala.id_partida);
-    }
-    else if(sala.estado !== 0){
-        alert("La sala ya ha comenzado o ya finalizo.");
-        window.location.href = '/';
-        return;
-    }
 
-    //Registrando al usuario en la sala si no está registrado
-    const registro = await registrarseSala(sala.id_partida);
+  if (sala.estado === 1 && registrado) {
+    activarControles(sala.id_partida)
+  } else if (sala.estado !== 0) {
+    alert("La sala ya ha comenzado o ya finalizo.")
+    window.location.href = "/"
+    return
+  }
 
-    if(!registro){
-        console.error("Error al registrarse en la sala");
-        return;
-    }
+  const registro = await registrarseSala(sala.id_partida)
 
-    socket = io({auth: {token}});
-    socket.emit('unirseSala', sala.id_partida);
+  if (!registro) {
+    console.error("Error al registrarse en la sala")
+    return
+  }
 
-    if(registro.registrado){
-        socket.emit('nuevoUsuario',{
-            id_room: sala.id_partida,
-            username: usuario.username,
-            img_id: usuario.img_id,
-        });
-    }
+  socket = io({ auth: { token } }) 
+  socket.emit("unirseSala", sala.id_partida)
 
-    socket.on('salaEliminada', (err) => {
-        alert("La sala ha sido cerrada por el administrador.");
-        socket.disconnect();
-        window.location.href = '/';
-    });
+  if (registro.registrado) {
+    socket.emit("nuevoUsuario", {
+      id_room: sala.id_partida,
+      username: usuario.username,
+      img_id: usuario.img_id,
+    })
+  }
 
-    socket.on('nuevoUsuario', (data) => {
-        renderUsuariosEnSala(sala.id_partida);
-    });
+  socket.on("salaEliminada", (err) => {
+    alert("La sala ha sido cerrada por el administrador.")
+    socket.disconnect()
+    window.location.href = "/"
+  })
 
-    socket.on('usuarioAbandono', () => {
-        renderUsuariosEnSala(sala.id_partida);
-    });
+  socket.on("nuevoUsuario", (data) => {
+    renderUsuariosEnSala(sala.id_partida)
+  })
 
-    socket.on('inicioSala', () => {
-        activarControles(sala.id_partida);
-    });
+  socket.on("usuarioAbandono", () => {
+    renderUsuariosEnSala(sala.id_partida)
+  })
 
-    socket.on('nuevoNumero',(numero) =>{
-        renderNuevoNumero(numero);
-    });
+  socket.on("inicioSala", () => {
+    activarControles(sala.id_partida)
+  })
 
-    renderUsuariosEnSala(sala.id_partida);
+  socket.on("nuevoNumero", (numero) => {
+    renderNuevoNumero(numero)
+  })
+
+  await loadSelectedCartones()
+  renderUsuariosEnSala(sala.id_partida)
 }
 
-async function getUsuario(){
-    const response = await fetch(`/api/usuarios/actual`);
-
-    if (!response.ok) {
-        console.log("Error al obtener el usuario actual");
-        return;
-    }
-
-    return await response.json();
+async function loadSelectedCartones() {
+  const storedCartones = localStorage.getItem("selectedCartones")
+  if (storedCartones) {
+    selectedCartones = JSON.parse(storedCartones)
+    await displaySelectedCartones()
+  }
 }
 
-async function getSala(id_room){
-    const response = await fetch(`/api/partidas/${id_room}`);
+async function displaySelectedCartones() {
+  if (selectedCartones.length === 0) return
 
-    if (!response.ok) {
-        console.error("Error al obtener la sala");
-        return;
+  try {
+    const cartonesData = []
+    for (const cartonId of selectedCartones) {
+      const response = await fetch(`/api/cartones/${cartonId}`, {
+        credentials: "include",
+      })
+      if (response.ok) {
+        const cartonData = await response.json()
+        cartonesData.push(cartonData)
+      }
     }
 
-    return await response.json();
+    renderSelectedCartones(cartonesData)
+    renderGameCartones(cartonesData)
+  } catch (error) {
+    console.error("Error loading selected cartones:", error)
+  }
 }
 
-//Valida que el usuario esté registrado en la sala
-async function usuarioRegistrado(id_room){
-    const response = await fetch(`/api/partidas/${id_room}/registrado`);
+function renderSelectedCartones(cartonesData) {
+  const container = document.getElementById("selectedCartonesDisplay")
 
-    if (!response.ok) {
-        console.error("Error al verificar si el usuario es miembro de la sala");
-        return false;
-    }
+  if (cartonesData.length === 0) {
+    container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                <p class="text-white">No hay cartones seleccionados</p>
+            </div>
+        `
+    return
+  }
 
-    const data = await response.json();
-    return data.registrado;
+  container.innerHTML = cartonesData
+    .map((cartonData, index) => {
+      let carton
+      if (Array.isArray(cartonData.carton)) {
+        carton = cartonData.carton
+      } else if (typeof cartonData.carton === "string") {
+        try {
+          carton = JSON.parse(cartonData.carton)
+        } catch (e) {
+          console.error("Error parsing carton JSON:", e)
+          carton = []
+        }
+      } else {
+        carton = []
+      }
+
+      return `
+                <div class="carton-preview fade-in">
+                    <div class="text-center mb-2">
+                        <h6 class="text-white mb-1">Cartón #${index + 1}</h6>
+                        <small class="text-muted">ID: ${cartonData.id_carton}</small>
+                    </div>
+                    
+                    <table class="bingo-table-preview">
+                        <thead>
+                            <tr>
+                                <th class="bingo-cell-preview bingo-header-preview">B</th>
+                                <th class="bingo-cell-preview bingo-header-preview">I</th>
+                                <th class="bingo-cell-preview bingo-header-preview">N</th>
+                                <th class="bingo-cell-preview bingo-header-preview">G</th>
+                                <th class="bingo-cell-preview bingo-header-preview">O</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${
+                              Array.isArray(carton)
+                                ? carton
+                                    .map(
+                                      (row) => `
+                                    <tr>
+                                        ${
+                                          Array.isArray(row)
+                                            ? row
+                                                .map(
+                                                  (cell) => `
+                                                <td class="bingo-cell-preview">${cell === null ? "FREE" : cell}</td>
+                                            `,
+                                                )
+                                                .join("")
+                                            : ""
+                                        }
+                                    </tr>
+                                `,
+                                    )
+                                    .join("")
+                                : ""
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            `
+    })
+    .join("")
 }
 
-async function registrarseSala(id_room){
-    const response = await fetch(`/api/partidas/${id_room}/registrarse`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
+function renderGameCartones(cartonesData) {
+  const container = document.getElementById("gameCartonesDisplay")
 
-    if (!response.ok) {
-        console.error("Error al registrarse en la sala");
-        return;
-    }
+  container.innerHTML = cartonesData
+    .map((cartonData, index) => {
+      let carton
+      if (Array.isArray(cartonData.carton)) {
+        carton = cartonData.carton
+      } else if (typeof cartonData.carton === "string") {
+        try {
+          carton = JSON.parse(cartonData.carton)
+        } catch (e) {
+          console.error("Error parsing carton JSON:", e)
+          carton = []
+        }
+      } else {
+        carton = []
+      }
 
-    return await response.json();
+      return `
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="carton-preview">
+                        <div class="text-center mb-3">
+                            <h5 class="text-white mb-1">Cartón #${index + 1}</h5>
+                            <small class="text-muted">ID: ${cartonData.id_carton}</small>
+                        </div>
+                        
+                        <table class="bingo-table w-100">
+                            <thead>
+                                <tr>
+                                    <th class="bingo-cell bingo-header">B</th>
+                                    <th class="bingo-cell bingo-header">I</th>
+                                    <th class="bingo-cell bingo-header">N</th>
+                                    <th class="bingo-cell bingo-header">G</th>
+                                    <th class="bingo-cell bingo-header">O</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${
+                                  Array.isArray(carton)
+                                    ? carton
+                                        .map(
+                                          (row) => `
+                                        <tr>
+                                            ${
+                                              Array.isArray(row)
+                                                ? row
+                                                    .map(
+                                                      (cell) => `
+                                                    <td class="bingo-cell selectable-cell" data-number="${cell}">${cell === null ? "FREE" : cell}</td>
+                                                `,
+                                                    )
+                                                    .join("")
+                                                : ""
+                                            }
+                                        </tr>
+                                    `,
+                                        )
+                                        .join("")
+                                    : ""
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `
+    })
+    .join("")
 }
 
-async function getUsuariosEnSala(id_room){
-    const response = await fetch(`/api/partidas/${id_room}/usuarios`);
-    if (!response.ok) {
-        console.error("Error al obtener los usuarios en la sala");
-        return null;
-    }
-    return await response.json();
+async function getUsuario() {
+  const response = await fetch(`/api/usuarios/actual`)
+
+  if (!response.ok) {
+    console.log("Error al obtener el usuario actual")
+    return
+  }
+
+  return await response.json()
 }
 
-async function renderUsuariosEnSala(id_room){
-    const usuarios = await getUsuariosEnSala(id_room);
-    if (!usuarios) {
-        console.error("No se pudieron obtener los usuarios en la sala");
-        return;
-    }
-    
-    const jugadores = document.getElementById('jugadores');
-    jugadores.innerHTML = ''; // Limpiar la lista antes de renderizar
+async function getSala(id_room) {
+  const response = await fetch(`/api/partidas/${id_room}`)
 
-    usuarios.forEach(usuario => {
-        const li = document.createElement('li');
-        const div = document.createElement('div');
-        const img = document.createElement('img');
-        const p = document.createElement('p');
+  if (!response.ok) {
+    console.error("Error al obtener la sala")
+    return
+  }
 
-        img.src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`;
-        img.width = '50';
-        img.height = '50';
-        p.textContent = usuario.username;
-        div.appendChild(img);
-        div.appendChild(p);
-        li.appendChild(div);
-        jugadores.appendChild(li);
-    });
+  return await response.json()
+}
+
+async function usuarioRegistrado(id_room) {
+  const response = await fetch(`/api/partidas/${id_room}/registrado`)
+
+  if (!response.ok) {
+    console.error("Error al verificar si el usuario es miembro de la sala")
+    return false
+  }
+
+  const data = await response.json()
+  return data.registrado
+}
+
+async function registrarseSala(id_room) {
+  const response = await fetch(`/api/partidas/${id_room}/registrarse`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  if (!response.ok) {
+    console.error("Error al registrarse en la sala")
+    return
+  }
+
+  return await response.json()
+}
+
+async function getUsuariosEnSala(id_room) {
+  const response = await fetch(`/api/partidas/${id_room}/usuarios`)
+  if (!response.ok) {
+    console.error("Error al obtener los usuarios en la sala")
+    return null
+  }
+  return await response.json()
+}
+
+async function renderUsuariosEnSala(id_room) {
+  const usuarios = await getUsuariosEnSala(id_room)
+  if (!usuarios) {
+    console.error("No se pudieron obtener los usuarios en la sala")
+    return
+  }
+
+  const jugadores = document.getElementById("jugadores")
+  jugadores.innerHTML = "" // Limpiar la lista antes de renderizar
+
+  usuarios.forEach((usuario) => {
+    const playerDiv = document.createElement("div")
+    playerDiv.className = "player-item fade-in"
+
+    playerDiv.innerHTML = `
+            <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}" 
+                 alt="${usuario.username}" class="player-avatar">
+            <p class="player-name">${usuario.username}</p>
+        `
+
+    jugadores.appendChild(playerDiv)
+  })
 }
 
 async function renderNumerosLlamados(id_room) {
-    const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}`);
-    if (!response.ok) {
-        console.error("Error al obtener los números llamados");
-        return;
-    }
-    const data = await response.json();
-    numerosLlamados.innerHTML = ''; // Limpiar la lista antes de renderizar
-    data.partida.numbers.forEach(numero => {
-        const p = document.createElement('span');
-        p.textContent = numero+" ";
-        numerosLlamados.appendChild(p);
-    });
+  const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}`)
+  if (!response.ok) {
+    console.error("Error al obtener los números llamados")
+    return
+  }
+  const data = await response.json()
+  numerosLlamados.innerHTML = "" // Limpiar la lista antes de renderizar
+  data.partida.numbers.forEach((numero) => {
+    const p = document.createElement("span")
+    p.textContent = numero + " "
+    numerosLlamados.appendChild(p)
+  })
 }
 
 async function renderNuevoNumero(numero) {
-    numeroActual.textContent = numero;
+  numeroActual.textContent = numero
 
-    // Agregar el nuevo número a la lista de números llamados
-    const p = document.createElement('span');
-    p.textContent = numero+" ";
-    numerosLlamados.appendChild(p);
+
+  const span = document.createElement("span")
+  span.className = "called-number"
+  span.textContent = numero
+  numerosLlamados.appendChild(span)
 }
 
 async function abandonarSala() {
-    const idRoom = document.getElementById('idRoom');
-    const response = await fetch(`/api/partidas/${idRoom.textContent}/abandonar`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
+  const response = await fetch(`/api/partidas/${idRoom.textContent}/abandonar`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
 
-    if (!response.ok) {
-        console.error("Error al abandonar la sala");
-        return;
-    }
+  if (!response.ok) {
+    console.error("Error al abandonar la sala")
+    return
+  }
 
-    const result = await response.json();
-    if (result.success) {
-        socket.emit('abandonarSala', idRoom.textContent);
-        socket.disconnect(); // Desconectar el socket
-        alert("Has abandonado la sala.");
-        window.location.href = '/index'; // Redirigir a la página de inicio
-    } else {
-        console.error("No se pudo abandonar la sala");
-    }
+  const result = await response.json()
+  if (result.success) {
+    socket.emit("abandonarSala", idRoom.textContent)
+    socket.disconnect()
+    alert("Has abandonado la sala.")
+    window.location.href = "/index" 
+  } else {
+    console.error("No se pudo abandonar la sala")
+  }
 }
 
 async function activarControles(id_partida) {
-    espera.setAttribute('hidden', '');
-    tablero.removeAttribute('hidden');
-
-    renderNumerosLlamados(id_partida);
+  espera.setAttribute("hidden", "")
+  tablero.removeAttribute("hidden")
+  renderNumerosLlamados(id_partida)
 }
 
-unirseSala();
+unirseSala()

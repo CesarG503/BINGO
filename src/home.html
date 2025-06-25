@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
     <script src="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/js/retrosci-fi.js" defer></script>
     <link rel="stylesheet" href="/css/perfil.css">
+    <link rel="stylesheet" href="css/tiendaUser.css">
 
 </head>
 
@@ -19,9 +20,8 @@
     <button class="btn-custom logout" onclick="logout()" style="max-width: 75px;"><img src="/img/logout.png"
             alt="Logout"></button>
 
-    <!-- Imagen de perfil flotante -->
     <div class="profile-icon" onclick="toggleProfilePanel()" id="imagenPequeña">
-        <img src="" alt="Perfil" id="mainProfileImg">
+        <img src="/placeholder.svg" alt="Perfil" id="mainProfileImg">
     </div>
 
 
@@ -45,7 +45,39 @@
             </div>
         </div>
     </div>
-    <!-- Panel deslizante de perfil -->
+    <!-- panel de carnotes-->
+    <div class="container my-5" id="cartonesSection" style="display: none;">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="text-white mb-4">
+                    <i class="fas fa-ticket-alt me-2 text-warning"></i>Mis Cartones
+                </h2>
+                <p class="text-white-50">Selecciona los cartones con los que quieres jugar (mínimo 1, máximo 4)</p>
+                <div class="selected-info mb-3">
+                    <span class="badge bg-info fs-6" id="selectedCount">0 cartones seleccionados</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row" id="userCartonesContainer">
+            <div class="col-12 text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="text-white mt-2">Cargando tus cartones...</p>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <button class="btn btn-success btn-lg" id="confirmCartonesBtn" disabled>
+                <i class="fas fa-check me-2"></i>Confirmar Selección
+            </button>
+            <button class="btn btn-secondary btn-lg ms-2" id="cancelCartonesBtn">
+                <i class="fas fa-times me-2"></i>Cancelar
+            </button>
+        </div>
+    </div>
+    
     <div class="profile-panel" id="profilePanel">
         <div class="row align-items-center">
             <div class="col">
@@ -63,7 +95,7 @@
 
         <div class="profile-img-container">
             <div class="d-flex justify-content-center">
-                <img src="" alt="" class="profile-img" id="mainProfileImg2">
+                <img src="/placeholder.svg" alt="" class="profile-img" id="mainProfileImg2">
             </div>
             <div class="text-center" style="padding-top: 5px;">
                 <button class="btn bingo-button px-4 py-2 estilo-brillo" onclick="toggleImageDropdown()">
@@ -71,7 +103,6 @@
                 </button>
             </div>
 
-            <!-- donde se crea el menu de imagenes -->
             <div id="imageDropdown" class="image-selector shadow p-3 rounded bg-white" style="display: none;">
                 <div class="d-flex flex-wrap gap-2 justify-content-center" id="listImgs">
 
