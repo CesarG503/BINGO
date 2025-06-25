@@ -191,6 +191,11 @@ table .bola {
   gap: 20px;
 }
 
+.bolaSeleccionada{
+  background-color:#F9F2F2;
+  color: black;
+  font-weight: bold;
+}
 
 
 @media screen and (max-width: 768px) {
@@ -199,7 +204,7 @@ table .bola {
     margin: 0;
   }
 
-  .card-wrapper .swiper-slide-button{
+.buttons-paginacion{
     display: none;
   }
 
