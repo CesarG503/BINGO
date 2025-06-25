@@ -346,15 +346,15 @@ function renderGameCartones(cartonesData) {
     } else if (totalCartones === 2) {
       slidesToShow = 2;
     }
-    window.gameCartonesSwiper = new Swiper('.swiper', {
+    window.gameCartonesSwiper = new Swiper(".card-wrapper", {
       slidesPerView: slidesToShow,
       spaceBetween: 20,
       navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
       },
       pagination: {
-        el: '.swiper-pagination',
+        el: ".swiper-pagination",
         clickable: true,
         dynamicBullets: true,
       },
@@ -372,7 +372,7 @@ function renderGameCartones(cartonesData) {
           slidesPerView: slidesToShow,
         },
       },
-    })
+    });
   }
 
   if (!window.numerosSeleccionados) window.numerosSeleccionados = {};
