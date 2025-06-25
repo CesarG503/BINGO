@@ -64,17 +64,19 @@ function toggleImageDropdown() {
 // ===============================
 function crearImagenes() {
   const divImgs = document.getElementById("listImgs")
-  // Limpiar antes de agregar (evita duplicados)
   divImgs.innerHTML = ""
 
   // Obtener el username actualizado y correcto
   let username = "U"
+  // Si hay un input editable, usar su valor, si no, usar el texto del span
+  const usernameInput = document.querySelector("#username[type='text']")
   const usernameElem = document.getElementById("username")
-  if (usernameElem) {
-    // Extraer el texto del span, sin espacios ni @
-    username = usernameElem.textContent.trim().replace(/^@/, "")
-    if (!username) username = "U"
+  if (usernameInput && usernameInput.value.trim()) {
+    username = usernameInput.value.trim()
+  } else if (usernameElem && usernameElem.textContent.trim()) {
+    username = usernameElem.textContent.trim()
   }
+  if (!username) username = "U"
 
   // Agregar la imagen predeterminada como opción visual (no como botón)
   const defaultDiv = document.createElement("div")
@@ -167,12 +169,10 @@ function setDefaultProfileImage(username) {
   if (miniperfil) {
     miniperfil.innerHTML = createAvatarElement(username, 60, 1.5)
   }
-  // Eliminar el alt para que guardarPerfil lo envíe como null
   const img2 = document.getElementById("mainProfileImg2")
   if (img2) {
     img2.alt = ""
   }
-  // Cerrar el dropdown si está abierto
   const dropdown = document.getElementById("imageDropdown")
   if (dropdown) {
     dropdown.style.display = "none"
@@ -259,11 +259,14 @@ function guardarTexto(input) {
   span.className = "editable-text me-2"
   span.textContent = value
   input.replaceWith(span)
+  
+  if (id === "username") {
+    crearImagenes()
+  }
 }
 
 // Actualizar la función guardarPerfil para obtener el img_id correctamente
 async function guardarPerfil() {
-  // Obtener elementos del DOM
   const usernameElem = document.getElementById("username")
   const emailElem = document.getElementById("email")
 
@@ -294,7 +297,6 @@ async function guardarPerfil() {
   }
 
   try {
-    // Enviar una petición PUT para actualizar el perfil
     const response = await fetch(`/api/usuarios/actual/perfil`, {
       method: "PUT",
       headers: {
@@ -322,5 +324,3 @@ async function guardarPerfil() {
     alert("Error al actualizar el perfil: " + error.message)
   }
 }
-
-

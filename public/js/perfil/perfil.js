@@ -3,16 +3,13 @@
 // ===============================
 async function cargarPerfil() {
   try {
-    // Realiza una petición GET a la API para obtener los datos del usuario
     const res = await fetch(`/api/usuarios/actual`)
     const data = await res.json()
 
-    // Asigna los datos recibidos a los elementos del DOM
     document.getElementById("username").textContent = data.username 
     document.getElementById("email").textContent = data.email
     document.getElementById("creditos").textContent = data.creditos
 
-    // Función para crear avatar con iniciales usando los estilos definidos
     const createAvatarElement = (username, size = 60, fontSize = 1.5) => {
       return `
         <div class="user-avatar" style="width:${size}px;height:${size}px; font-size: ${fontSize}rem">
@@ -44,7 +41,6 @@ async function cargarPerfil() {
       }
     }
 
-    // Renderizar icono pequeño flotante
     const iconDiv = document.getElementById("imagenPequeña")
     if (iconDiv) {
       if (data.img_id && data.img_id.trim() !== "") {
@@ -93,7 +89,7 @@ async function guardarPerfil() {
   // Limpiar y preparar los valores a enviar
   const username = usernameElem.textContent.replace(/^@/, "").trim() // Elimina el '@'
   const email = emailElem.textContent.trim()
-  const img_id = img?.alt?.trim() || "" // El alt contiene el ID de la imagen seleccionada
+  const img_id = img?.alt?.trim() || ""
 
   // Validaciones básicas antes de enviar
   if (username === "" || email === "") {
