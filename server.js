@@ -351,14 +351,14 @@ io.on('connection', (socket) => {
     io.to(data.id_room).emit('nuevoNumero', data.extraido);
   });
 
-  socket.on('callBingo', (data) => {
+  socket.on('callBingo', async (data) => {
     // Validar el cartón del usuario
-    const isValid = validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
+    const isValid = await validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
     if (!isValid) {
       return socket.emit('errorCarton', 'Cartón inválido o no hay bingo');
     }
-
-    io.to(data.id_room).emit('bingoLlamado', data);
+    socket.emit("eresGanador", data);
+    io.to(data.id_room).emit('ganador', data);
   });
 
   // Manejar eventos de desconexion

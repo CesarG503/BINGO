@@ -7,6 +7,7 @@ const numeroActual = document.getElementById("numero-actual")
 const idRoom = document.getElementById("idRoom")
 
 let socket
+let ganador = false;
 let selectedCartones = []
 
 btnAbandonar.addEventListener("click", () => {
@@ -151,7 +152,16 @@ async function unirseSala() {
 
   socket.on("nuevoNumero", (numero) => {
     renderNuevoNumero(numero)
-  })
+  });
+
+  socket.on("eresGanador", (data)=>{
+    eresGanador(data);
+  });
+
+  socket.on("ganador", (data) => {
+    if(ganador) return; 
+    hayGanador(data);
+  });
 
   renderUsuariosEnSala(sala.id_partida)
 }
@@ -482,6 +492,31 @@ async function activarControles(id_partida) {
   espera.setAttribute("hidden", "")
   tablero.removeAttribute("hidden")
   renderNumerosLlamados(id_partida)
+}
+
+async function eresGanador(data){
+  ganador = true;
+  console.log(data);
+  const usuario = data.ganador;
+  const mensaje = `¡${usuario.username}! Eres el ganador de la partida.`
+  alert(mensaje)
+  socket.disconnect()
+}
+
+async function hayGanador(data){
+  const usuario = data.ganador
+  const mensaje = `¡${usuario.username}! Ha ganado la partida.`
+  alert(mensaje)
+  socket.disconnect()
+}
+
+function callBingo(carton, seleccionados, id_room, usuario) {
+  socket.emit("callBingo", {
+    id_room: id_room,
+    numerosSeleccionados: seleccionados,
+    carton: carton,
+    ganador: usuario
+  })
 }
 
 unirseSala()
