@@ -27,22 +27,17 @@
   
 <!-- Pantalla de lobby -->
   <div id="waiting-room" class="esperando">
+    <a type="submit" id="btn-eliminar-sala" class="btn-custom logout" href="/index" style="max-width: 75px;"><img src="/img/atras.png" alt="Logout"></a>
     <p>Esperando que jugadores se unan a la partida...</p>
     <p id="id-room" hidden><%= id_room%></p>
     <p class="fs-1">ID Partida:<b class="text-warning"> <%= id_room %></b></p>
     <p class="fs-3">Jugadores: <span id="n-jugadores" class="text-warning">0</span></p>
-                <div id="btn-iniciar-sala" class="col-6 col-sm-4 col-md-3 col-lg-2">
-                <a class="btn-custom w-100 perfil">
-                    <img src="/img/iniciar.png" alt="Iniciar">
-                    <span>Iniciar</span>
-                </a>
-            </div>
-            <div id="btn-eliminar-sala" class="col-6 col-sm-4 col-md-3 col-lg-2">
-                <a class="btn-custom w-100 cerrar">
-                    <img src="/img/cerrar.png" alt="Cerrar">
-                    <span>Cerrar</span>
-                </a>
-            </div>
+        <div id="btn-iniciar-sala" class="col-6 col-sm-4 col-md-3 col-lg-2">
+          <a class="btn-custom w-100 perfil">
+            <img src="/img/iniciar.png" alt="Iniciar">
+            <span>Iniciar</span>
+          </a>
+      </div>
   </div>
 
 <!-- Pantalla de juego -->
