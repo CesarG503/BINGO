@@ -1,4 +1,5 @@
 async function validarCarton(tablero, seleccionados, idPartida) {
+    let numerosGanadores = []
      const respose = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${idPartida}`);
     if (!respose.ok) {
         console.error('Error al obtener los datos de la partida');
@@ -20,8 +21,14 @@ async function validarCarton(tablero, seleccionados, idPartida) {
 
     const n = tablero.length;
 
-    const esLineaGanadora = (linea) =>
-        linea.every(num => num === "FREE" || seleccionados.includes(num));
+    function esLineaGanadora(linea) {
+        linea.forEach(num => {
+            if (seleccionados.includes(num)) {
+                numerosGanadores.push(num);
+            }
+        });
+        return linea.every(num => num === "FREE" || seleccionados.includes(num));
+    }
 
     // Verificar filas
     for (let fila of tablero) {
@@ -29,6 +36,7 @@ async function validarCarton(tablero, seleccionados, idPartida) {
             console.log(`Bingo en la fila ${tablero.indexOf(fila)}`);
             return true;
         }
+        numerosGanadores.length = 0;
     }
 
     // Verificar columnas
@@ -36,25 +44,28 @@ async function validarCarton(tablero, seleccionados, idPartida) {
         const columna = tablero.map(fila => fila[col]);
         if (esLineaGanadora(columna)) {
             console.log(`Bingo en la columna ${col}`);
-            return true;
+            return numerosGanadores;
         }
+        numerosGanadores.length = 0;
     }
 
     // Verificar diagonal principal
     const diagonalPrincipal = tablero.map((fila, i) => fila[i]);
     if (esLineaGanadora(diagonalPrincipal)) {
         console.log('Bingo en la diagonal principal');
-        return true;
+        return numerosGanadores;
     }
+    numerosGanadores.length = 0;
 
     // Verificar diagonal secundaria
     const diagonalSecundaria = tablero.map((fila, i) => fila[n - 1 - i]);
     if (esLineaGanadora(diagonalSecundaria)) {
         console.log('Bingo en la diagonal secundaria');
-        return true;
+        return numerosGanadores;
     }
+    numerosGanadores.length = 0;
 
-    return false;
+    return numerosGanadores;
 }
 
 module.exports = {

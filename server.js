@@ -353,12 +353,20 @@ io.on('connection', (socket) => {
 
   socket.on('callBingo', async (data) => {
     // Validar el cartón del usuario
-    const isValid = await validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
-    if (!isValid) {
+    const numerosGanadores = await validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
+    if (numerosGanadores.length === 0 || numerosGanadores.length < 4) {
       return socket.emit('errorCarton', 'Cartón inválido o no hay bingo');
     }
-    socket.emit("eresGanador", data);
-    io.to(data.id_room).emit('ganador', data);
+
+    const newData = {
+      ganador: data.ganador,
+      numerosGanadores: numerosGanadores,
+      carton: data.carton,
+      id_room: data.id_room,
+    }
+    
+    socket.emit("eresGanador", newData );
+    io.to(data.id_room).emit('ganador', newData);
   });
 
   // Manejar eventos de desconexion

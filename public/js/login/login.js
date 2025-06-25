@@ -47,7 +47,7 @@ document.getElementById('sign-in-form').addEventListener('submit', async (e) => 
   messageElement.textContent = '';
   if (data.token) {
     const date = new Date();
-    date.setTime(date.getTime() + (1 * 60 * 60 * 1000));
+    date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
     const expires = `expires=${date.toUTCString()}`;
     document.cookie = `token=${data.token}; ${expires} path=/;`; // Almacenar la cookie con el token
     messageElement.textContent = 'Inicio de sesion Exitoso!';
