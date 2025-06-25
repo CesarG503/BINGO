@@ -368,6 +368,7 @@ async function usuarioRegistrado(id_room) {
   return data.registrado
 }
 
+
 async function registrarseSala(id_room) {
   const response = await fetch(`/api/partidas/${id_room}/registrarse`, {
     method: "POST",

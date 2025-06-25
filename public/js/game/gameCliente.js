@@ -126,14 +126,15 @@ document.getElementById("cardList").addEventListener("click", (e) => {
   console.log(target);
 
   if(!e.target.classList.contains("seleccionable"))return;
+  target.classList.toggle("bolaSeleccionada");
   
 
-  if (bolasSeleccionadas.includes(parseInt(target.innerText))) {
-    console.log("Se puede seleccionar la bola");
-    target.classList.add(fondo[asignarColor(parseInt(target.innerText))]);
-  } else {
-    console.log("Bola no seleccionable");
-  }
+  // if (bolasSeleccionadas.includes(parseInt(target.innerText))) {
+  //   console.log("Se puede seleccionar la bola");
+  //   target.classList.add(fondo[asignarColor(parseInt(target.innerText))]);
+  // } else {
+  //   console.log("Bola no seleccionable");
+  // }
 });
 
 function asignarColor(numeroBola) {
