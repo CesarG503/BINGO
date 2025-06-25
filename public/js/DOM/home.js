@@ -29,7 +29,7 @@ function renderActiveGamesButton() {
     resumeBtn.id = "resume-game-btn"
     resumeBtn.className = "col-6 col-sm-4 col-md-3 col-lg-2"
     resumeBtn.innerHTML = `
-            <a class="btn-custom w-100 admin" onclick="showActiveGames()">
+            <a class="btn-custom w-100 perfil" onclick="showActiveGames()">
                 <img src="./img/iniciar.png" alt="Reanudar">
                 <span>Reanudar Partida</span>
             </a>
