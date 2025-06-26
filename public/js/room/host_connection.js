@@ -201,10 +201,20 @@ async function inicializar() {
     })
   }
   if (btnEliminar) {
-    btnEliminar.addEventListener("click", async () => eliminarSala(sala.id_partida, usuario.id_usuario))
+
+    btnEliminar.addEventListener("click", async () => {
+
+    });
   }
   if (btnCerrar) {
-    btnCerrar.addEventListener("click", () => eliminarSala(sala.id_partida, usuario.id_usuario))
+
+    btnCerrar.addEventListener("click", async () => {
+      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
+      if (confirmar) {
+        eliminarSala(sala.id_partida, usuario.id_usuario);
+      }
+      eliminarSala(sala.id_partida, usuario.id_usuario);
+    })
   }
 }
 
@@ -362,6 +372,28 @@ function menssaje(titulo, texto, icono = null) {
     icon: icono,
   });
 }
-    
+
+async function cuestion(texto) {
+  const swalWithBootstrapButtons = Swal.mixin({
+    customClass: {
+      confirmButton: "btn btn-success",
+      cancelButton: "btn btn-danger",
+    },
+    buttonsStyling: false,
+  });
+
+  const result = await swalWithBootstrapButtons.fire({
+    title: "¿Estás seguro?",
+    text: texto,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "No, cancelar",
+    reverseButtons: true,
+  });
+
+  return result.isConfirmed;
+}
+
     
 inicializar()
