@@ -197,7 +197,7 @@ function hacerEditable(id) {
   const input = document.createElement("input")
   input.type = "text"
   input.value = currentText
-  input.className = "editable-text me-2"
+  input.className = "editable-text text-dark me-2"
   input.id = id
 
   // Prevenir duplicados

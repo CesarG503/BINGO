@@ -5,9 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentación - Bingo Online</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+
     <link rel="stylesheet" href="./css/documentacion.css">
 </head>
 
@@ -54,7 +56,7 @@
                 <div class="row align-items-center min-vh-100">
                     <div class="col-lg-6">
                         <div class="contenido-hero">
-                            <h1 class="titulo-principal">Documentación</h1>
+                            <h1 class="titulo-principal text-white">Documentación</h1>
                             <h2 class="subtitulo-principal">Bingo Online</h2>
                             <p class="descripcion-hero">
                                 Guía completa para disfrutar de la mejor experiencia de Bingo en línea.
@@ -69,7 +71,7 @@
                     <div class="col-lg-6">
                         <div class="imagen-hero">
                             <!-- Imagen sugerida: Ilustración de cartones de bingo animados con efectos de luz -->
-                            <img src="./img/bingo.svg" alt="Ilustración de documentación de bingo" class="img-fluid">
+                            <img src="./img/bingo.svg" alt="Ilustración de documentación de bingo" class="img-fluid rounded">
                         </div>
                     </div>
                 </div>
@@ -82,7 +84,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="encabezado-seccion">
-                            <h2 class="titulo-seccion">Acerca de Nosotros</h2>
+                            <h2 class="titulo-seccion text-white">Acerca de Nosotros</h2>
                             <div class="linea-decorativa"></div>
                         </div>
                     </div>
@@ -113,9 +115,57 @@
                     </div>
                     <div class="col-lg-6">
                         <div class="imagen-seccion">
-                            <!-- Imagen sugerida: Foto del equipo de estudiantes trabajando en computadoras o ilustración de desarrolladores -->
-                            <img src="./img/equipo-desarrolladores.jpg" alt="Equipo de desarrolladores trabajando"
-                                class="img-fluid rounded">
+                            <div class="equipo-grid">
+                                <div class="miembro-equipo">
+                                    <div class="foto-contenedor">
+                                        <img src="./img/imgDocumentacion/image.png" alt="Cesar Garay" class="foto-miembro">
+                                    </div>
+                                    <div class="nombre-miembro">
+                                        <h6>Cesar Garay</h6>
+                                        <small>Desarrollador Full Stack</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="miembro-equipo">
+                                    <div class="foto-contenedor">
+                                        <img src="./img/imgDocumentacion/juan.jpg" alt="Juan Paiz" class="foto-miembro">
+                                    </div>
+                                    <div class="nombre-miembro">
+                                        <h6>Juan Paiz</h6>
+                                        <small>Frontend Developer, UI/UX Designer</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="miembro-equipo">
+                                    <div class="foto-contenedor">
+                                        <img src="./img/imgDocumentacion/Gerson.jpeg" alt="Gerson Alegria" class="foto-miembro">
+                                    </div>
+                                    <div class="nombre-miembro">
+                                        <h6>Gerson Alegria</h6>
+                                        <small>Frontend Developer, UI/UX Designer</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="miembro-equipo">
+                                    <div class="foto-contenedor">
+                                        <img src="./img/imgDocumentacion/enoc.png" alt="Cesar Aparicio" class="foto-miembro">
+                                    </div>
+                                    <div class="nombre-miembro">
+                                        <h6>Cesar Aparicio</h6>
+                                        <small>Desarrollador Full Stack</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="miembro-equipo">
+                                    <div class="foto-contenedor">
+                                        <img src="./img/imgDocumentacion/jesson.png" alt="Jasson Amilcar" class="foto-miembro">
+                                    </div>
+                                    <div class="nombre-miembro">
+                                        <h6>Jasson Amilcar</h6>
+                                        <small>Backend Developer</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -182,7 +232,7 @@
                             </ul>
                             <div class="imagen-ejemplo">
                                 <!-- Imagen sugerida: Captura de pantalla de la página de login -->
-                                <img src="./img/login-screen.png" alt="Pantalla de inicio de sesión"
+                                <img src="./img/imgDocumentacion/login.png" alt="Pantalla de inicio de sesión"
                                     class="img-fluid rounded">
                             </div>
                         </div>
@@ -203,12 +253,12 @@
                             </ul>
                             <div class="alerta-requisitos">
                                 <i class="fas fa-info-circle"></i>
-                                <strong>Requisitos de contraseña:</strong> Debe contener mayúsculas, minúsculas, números
+                                <strong class="text-danger">Requisitos de contraseña:</strong> Debe contener mayúsculas, minúsculas, números
                                 y caracteres especiales.
                             </div>
                             <div class="imagen-ejemplo">
                                 <!-- Imagen sugerida: Captura de pantalla de la página de registro -->
-                                <img src="./img/register-screen.png" alt="Pantalla de registro"
+                                <img src="./img/imgDocumentacion/registrar.png" alt="Pantalla de registro"
                                     class="img-fluid rounded">
                             </div>
                         </div>
@@ -239,12 +289,12 @@
                             <div class="botones-navegacion">
                                 <div class="boton-nav">
                                     <i class="fas fa-sign-out-alt"></i>
-                                    <span>Logout (Parte superior izquierda)</span>
+                                    <span class="text-danger">Logout (Parte superior izquierda)</span>
                                     <p>Cerrar sesión y salir del sistema</p>
                                 </div>
                                 <div class="boton-nav">
                                     <i class="fas fa-user-circle"></i>
-                                    <span>Perfil (Parte superior derecha)</span>
+                                    <span class="text-danger">Perfil (Parte superior derecha)</span>
                                     <p>Acceder a la configuración de tu cuenta</p>
                                 </div>
                             </div>
@@ -265,8 +315,8 @@
                                         <p>Personaliza tu avatar seleccionando una imagen de la lista desplegable
                                             disponible.</p>
                                         <!-- Imagen sugerida: Interfaz mostrando opciones de avatares -->
-                                        <img src="./img/avatar-selection.png" alt="Selección de avatar"
-                                            class="img-config">
+                                        <img src="./img/imgDocumentacion/perfilimg.png" alt="Selección de avatar"
+                                            class="img-fluid rounded">
                                     </div>
                                 </div>
 
@@ -279,8 +329,8 @@
                                         <p>Visualiza tu saldo actual para comprar cartones de bingo. Los créditos se
                                             obtienen a través de un administrador.</p>
                                         <!-- Imagen sugerida: Panel mostrando el saldo de créditos -->
-                                        <img src="./img/credits-display.png" alt="Visualización de créditos"
-                                            class="img-config">
+                                        <img src="./img/imgDocumentacion/creditos.png" alt="Visualización de créditos"
+                                            class="img-fluid rounded">
                                     </div>
                                 </div>
 
@@ -293,8 +343,8 @@
                                         <p>Modifica el nombre con el que apareces ante otros jugadores. Haz clic en el
                                             ícono del lápiz para editarlo.</p>
                                         <!-- Imagen sugerida: Campo de texto editable con ícono de lápiz -->
-                                        <img src="./img/username-edit.png" alt="Edición de nombre de usuario"
-                                            class="img-config">
+                                        <img src="./img/imgDocumentacion/username.png" alt="Edición de nombre de usuario"
+                                             class="img-fluid rounded">
                                     </div>
                                 </div>
 
@@ -307,8 +357,8 @@
                                         <p>Actualiza tu dirección de correo electrónico. Utiliza el ícono del lápiz para
                                             realizar cambios.</p>
                                         <!-- Imagen sugerida: Campo de email editable -->
-                                        <img src="./img/email-edit.png" alt="Edición de correo electrónico"
-                                            class="img-config">
+                                        <img src="./img/imgDocumentacion/email.png" alt="Edición de correo electrónico"
+                                             class="img-fluid rounded">
                                     </div>
                                 </div>
                             </div>
@@ -354,10 +404,7 @@
                                 <div class="contenido-paso">
                                     <h4>Obtener Créditos</h4>
                                     <p>Para jugar necesitas créditos. Contacta a un administrador para realizar la
-                                        transferencia a tu cuenta.</p>
-                                    <!-- Imagen sugerida: Administrador realizando transferencia de créditos -->
-                                    <img src="./img/admin-transfer.png" alt="Administrador transfiriendo créditos"
-                                        class="img-paso">
+                                        transferencia a tu cuenta, y entra a la tienda.</p>
                                 </div>
                             </div>
 
@@ -368,8 +415,8 @@
                                     <p>Una vez que tengas créditos, explora nuestra sección de ofertas especiales. ¡No
                                         hay límite de compra!</p>
                                     <!-- Imagen sugerida: Interfaz de la tienda mostrando packs de cartones -->
-                                    <img src="./img/special-offers.png" alt="Ofertas especiales de cartones"
-                                        class="img-paso">
+                                    <img src="./img/imgDocumentacion/cartones.png" alt="Ofertas especiales de cartones"
+                                         class="img-fluid rounded">
                                 </div>
                             </div>
 
@@ -384,8 +431,8 @@
                                         <li><i class="fas fa-check"></i> Saldo restante después de la compra</li>
                                     </ul>
                                     <!-- Imagen sugerida: Modal de confirmación de compra -->
-                                    <img src="./img/purchase-confirmation.png" alt="Confirmación de compra"
-                                        class="img-paso">
+                                    <img src="./img/imgDocumentacion/compraCartones.png" alt="Confirmación de compra"
+                                         class="img-fluid rounded">
                                 </div>
                             </div>
 
@@ -397,7 +444,7 @@
                                         confirmación. En la parte inferior de la tienda podrás ver todos los cartones
                                         que has adquirido.</p>
                                     <!-- Imagen sugerida: Sección de cartones comprados -->
-                                    <img src="./img/purchased-cards.png" alt="Cartones comprados" class="img-paso">
+                                    <img src="./img/imgDocumentacion/cartonesComprados.png" alt="Cartones comprados" class="img-fluid rounded">
                                 </div>
                             </div>
                         </div>
@@ -443,7 +490,7 @@
                                         </ol>
                                     </div>
                                     <!-- Imagen sugerida: Campo de entrada de ID de sala -->
-                                    <img src="./img/room-id-input.png" alt="Ingreso de ID de sala" class="img-fase">
+                                    <img src="./img/imgDocumentacion/jugar.png" alt="Ingreso de ID de sala"  class="img-fluid rounded">
                                 </div>
                             </div>
 
@@ -461,7 +508,7 @@
                                         </ul>
                                     </div>
                                     <!-- Imagen sugerida: Interfaz de selección de cartones -->
-                                    <img src="./img/card-selection.png" alt="Selección de cartones" class="img-fase">
+                                    <img src="./img/imgDocumentacion/seleccionarCartones.png" alt="Selección de cartones"  class="img-fluid rounded">
                                 </div>
                             </div>
 
@@ -487,7 +534,7 @@
                                         </div>
                                     </div>
                                     <!-- Imagen sugerida: Sala de espera con jugadores -->
-                                    <img src="./img/waiting-room.png" alt="Sala de espera" class="img-fase">
+                                    <img src="./img/imgDocumentacion/saladeEspera.png" alt="Sala de espera"  class="img-fluid rounded">
                                 </div>
                             </div>
 
@@ -525,7 +572,7 @@
                                         </div>
                                     </div>
                                     <!-- Imagen sugerida: Interfaz de juego activo -->
-                                    <img src="./img/active-game.png" alt="Juego activo" class="img-fase">
+                                    <img src="./img/imgDocumentacion/cartonesEnJuego.png" alt="Juego activo"  class="img-fluid rounded">
                                 </div>
                             </div>
                         </div>
@@ -575,7 +622,7 @@
                     <div class="col-lg-6">
                         <div class="imagen-reanudar">
                             <!-- Imagen sugerida: Botón de reanudar partida en el índice -->
-                            <img src="./img/resume-game-button.png" alt="Botón de reanudar partida"
+                            <img src="./img/imgDocumentacion/reaudar.png" alt="Botón de reanudar partida"
                                 class="img-fluid rounded">
                         </div>
                     </div>
@@ -608,7 +655,7 @@
                                 de la sala y podrán ver quién fue el ganador.
                             </p>
                             <!-- Imagen sugerida: Pantalla de victoria mostrando al ganador -->
-                            <img src="./img/game-winner.png" alt="Pantalla de ganador" class="img-finalizacion">
+                            <img src="./img/imgDocumentacion/ganador.png" alt="Pantalla de ganador"  class="img-fluid rounded">
                         </div>
                     </div>
 
@@ -625,8 +672,8 @@
                                 desaparecen del inventario.
                             </p>
                             <!-- Imagen sugerida: Panel de administrador con opción de terminar partida -->
-                            <img src="./img/admin-end-game.png" alt="Administrador terminando partida"
-                                class="img-finalizacion">
+                            <img src="./img/imgDocumentacion/terminarSala.png" alt="Administrador terminando partida"
+                                 class="img-fluid rounded">
                         </div>
                     </div>
                 </div>
@@ -657,26 +704,96 @@
         <footer class="pie-pagina">
             <div class="container">
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-4">
                         <div class="info-footer">
-                            <h5>Bingo Online</h5>
-                            <p>Proyecto desarrollado por los mejores elementos de Herramientas de Productividad</p>
+                            <h5>
+                                <img src="./img/bingo.svg" alt="Logo" width="30" height="30" class="me-2">
+                                Bingo Online
+                            </h5>
+                            <p>Proyecto desarrollado con pasión por estudiantes de Herramientas de Productividad. 
+                               Una experiencia de bingo moderna, interactiva y emocionante.</p>
+                            <div class="caracteristicas-footer">
+                                <small class="d-block mb-1"><i class="fas fa-check-circle me-2"></i>Juego multijugador en tiempo real</small>
+                                <small class="d-block mb-1"><i class="fas fa-check-circle me-2"></i>Sistema de cartones virtuales</small>
+                                <small class="d-block mb-1"><i class="fas fa-check-circle me-2"></i>Interfaz intuitiva y responsive</small>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-lg-6">
-                        <div class="enlaces-footer">
-                            <a href="/home.html" class="btn btn-outline-light">Volver al Juego</a>
+                    <div class="col-lg-4">
+                        <div class="enlaces-utiles">
+                            <h6 class="mb-3">Enlaces Útiles</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <a href="#nosotros" class="text-decoration-none">
+                                        <i class="fas fa-users me-2"></i>Acerca de Nosotros
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="#acceso" class="text-decoration-none">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Cómo Acceder
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="#juego" class="text-decoration-none">
+                                        <i class="fas fa-gamepad me-2"></i>Cómo Jugar
+                                    </a>
+                                </li>
+                                <li class="mb-2">
+                                    <a href="#tienda" class="text-decoration-none">
+                                        <i class="fas fa-shopping-cart me-2"></i>La Tienda
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="contacto-footer">
+                            <h6 class="mb-3">Información del Proyecto</h6>
+                            <div class="info-proyecto">
+                                <p class="mb-2">
+                                    <i class="fas fa-graduation-cap me-2"></i>
+                                    <strong>Materia:</strong> Herramientas de Productividad
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    <strong>Año:</strong> 2025
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-code me-2"></i>
+                                    <strong>Tecnologías:</strong> Node.js, Socket.io, HTML5, CSS3, Express
+                                </p>
+                            </div>
+                            <div class="enlaces-footer mt-3">
+                                <a href="/home.html" class="btn btn-outline-light me-2">
+                                    <i class="fas fa-home me-2"></i>Volver al Juego
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row mt-3">
-                    <div class="col-lg-12 text-center">
-                        <p class="copyright">&copy; 2025 Bingo Online. Todos los derechos reservados.</p>
+                <div class="row mt-4">
+                    <div class="col-lg-12">
+                        <div class="separador-footer"></div>
+                        <div class="text-center">
+                            <p class="copyright">
+                                &copy; 2025 Bingo Online - Proyecto Académico. 
+                                Desarrollado con <i class="fas fa-heart text-danger"></i> por estudiantes apasionados por la programación.
+                            </p>
+                            <small class="text-muted">
+                                Este proyecto fue creado con fines educativos como parte de la evaluación final de la materia.
+                            </small>
+                        </div>
                     </div>
                 </div>
             </div>
         </footer>
     </div>
+
+    <!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+    
+    <!-- Script personalizado -->
+    <script src="./js/DOM/documentacion.js"></script>
 </body>
 
 </html>
