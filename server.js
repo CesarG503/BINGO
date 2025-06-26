@@ -70,8 +70,9 @@ app.post('/login', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Usuarios WHERE email = $1', [email]);
     const user = result.rows[0];
-    if (user && await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ uid: user.id_usuario, email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
+    if (user && await bcrypt.compare(password, user.password)) 
+      {
+      const token = jwt.sign({ uid:user.id_usuario,  email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '24h' });
       res.json({ token, uid: user.id_usuario, rol: user.rol }); // Enviar el token, ID y rol del usuario
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
@@ -109,6 +110,9 @@ app.get('/tienda', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
 });
 
+app.get('/documentacion', authenticateToken, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'documentacion.html'));
+});
 
 app.get('/creditos', authenticateToken, validateRole(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tienda.html'));

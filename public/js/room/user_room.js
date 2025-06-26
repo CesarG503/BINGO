@@ -555,19 +555,23 @@ async function renderNumerosLlamados(id_room) {
   const data = await response.json()
   numerosLlamados.innerHTML = "" // Limpiar la lista antes de renderizar
   data.partida.numbers.forEach((numero) => {
-    const p = document.createElement("span")
-    p.textContent = numero + " "
-    numerosLlamados.appendChild(p)
+    const span = document.createElement("span")
+    span.textContent = numero
+    span.className = "called-number"
+    numerosLlamados.insertBefore(span, numerosLlamados.firstChild);
   })
+
+  if (data.partida.numbers.length > 0 && numeroActual.textContent === "--") {
+    numeroActual.textContent = data.partida.numbers[data.partida.numbers.length - 1]
+  }
 }
 
 async function renderNuevoNumero(numero) {
   numeroActual.textContent = numero
-
   const span = document.createElement("span")
   span.className = "called-number"
   span.textContent = numero
-  numerosLlamados.appendChild(span)
+  numerosLlamados.insertBefore(span, numerosLlamados.firstChild);
 }
 
 async function abandonarSala() {

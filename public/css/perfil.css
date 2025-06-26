@@ -552,9 +552,9 @@ body {
 
 .called-numbers-grid {
   display: flex;
-  flex-wrap: wrap;
   gap: 0.5rem;
-  justify-content: center;
+  justify-content: start;
+  overflow: hidden
 }
 
 .called-number {

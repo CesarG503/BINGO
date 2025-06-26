@@ -13,9 +13,10 @@ export const authenticateToken = (req, res, next) => {
   jwt.verify(token, 'secret_key', (err, user) => {
     if (err){ 
       if (err.name === 'TokenExpiredError') {
+        res.clearCookie('token'); // Elimina la cookie del token
         return res.redirect('/'); // Redirige al login
       }
-      consoole.log('User authenticated:')
+      console.log('User authenticated:')
       return res.redirect('/');
     }
     req.user = user;
