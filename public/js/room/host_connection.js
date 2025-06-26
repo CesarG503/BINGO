@@ -160,6 +160,7 @@ async function inicializar() {
   //Validacion de host
   if (sala.host !== usuario.id_usuario) {
     alert("No tienes permiso para administrar esta sala.")
+    menssaje("Error", "La sala ya finalizo.", "error");
     window.location.href = "/"
     return
   }
@@ -167,7 +168,7 @@ async function inicializar() {
   else if (sala.estado === 1) {
     activarControles(sala.id_partida, usuario.id_usuario)
   } else if (sala.estado !== 0) {
-    alert("La sala ya finalizo.")
+    menssaje("Error", "La sala ya finalizo.", "error");
     window.location.href = "/"
     return
   }
@@ -176,7 +177,7 @@ async function inicializar() {
 
   const token = getCookieValue("token")
   if (!token) {
-    alert("Error inesperado, no posees un usuario valido.")
+    menssaje("Error","Error inesperado, no posees un usuario valido.","error");
   }
   socket = io({ auth: { token } }) // Usar la variable global
 
@@ -354,6 +355,13 @@ function pintarGanadores(cartonElement, numerosGanadores = []) {
 }
 
 
+function menssaje(titulo, texto, icono = null) {
+  Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: icono,
+  });
+}
     
     
 inicializar()
