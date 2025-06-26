@@ -3,19 +3,22 @@ async function validarCarton(tablero, seleccionados, idPartida) {
      const respose = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${idPartida}`);
     if (!respose.ok) {
         console.error('Error al obtener los datos de la partida');
-        return false;
+        return [];
     }
     const data = await respose.json();
-
+    if (!data || !data.partida || !data.partida.numbers) {
+        console.error('Datos de la partida no válidos');
+        return [];
+    }
     if(data.partida.numbers.length === 0) {
         console.error('No hay números en la base de datos');
-        return false;
+        return [];
     }
 
     for (let num of seleccionados) {
         if (num !== "FREE" && !data.partida.numbers.includes(num)) {
             console.error(`Carton invalido`);
-            return false;
+            return [];
         }
     }
 

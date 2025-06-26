@@ -370,6 +370,7 @@ io.on('connection', (socket) => {
     const newData = {
       ganador: data.ganador,
       numerosGanadores: numerosGanadores,
+      numerosSeleccionados: data.numerosSeleccionados,
       carton: data.carton,
       id_room: data.id_room,
     }

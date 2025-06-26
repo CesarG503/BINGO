@@ -194,6 +194,10 @@ async function inicializar() {
     activarControles(sala.id_partida, usuario.id_usuario)
   })
 
+  socket.on("ganador", (data) => {
+    jugadorGanador(data.ganador.username, data.carton, data.numerosSeleccionados, data.numerosGanadores);
+  });
+
   if (btnIniciar) {
     btnIniciar.addEventListener("click", () => {
       iniciarSala(sala.id_partida, usuario.id_usuario)
@@ -206,24 +210,6 @@ async function inicializar() {
     btnCerrar.addEventListener("click", () => eliminarSala(sala.id_partida, usuario.id_usuario))
   }
 }
-
-// Escuchar el botón
-// Evento principal
-document.getElementById('btnGanador').addEventListener('click', () => {
-  // Datos de ejemplo
-  const arreglo = [
-    [11, 26, 41, 56, 71],
-    [12, 27, 42, 57, 72],
-    [13, 28, "FREE", 58, 73],
-    [14, 29, 44, 59, 74],
-    [15, 30, 45, 60, 75],
-  ];
-  const numerosSeleccionados = [13, 28, 58, 74, 75, 11, 73, 26, 27, 29, 30];
-  const numerosGanadores = [15,29,57,71];
-
-  jugadorGanador('Juan', arreglo, numerosSeleccionados, numerosGanadores);
-});
-
 
 // Mostrar alerta de ganador
 function jugadorGanador(nombre, carton, numerosSeleccionados, numerosGanadores = []) {

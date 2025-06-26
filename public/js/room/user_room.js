@@ -8,7 +8,7 @@ const idRoom = document.getElementById("idRoom")
 
 const btnBingo = document.getElementById("btnBingo")
 
-btnBingo.addEventListener("click", () => {
+btnBingo.addEventListener("click", async () => {
   const tabla = document.querySelector(".swiper-slide-active table");
   if (!tabla) {
     console.warn("No se encontró la tabla activa.");
@@ -38,6 +38,8 @@ btnBingo.addEventListener("click", () => {
 
     carton.push(fila);
   });
+
+  callBingo(carton, seleccionados, idRoom.textContent, await getUsuario());
 
   console.log("Cartón completo:", carton);
   console.log("Números seleccionados:", seleccionados);
