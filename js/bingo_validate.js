@@ -34,7 +34,7 @@ async function validarCarton(tablero, seleccionados, idPartida) {
     for (let fila of tablero) {
         if (esLineaGanadora(fila)) {
             console.log(`Bingo en la fila ${tablero.indexOf(fila)}`);
-            return true;
+            return numerosGanadores;
         }
         numerosGanadores.length = 0;
     }

@@ -72,7 +72,7 @@ app.post('/login', async (req, res) => {
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) 
       {
-      const token = jwt.sign({ uid:user.id_usuario,  email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
+      const token = jwt.sign({ uid:user.id_usuario,  email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '24h' });
       res.json({ token, uid: user.id_usuario, rol: user.rol }); // Enviar el token, ID y rol del usuario
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
