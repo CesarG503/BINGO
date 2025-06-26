@@ -147,6 +147,9 @@ async function unirseSala() {
   } else {
     // Cargar cartones desde localStorage para sala en espera
     await loadSelectedCartones()
+    if (localStorage.getItem("penalizacion")) {
+      localStorage.removeItem("penalizacion") 
+    }
   }
 
   const registro = await registrarseSala(sala.id_partida)
@@ -154,6 +157,11 @@ async function unirseSala() {
   if (!registro) {
     console.error("Error al registrarse en la sala")
     return
+  }
+
+  let timing = localStorage.getItem("penalizacion")
+  if(timing){
+    penalizacion(timing);
   }
 
   socket = io({ auth: { token } }) // Usar la variable global
@@ -198,6 +206,10 @@ async function unirseSala() {
   socket.on("ganador", (data) => {
     if(ganador) return; 
     hayGanador(data);
+  });
+
+  socket.on("errorCarton",(data)=>{
+    penalizacion(30);
   });
 
   renderUsuariosEnSala(sala.id_partida)
@@ -765,6 +777,35 @@ async function menssaje(titulo, texto, icono = null) {
     text: texto,
     icon: icono,
   });
+}
+
+function penalizacion(tiempo){
+  mensajeTiempo("error", "Penalizacion", "Has sido penalizado por llamar Bingo sin tenerlo completo o correcto.");
+  let tiempoRestante = tiempo;
+
+const intervalo = setInterval(function() {
+  if (tiempoRestante <= 0) {
+    clearInterval(intervalo);
+    btnBingo.disabled = false; 
+    btnBingo.textContent = "Bingo";
+    localStorage.removeItem("penalizacion");
+  } else {
+    localStorage.setItem("penalizacion", tiempoRestante);
+    btnBingo.disabled = true; 
+    btnBingo.textContent = tiempoRestante + " segundos restantes";
+    tiempoRestante--;
+  }
+}, 1000);
+}
+
+async function mensajeTiempo(icon, titulo, texto) {
+  await Swal.fire({
+  icon: icon,
+  title: titulo,
+  text: texto,
+  showConfirmButton: false,
+  timer: 1500
+});
 }
 
 unirseSala()
