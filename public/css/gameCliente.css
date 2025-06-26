@@ -197,6 +197,23 @@ table .bola {
   font-weight: bold;
 }
 
+@keyframes destello {
+  0%, 100% {
+    box-shadow: 0 0 10px 5px rgba(251, 255, 2, 0.6),
+                0 0 20px 10px rgba(251, 255, 2, 0.4),
+                0 0 30px 15px rgba(251, 255, 2, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(251, 255, 2, 0.9),
+                0 0 35px 20px rgba(251, 255, 2, 0.6),
+                0 0 50px 25px rgba(251, 255, 2, 0.3);
+  }
+}
+
+.swiper-slide-active .carton-preview {
+  animation: destello 2s infinite ease-in-out;
+  border-radius: 12px; /* opcional, pero hace que se vea más suave */
+}
 
 @media screen and (max-width: 768px) {
 
