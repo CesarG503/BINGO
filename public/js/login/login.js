@@ -97,11 +97,11 @@ function validarCampo(id) {
   const pass = document.getElementById('password');
   const errorPassword = document.getElementById('error-password');
   if (id === 'password' && valor === '') {
-    
+
     pass.removeAttribute('oninput');
     error.classList.add('invalid');
     error.textContent = 'La contraseña es obligatoria.';
-  }else{
+  } else {
     //errorPassword.textContent = 'La contraseña debe tener al menos 5 caracteres, una mayúscula, un número y un carácter especial.';
     pass.setAttribute("oninput", "validarPassword2(this)");
   }
@@ -178,7 +178,7 @@ form.addEventListener('submit', async (e) => {
       }
       messageElement.textContent = '';
 
-      
+
     } else {
       message.textContent = 'Las contraseñas no coinciden';
     }
@@ -224,5 +224,11 @@ function validarPassword2(input) {
   }
 }
 
+const recuperarContra = document.getElementById("recuperarContraseña");
+
+recuperarContra.addEventListener("click", e => {
+  e.preventDefault();
+  window.location.href = "/recuperar"
+})
 
 

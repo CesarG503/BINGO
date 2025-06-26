@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser'); 
+const cookieParser = require('cookie-parser');
 const { authenticateToken, authenticateSocket, validateRole } = require('./js/authenthicated'); // Importar la función de autenticación
 const { Server } = require('socket.io');
 const path = require('path'); // Importar path para manejar rutas de archivos
@@ -16,7 +16,7 @@ const cartonUsuarioRouter = require("./js/crud/carton_usuario")
 const nodemiler = require('nodemailer');
 const crypto = require("crypto")
 const { Email } = require('./js/email/email');
-const {validarCarton} = require('./js/bingo_validate');
+const { validarCarton } = require('./js/bingo_validate');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -25,7 +25,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src'));
 const server = httpServer.createServer(app);
-const PORT =  process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 // Configurar CORS para aceptar cualquier origen (útil para pruebas móviles)
 app.use(cors({
@@ -39,7 +39,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Configurar el servidor para servir archivos estáticos desde el directorio public
-app.use(express.static(path.join(__dirname,'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Conexión a la base de datos
 pool.connect((err) => {
@@ -70,9 +70,8 @@ app.post('/login', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM Usuarios WHERE email = $1', [email]);
     const user = result.rows[0];
-    if (user && await bcrypt.compare(password, user.password)) 
-      {
-      const token = jwt.sign({ uid:user.id_usuario,  email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
+    if (user && await bcrypt.compare(password, user.password)) {
+      const token = jwt.sign({ uid: user.id_usuario, email: user.correo, rol: user.rol }, 'secret_key', { expiresIn: '1h' });
       res.json({ token, uid: user.id_usuario, rol: user.rol }); // Enviar el token, ID y rol del usuario
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
@@ -84,19 +83,24 @@ app.post('/login', async (req, res) => {
 
 // Configurar la ruta raíz para servir login.html
 app.get('/', (req, res) => {
-  if(req.cookies.token) {
+  if (req.cookies.token) {
     // Si el usuario ya tiene un token, redirigir a la página de inicio
     return res.redirect('/index');
   }
   res.sendFile(path.join(__dirname, 'src', 'login.html'));
 });
 
+// Ruta pública para recuperación de contraseña
+app.get('/recuperar', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'recuperarContra.html'));
+});
+
 //Colocar las rutas protegidas debajo de esta línea
 app.get('/index', authenticateToken, (req, res) => {
-  if(req.user.rol === 0){
+  if (req.user.rol === 0) {
     res.sendFile(path.join(__dirname, 'src', 'admin_menu.html'));
   }
-  else if(req.user.rol === 1){
+  else if (req.user.rol === 1) {
     res.sendFile(path.join(__dirname, 'src', 'home.html'));
   }
 });
@@ -104,6 +108,7 @@ app.get('/index', authenticateToken, (req, res) => {
 app.get('/tienda', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
 });
+
 
 app.get('/creditos', authenticateToken, validateRole(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
@@ -117,23 +122,23 @@ app.get('/perfil', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'perfil.html'));
 });
 
-app.get('/home',authenticateToken,(req,res) =>{
-  if(req.user.rol === 0){
+app.get('/home', authenticateToken, (req, res) => {
+  if (req.user.rol === 0) {
     res.sendFile(path.join(__dirname, 'src', 'admin_home.html'));
   }
-  else{
+  else {
     res.sendFile(path.join(__dirname, 'src', 'home.html'));
   }
 });
 
 app.get('/room/user/:roomId', authenticateToken, async (req, res) => {
   const roomId = req.params.roomId;
-  res.render('user_room', { id_room: roomId});
+  res.render('user_room', { id_room: roomId });
 });
 
-app.get('/room/host/:roomId', authenticateToken,validateRole(0), async (req, res) => {
+app.get('/room/host/:roomId', authenticateToken, validateRole(0), async (req, res) => {
   const roomId = req.params.roomId;
-  res.render('host_room', { id_room: roomId});
+  res.render('host_room', { id_room: roomId });
 });
 
 // ruta cambio de contraseña
@@ -159,7 +164,7 @@ app.post("/send-password-reset", async (req, res) => {
     }
 
     const user = userResult.rows[0]
-    
+
     const resetToken = crypto.randomBytes(32).toString("hex") //token
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // Token expira en 24 horas
 
@@ -314,10 +319,10 @@ io.use((socket, next) => authenticateSocket(socket, next));
 io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado');
 
-  socket.on('unirseSala', (id_room) => {socket.join(id_room);});
+  socket.on('unirseSala', (id_room) => { socket.join(id_room); });
 
   socket.on('nuevoUsuario', (data) => {
-    io.to(data.id_room).emit('nuevoUsuario',data);
+    io.to(data.id_room).emit('nuevoUsuario', data);
   });
 
   socket.on('abandonarSala', (id_room) => {
@@ -326,7 +331,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('salaEliminada', (data) => {
-    if(socket.user.rol !== 0 || socket.user.uid !== data.host) {
+    if (socket.user.rol !== 0 || socket.user.uid !== data.host) {
       console.log(`Usuario sin permiso accedio para eliminar la sala ${data.id_room}`);
       return socket.emit('error', 'No tienes permiso para eliminar la sala');
     }
@@ -335,7 +340,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('iniciarSala', (data) => {
-    if(socket.user.rol !== 0 || socket.user.uid !== data.host) {
+    if (socket.user.rol !== 0 || socket.user.uid !== data.host) {
       console.log(`Usuario sin permiso accedio para iniciar la sala ${data.id_room}`);
       return socket.emit('error', 'No tienes permiso para iniciar la sala');
     }
@@ -343,7 +348,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('getNuevoNumero', (data) => {
-    if(socket.user.rol !== 0 || socket.user.uid !== data.host) {
+    if (socket.user.rol !== 0 || socket.user.uid !== data.host) {
       console.log(`Usuario sin permiso accedio para enviar un nuevo numero en la sala ${data.id_room}`);
       return socket.emit('error', 'No tienes permiso para enviar un nuevo número');
     }

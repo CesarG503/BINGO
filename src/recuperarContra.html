@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recuperar Contraseña - Bingo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: radial-gradient(circle at center, #1e1e2f 0%, #12121c 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            background: #2a2a40;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            width: 360px;
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        h2 {
+            color: #f9d342;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        .bingo-ball {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at 30% 30%, #c4c0c0 0%, #120052 40%, #5202ad 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 64, 129, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: spin 6s linear infinite;
+            margin: 0 auto 20px;
+            border: 3px solid #fff;
+            position: relative;
+        }
+
+        .ball-content {
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .input-field {
+            background: #3b3b54;
+            border-radius: 25px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .input-field i {
+            margin-right: 10px;
+            color: #f9d342;
+        }
+
+        .input-field input {
+            border: none;
+            background: none;
+            outline: none;
+            font-size: 16px;
+            flex: 1;
+            color: white;
+        }
+
+        .btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #d32f2f;
+        }
+
+        .back-link {
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            text-decoration: none;
+            color: #90caf9;
+            font-size: 14px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="bingo-ball">
+            <div class="ball-content">8</div>
+        </div>
+        <h2>Recuperar Contraseña</h2>
+
+        <form id="recover-form">
+            <div class="input-field">
+                <input type="email" id="email" name="email" placeholder="Tu correo electrónico" required />
+            </div>
+            <button type="submit" class="btn">Enviar Instrucciones</button>
+        </form>
+
+        <p id="message"></p>
+
+        <div class="back-link">
+            <a href="/">← Volver al inicio</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('recover-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = '';
+            messageEl.className = '';
+
+            try {
+                const response = await fetch('/send-password-reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageEl.textContent = data.message || 'Correo enviado.';
+                    messageEl.className = 'success';
+                } else {
+                    messageEl.textContent = data.error || 'Error al enviar correo.';
+                    messageEl.className = 'error';
+                }
+            } catch (err) {
+                messageEl.textContent = 'Error al conectar con el servidor.';
+                messageEl.className = 'error';
+            }
+        });
+    </script>
+</body>
+
+</html>
