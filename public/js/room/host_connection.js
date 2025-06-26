@@ -1,7 +1,7 @@
 import getCookieValue from "/js/util/get_cookie.js"
 import { iniciarRuletazo, addBallGrid } from "/js/game/game.js"
 
-const btnEliminar = document.querySelector("#btn-eliminar-sala a")
+const btnEliminar = document.querySelector("#btn-eliminar-sala")
 const btnCerrar = document.querySelector("#btn-cerrar-sala")
 const btnIniciar = document.querySelector("#btn-iniciar-sala a")
 const idRoom = document.getElementById("id-room")
@@ -159,7 +159,7 @@ async function inicializar() {
 
   //Validacion de host
   if (sala.host !== usuario.id_usuario) {
-    alert("No tienes permiso para administrar esta sala.")
+    await menssaje("Error", "No tienes permiso para administrar esta sala.", "error");
     window.location.href = "/"
     return
   }
@@ -167,7 +167,7 @@ async function inicializar() {
   else if (sala.estado === 1) {
     activarControles(sala.id_partida, usuario.id_usuario)
   } else if (sala.estado !== 0) {
-    alert("La sala ya finalizo.")
+    await menssaje("Error", "La sala ya finalizo.", "error");
     window.location.href = "/"
     return
   }
@@ -176,7 +176,7 @@ async function inicializar() {
 
   const token = getCookieValue("token")
   if (!token) {
-    alert("Error inesperado, no posees un usuario valido.")
+    await menssaje("Error","Error inesperado, no posees un usuario valido.","error");
   }
   socket = io({ auth: { token } }) // Usar la variable global
 
@@ -194,36 +194,34 @@ async function inicializar() {
     activarControles(sala.id_partida, usuario.id_usuario)
   })
 
+  socket.on("ganador", (data) => {
+    jugadorGanador(data.ganador.username, data.carton, data.numerosSeleccionados, data.numerosGanadores);
+  });
+
   if (btnIniciar) {
     btnIniciar.addEventListener("click", () => {
       iniciarSala(sala.id_partida, usuario.id_usuario)
     })
   }
   if (btnEliminar) {
-    btnEliminar.addEventListener("click", async () => eliminarSala(sala.id_partida, usuario.id_usuario))
+
+    btnEliminar.addEventListener("click", async () => {
+      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
+      if (confirmar) {
+        eliminarSala(sala.id_partida, usuario.id_usuario);
+      }
+    });
   }
   if (btnCerrar) {
-    btnCerrar.addEventListener("click", () => eliminarSala(sala.id_partida, usuario.id_usuario))
+
+    btnCerrar.addEventListener("click", async () => {
+      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
+      if (confirmar) {
+        eliminarSala(sala.id_partida, usuario.id_usuario);
+      }
+    })
   }
 }
-
-// Escuchar el botón
-// Evento principal
-document.getElementById('btnGanador').addEventListener('click', () => {
-  // Datos de ejemplo
-  const arreglo = [
-    [11, 26, 41, 56, 71],
-    [12, 27, 42, 57, 72],
-    [13, 28, "FREE", 58, 73],
-    [14, 29, 44, 59, 74],
-    [15, 30, 45, 60, 75],
-  ];
-  const numerosSeleccionados = [13, 28, 58, 74, 75, 11, 73, 26, 27, 29, 30];
-  const numerosGanadores = [15,29,57,71];
-
-  jugadorGanador('Juan', arreglo, numerosSeleccionados, numerosGanadores);
-});
-
 
 // Mostrar alerta de ganador
 function jugadorGanador(nombre, carton, numerosSeleccionados, numerosGanadores = []) {
@@ -354,6 +352,35 @@ function pintarGanadores(cartonElement, numerosGanadores = []) {
 }
 
 
-    
+async function menssaje(titulo, texto, icono = null) {
+  await Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: icono,
+  });
+}
+
+async function cuestion(texto) {
+  const swalWithBootstrapButtons = Swal.mixin({
+    customClass: {
+      confirmButton: "btn btn-success",
+      cancelButton: "btn btn-danger",
+    },
+    buttonsStyling: false,
+  });
+
+  const result = await swalWithBootstrapButtons.fire({
+    title: "¿Estás seguro?",
+    text: texto,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "No, cancelar",
+    reverseButtons: true,
+  });
+
+  return result.isConfirmed;
+}
+
     
 inicializar()

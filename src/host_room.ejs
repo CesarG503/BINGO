@@ -32,7 +32,7 @@
   
 <!-- Pantalla de lobby -->
   <div id="waiting-room" class="esperando">
-    <a type="submit" id="btn-eliminar-sala" class="btn-custom logout" href="/index" style="max-width: 75px;"><img src="/img/atras.png" alt="Logout"></a>
+    <button id="btn-eliminar-sala" class="btn-custom logout" style="max-width: 75px;"><img src="/img/atras.png" alt="Logout"></button>
     <p>Esperando que jugadores se unan a la partida...</p>
     <p id="id-room" hidden><%= id_room%></p>
     <p class="fs-1">ID Partida:<b class="text-warning"> <%= id_room %></b></p>
@@ -231,7 +231,6 @@
         </div>
         <div class="bola-selec bola-i" id="bola-selec">Bola</div>
         <button class="btn btn-success btn-lg" id="btn-new-number">NUEVA BOLA</button>
-        <button class="btn btn-success" id="btnGanador">ganador</button>
   
       </div>
    </div>

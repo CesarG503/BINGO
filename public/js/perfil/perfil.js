@@ -93,12 +93,14 @@ async function guardarPerfil() {
 
   // Validaciones básicas antes de enviar
   if (username === "" || email === "") {
-    alert("Por favor completa todos los campos.")
+    const mensaje = "Por favor completa todos los campos.";
+    menssaje('', mensaje, 'warning')
     return
   }
 
   if (!validarEmail(email)) {
-    alert("El email no tiene un formato válido.")
+    const mensaje = "El email no tiene un formato válido.";
+    menssaje('', mensaje, 'warning')
     return
   }
 
@@ -118,7 +120,8 @@ async function guardarPerfil() {
       throw new Error(result.error || "Error al actualizar perfil")
     }
 
-    alert("¡Perfil actualizado correctamente!")
+    const mensaje = "¡Perfil actualizado correctamente!";
+    menssaje('', mensaje, 'success')
   } catch (error) {
     console.error("Error al actualizar el perfil:", error.message, error.stack)
   }
@@ -128,3 +131,10 @@ async function guardarPerfil() {
 document.addEventListener("DOMContentLoaded", () => {
   cargarPerfil()
 })
+function menssaje(titulo, texto, icono = null) {
+  Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: icono,
+  });
+}

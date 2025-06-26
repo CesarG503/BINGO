@@ -217,13 +217,24 @@ router.delete("/:id", authenticateToken, validateRole(0), async (req, res) => {
     }
 
    
-    await pool.query(`DELETE FROM partida_usuario WHERE id_partida = $1`, [id])
-
+    const deleteds = await pool.query(`DELETE FROM partida_usuario WHERE id_partida = $1 RETURNING *`, [id])
+    if(deleteds.rowCount > 0){
+      for (const row of deleteds.rows) {
+        if (row.id_cartones) {
+          const id_cartones = row.id_cartones
+          for (const id_carton of id_cartones) {
+            await pool.query(`DELETE FROM carton_usuario WHERE id_carton = $1`, [id_carton])
+            await pool.query(`DELETE FROM Cartones WHERE id_carton = $1`, [id_carton])
+          }
+        }
+      }
+    }
     
     const result = await pool.query(`DELETE FROM Partidas WHERE id_partida = $1 RETURNING *`, [id])
     if (result.rowCount === 0) {
       return res.status(404).json({ error: "Partida no encontrada" })
     }
+
     const apiDelete = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id}/eliminar`)
     if (!apiDelete.ok) {
       console.error("Error al eliminar la partida en la API externa")

@@ -107,7 +107,8 @@ async function eliminarSala(id_room, id_usuario) {
     
     if (!response.ok) {
         console.error("Error al eliminar la sala");
-        alert("No se obtuvo una respuesta valida del servidor.");
+        const mensaje = "No se obtuvo una respuesta valida del servidor.";
+        menssaje('', mensaje, 'warning');
         return;
     }
 
@@ -120,7 +121,8 @@ async function eliminarSala(id_room, id_usuario) {
         socket.disconnect();
         window.location.href = '/'; // Redireccionar a la página de inicio
     } else {
-        alert("No se pudo eliminar la sala. Inteténtalo de nuevo más tarde.");
+        const mensaje = "No se pudo eliminar la sala. Inteténtalo de nuevo más tarde.";
+        menssaje('', mensaje, 'warning')
     }
 }
 
@@ -135,7 +137,8 @@ async function iniciarSala(id_room, id_usuario) {
 
     if (!response.ok) {
         console.error("Error al iniciar la sala");
-        alert("No se pudo iniciar la sala. Inténtalo de nuevo.");
+        const mensaje = "No se pudo iniciar la sala. Inténtalo de nuevo.";
+        menssaje('', mensaje, 'warning')
         console.log(await response.text());
         return;
     }
@@ -173,7 +176,8 @@ async function inicializar(){
 
     //Validacion de host
     if(sala.host !== usuario.id_usuario){
-        alert("No tienes permiso para administrar esta sala.");
+        const mensaje = "No tienes permiso para administrar esta sala.";
+        menssaje('', mensaje, 'warning')
         window.location.href = '/';
         return;
     }
@@ -182,7 +186,8 @@ async function inicializar(){
         activarControles(sala.id_partida, usuario.id_usuario);
     }
     else if(sala.estado !== 0){
-        alert("La sala ya finalizo.");
+        const mensaje ="La sala ya finalizo.";
+        menssaje('', mensaje, 'info')
         window.location.href = '/';
         return;
     }
@@ -191,7 +196,8 @@ async function inicializar(){
 
     const token = getCookieValue("token");
     if(!token){
-        alert("Error inesperado, no posees un usuario valido.");
+        const mensaje ="Error inesperado, no posees un usuario valido.";
+        menssaje('Error:', mensaje, 'error')
     }
     socket = io({auth: {token}});
 
@@ -221,5 +227,11 @@ async function inicializar(){
 
 
 }
-
+function menssaje(titulo, texto, icono = null) {
+  Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: icono,
+  });
+}
 inicializar();
