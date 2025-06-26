@@ -6,6 +6,43 @@ const numerosLlamados = document.getElementById("numeros-llamados")
 const numeroActual = document.getElementById("numero-actual")
 const idRoom = document.getElementById("idRoom")
 
+const btnBingo = document.getElementById("btnBingo")
+
+btnBingo.addEventListener("click", () => {
+  const tabla = document.querySelector(".swiper-slide-active table");
+  if (!tabla) {
+    console.warn("No se encontró la tabla activa.");
+    return;
+  }
+
+  const carton = [];
+  const seleccionados = [];
+
+  const filas = tabla.querySelectorAll("tbody tr");
+
+  filas.forEach((tr) => {
+    const fila = [];
+    const celdas = tr.querySelectorAll("td");
+
+    celdas.forEach((td) => {
+      const valor = td.getAttribute("data-number");
+
+      // Guardar el valor en la matriz del cartón
+      fila.push(valor === "FREE" ? "FREE" : Number(valor));
+
+      // Si tiene clase seleccionada, lo guardamos
+      if (td.classList.contains("bolaSeleccionada") && valor !== "FREE") {
+        seleccionados.push(Number(valor));
+      }
+    });
+
+    carton.push(fila);
+  });
+
+  console.log("Cartón completo:", carton);
+  console.log("Números seleccionados:", seleccionados);
+});
+
 
 let socket
 let ganador = false;
