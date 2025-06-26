@@ -1,76 +1,71 @@
-function validarCarton(numerosCarton, numerosSeleccionados, idPartida) {
-    const respose = fetch(`https://bingo-api.mixg-studio.workers.devapi/partida/${idPartida}`);
+async function validarCarton(tablero, seleccionados, idPartida) {
+    let numerosGanadores = []
+     const respose = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${idPartida}`);
     if (!respose.ok) {
         console.error('Error al obtener los datos de la partida');
         return false;
     }
-    const data = respose.json();
+    const data = await respose.json();
 
-
-    // Verificar si hay al menos un número seleccionado
-    if (numerosSeleccionados.length === 0) {
+    if(data.partida.numbers.length === 0) {
+        console.error('No hay números en la base de datos');
         return false;
     }
 
-  
+    for (let num of seleccionados) {
+        if (num !== "FREE" && !data.partida.numbers.includes(num)) {
+            console.error(`Carton invalido`);
+            return false;
+        }
+    }
 
-    //Verificar si los numeros seleccionados son los de la base de datos
-    for (let fila = 0; fila < numerosSeleccionados.length; fila++) {
-        for (let col = 0; col < numerosSeleccionados[fila].length; col++) {
-            if (numerosSeleccionados[fila][col] !== -1 && !data.numbers.includes(numerosSeleccionados[fila][col])) {
-                console.error(`Número seleccionado ${numerosSeleccionados[fila][col]} no está en la base de datos`);
-                return false;
+    const n = tablero.length;
+
+    function esLineaGanadora(linea) {
+        linea.forEach(num => {
+            if (seleccionados.includes(num)) {
+                numerosGanadores.push(num);
             }
-        }
+        });
+        return linea.every(num => num === "FREE" || seleccionados.includes(num));
     }
 
-    // Validar filas
-    for (let fila = 0; fila < numerosCarton.length; fila++) {
-        let bingoFila = true;
-        for (let col = 0; col < numerosCarton[fila].length; col++) {
-            if (numerosSeleccionados[fila][col] !== -1) {
-                bingoFila = false;
-                break;
-            }
+    // Verificar filas
+    for (let fila of tablero) {
+        if (esLineaGanadora(fila)) {
+            console.log(`Bingo en la fila ${tablero.indexOf(fila)}`);
+            return true;
         }
-        if (bingoFila) return true;
+        numerosGanadores.length = 0;
     }
 
-    // Validar columnas
-    for (let col = 0; col < numerosCarton[0].length; col++) {
-        let bingoCol = true;
-        for (let fila = 0; fila < numerosCarton.length; fila++) {
-            if (numerosSeleccionados[fila][col] !== -1) {
-                bingoCol = false;
-                break;
-            }
+    // Verificar columnas
+    for (let col = 0; col < n; col++) {
+        const columna = tablero.map(fila => fila[col]);
+        if (esLineaGanadora(columna)) {
+            console.log(`Bingo en la columna ${col}`);
+            return numerosGanadores;
         }
-        if (bingoCol) return true;
+        numerosGanadores.length = 0;
     }
 
-    // Validar diagonal principal
-    let bingoDiag1 = true;
-    for (let i = 0; i < numerosCarton.length; i++) {
-        if (numerosSeleccionados[i][i] !== -1) {
-            bingoDiag1 = false;
-            break;
-        }
+    // Verificar diagonal principal
+    const diagonalPrincipal = tablero.map((fila, i) => fila[i]);
+    if (esLineaGanadora(diagonalPrincipal)) {
+        console.log('Bingo en la diagonal principal');
+        return numerosGanadores;
     }
-    if (bingoDiag1) return true;
+    numerosGanadores.length = 0;
 
-    // Validar diagonal secundaria
-    let bingoDiag2 = true;
-    for (let i = 0; i < numerosCarton.length; i++) {
-        if (numerosSeleccionados[i][numerosCarton.length - 1 - i] !== -1) {
-            bingoDiag2 = false;
-            break;
-        }
+    // Verificar diagonal secundaria
+    const diagonalSecundaria = tablero.map((fila, i) => fila[n - 1 - i]);
+    if (esLineaGanadora(diagonalSecundaria)) {
+        console.log('Bingo en la diagonal secundaria');
+        return numerosGanadores;
     }
-    if (bingoDiag2) return true;
+    numerosGanadores.length = 0;
 
-    // Si no hay bingo
-    console.log('No hay bingo en el carton');
-    return false;
+    return numerosGanadores;
 }
 
 module.exports = {
