@@ -159,8 +159,7 @@ async function inicializar() {
 
   //Validacion de host
   if (sala.host !== usuario.id_usuario) {
-    alert("No tienes permiso para administrar esta sala.")
-    menssaje("Error", "La sala ya finalizo.", "error");
+    await menssaje("Error", "No tienes permiso para administrar esta sala.", "error");
     window.location.href = "/"
     return
   }
@@ -168,7 +167,7 @@ async function inicializar() {
   else if (sala.estado === 1) {
     activarControles(sala.id_partida, usuario.id_usuario)
   } else if (sala.estado !== 0) {
-    menssaje("Error", "La sala ya finalizo.", "error");
+    await menssaje("Error", "La sala ya finalizo.", "error");
     window.location.href = "/"
     return
   }
@@ -177,7 +176,7 @@ async function inicializar() {
 
   const token = getCookieValue("token")
   if (!token) {
-    menssaje("Error","Error inesperado, no posees un usuario valido.","error");
+    await menssaje("Error","Error inesperado, no posees un usuario valido.","error");
   }
   socket = io({ auth: { token } }) // Usar la variable global
 
@@ -207,13 +206,19 @@ async function inicializar() {
   if (btnEliminar) {
 
     btnEliminar.addEventListener("click", async () => {
-      eliminarSala(sala.id_partida, usuario.id_usuario);
+      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
+      if (confirmar) {
+        eliminarSala(sala.id_partida, usuario.id_usuario);
+      }
     });
   }
   if (btnCerrar) {
 
     btnCerrar.addEventListener("click", async () => {
-      eliminarSala(sala.id_partida, usuario.id_usuario);
+      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
+      if (confirmar) {
+        eliminarSala(sala.id_partida, usuario.id_usuario);
+      }
     })
   }
 }
@@ -347,8 +352,8 @@ function pintarGanadores(cartonElement, numerosGanadores = []) {
 }
 
 
-function menssaje(titulo, texto, icono = null) {
-  Swal.fire({
+async function menssaje(titulo, texto, icono = null) {
+  await Swal.fire({
     title: titulo,
     text: texto,
     icon: icono,

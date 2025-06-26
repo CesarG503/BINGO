@@ -108,7 +108,7 @@ async function loadCartonesFromPartida(id_room) {
 async function unirseSala() {
   const token = getCookieValue("token")
   if (!token) {
-    mensaje("Error", "no posees un usuario valido", "error");
+    await menssaje("Error", "no posees un usuario valido", "error");
     return
   }
   const usuario = await getUsuario()
@@ -141,7 +141,7 @@ async function unirseSala() {
     }
     activarControles(sala.id_partida)
   } else if (sala.estado !== 0) {
-    menssaje("Error", "La sala ya ha comenzado o ya finalizo.", 'error');
+    await menssaje("Error", "La sala ya ha comenzado o ya finalizo.", 'error');
     window.location.href = "/"
     return
   } else {
@@ -167,8 +167,8 @@ async function unirseSala() {
     })
   }
 
-  socket.on("salaEliminada", (err) => {
-    menssaje("error", "La sala ha sido cerrada por el administrador.", 'error');
+  socket.on("salaEliminada", async (err) => {
+    await menssaje("error", "La sala ha sido cerrada por el administrador.", 'error');
     socket.disconnect()
     window.location.href = "/"
   })
@@ -588,7 +588,7 @@ async function abandonarSala() {
   if (result.success) {
     socket.emit("abandonarSala", idRoom.textContent)
     socket.disconnect()
-    mensaje("Upps", 'Has abandonado la sala', 'error')
+    await menssaje("Upps", 'Has abandonado la sala', 'error')
     window.location.href = "/index"
   } else {
     console.error("No se pudo abandonar la sala")
@@ -739,14 +739,14 @@ async function eresGanador(data){
   console.log(data);
   const usuario = data.ganador;
   const mensaje = `¡${usuario.username}! Eres el ganador de la partida.`
-  mensaje(usuario, mensaje,)
+  await menssaje(usuario, mensaje,)
   socket.disconnect()
 }
 
 async function hayGanador(data){
   const usuario = data.ganador
   const mensaje = `¡${usuario.username}! Ha ganado la partida.`
-  mensaje('usuario', mensaje, 'success')
+  await menssaje('usuario', mensaje, 'success')
   socket.disconnect()
 }
 
@@ -759,8 +759,8 @@ function callBingo(carton, seleccionados, id_room, usuario) {
   })
 }
 
-function menssaje(titulo, texto, icono = null) {
-  Swal.fire({
+async function menssaje(titulo, texto, icono = null) {
+  await Swal.fire({
     title: titulo,
     text: texto,
     icon: icono,
