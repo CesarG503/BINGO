@@ -588,7 +588,6 @@ document.getElementById("cardList").addEventListener("click", (e) => {
   // }
 });
 
-
 // ###############################
 // ###############################
 // Funciones para colorear bolas y guardar números en arreglos
@@ -666,10 +665,6 @@ function pintarCartones() {
       }
     });
   });
-}
-
-function eliminarNumero(){
-
 }
 
 function eliminarDB() {
