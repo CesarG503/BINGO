@@ -110,6 +110,9 @@ app.get('/tienda', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tiendaUser.html'));
 });
 
+app.get('/documentacion', authenticateToken, (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'documentacion.html'));
+});
 
 app.get('/creditos', authenticateToken, validateRole(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'tienda.html'));
