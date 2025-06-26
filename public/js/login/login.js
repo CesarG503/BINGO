@@ -232,3 +232,10 @@ recuperarContra.addEventListener("click", e => {
 })
 
 
+function menssaje(titulo, texto, icono = null) {
+  Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: icono,
+  });
+}
