@@ -39,6 +39,12 @@
                     <span>Tienda</span>
                 </a>
             </div>
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                <a href="/documentacion" class="btn-custom w-100 perfil">
+                    <img src="./img/doc.png" alt="Docmentacion">
+                    <span>Documentación</span>
+                </a>
+            </div>
         </div>
     </div>
     <!-- panel de carnotes-->
@@ -54,7 +60,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="row" id="userCartonesContainer">
             <div class="col-12 text-center py-4">
                 <div class="spinner-border text-primary" role="status">
@@ -63,7 +69,7 @@
                 <p class="text-white mt-2">Cargando tus cartones...</p>
             </div>
         </div>
-        
+
         <div class="text-center mt-4">
             <button class="btn btn-success btn-lg" id="confirmCartonesBtn" disabled>
                 <i class="fas fa-check me-2"></i>Confirmar Selección
@@ -75,7 +81,7 @@
     </div>
     <!--BORON PERFIL -->
     <div class="profile-icon" onclick="toggleProfilePanel()" id="imagenPequeña"></div>
-     <!--FIN DE PERFIL-->
+    <!--FIN DE PERFIL-->
     <div class="profile-panel" id="profilePanel">
         <div class="row align-items-center">
             <div class="col">
@@ -145,12 +151,12 @@
     <!--FIN DE PERFIL-->
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-        setTimeout(async () => {
-            if (typeof loadActiveGames === 'function') {
-                await loadActiveGames();
-            }
-        }, 1000);
-    });
+            setTimeout(async () => {
+                if (typeof loadActiveGames === 'function') {
+                    await loadActiveGames();
+                }
+            }, 1000);
+        });
     </script>
     <script type="module" src="/js/DOM/home.js"></script>
     <script src="/js/perfil/script.js" defer></script>
