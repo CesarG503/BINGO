@@ -160,6 +160,7 @@ async function inicializar() {
   //Validacion de host
   if (sala.host !== usuario.id_usuario) {
     alert("No tienes permiso para administrar esta sala.")
+    menssaje("Error", "La sala ya finalizo.", "error");
     window.location.href = "/"
     return
   }
@@ -167,7 +168,7 @@ async function inicializar() {
   else if (sala.estado === 1) {
     activarControles(sala.id_partida, usuario.id_usuario)
   } else if (sala.estado !== 0) {
-    alert("La sala ya finalizo.")
+    menssaje("Error", "La sala ya finalizo.", "error");
     window.location.href = "/"
     return
   }
@@ -176,7 +177,7 @@ async function inicializar() {
 
   const token = getCookieValue("token")
   if (!token) {
-    alert("Error inesperado, no posees un usuario valido.")
+    menssaje("Error","Error inesperado, no posees un usuario valido.","error");
   }
   socket = io({ auth: { token } }) // Usar la variable global
 
@@ -204,10 +205,20 @@ async function inicializar() {
     })
   }
   if (btnEliminar) {
-    btnEliminar.addEventListener("click", async () => eliminarSala(sala.id_partida, usuario.id_usuario))
+
+    btnEliminar.addEventListener("click", async () => {
+
+    });
   }
   if (btnCerrar) {
-    btnCerrar.addEventListener("click", () => eliminarSala(sala.id_partida, usuario.id_usuario))
+
+    btnCerrar.addEventListener("click", async () => {
+      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
+      if (confirmar) {
+        eliminarSala(sala.id_partida, usuario.id_usuario);
+      }
+      eliminarSala(sala.id_partida, usuario.id_usuario);
+    })
   }
 }
 
@@ -340,6 +351,35 @@ function pintarGanadores(cartonElement, numerosGanadores = []) {
 }
 
 
-    
+function menssaje(titulo, texto, icono = null) {
+  Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: icono,
+  });
+}
+
+async function cuestion(texto) {
+  const swalWithBootstrapButtons = Swal.mixin({
+    customClass: {
+      confirmButton: "btn btn-success",
+      cancelButton: "btn btn-danger",
+    },
+    buttonsStyling: false,
+  });
+
+  const result = await swalWithBootstrapButtons.fire({
+    title: "¿Estás seguro?",
+    text: texto,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "No, cancelar",
+    reverseButtons: true,
+  });
+
+  return result.isConfirmed;
+}
+
     
 inicializar()

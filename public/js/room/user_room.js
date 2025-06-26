@@ -108,7 +108,7 @@ async function loadCartonesFromPartida(id_room) {
 async function unirseSala() {
   const token = getCookieValue("token")
   if (!token) {
-    alert("Error inesperado, no posees un usuario valido.")
+    mensaje("Error", "no posees un usuario valido", "error");
     return
   }
   const usuario = await getUsuario()
@@ -141,7 +141,7 @@ async function unirseSala() {
     }
     activarControles(sala.id_partida)
   } else if (sala.estado !== 0) {
-    alert("La sala ya ha comenzado o ya finalizo.")
+    menssaje("Error", "La sala ya ha comenzado o ya finalizo.", 'error');
     window.location.href = "/"
     return
   } else {
@@ -168,7 +168,7 @@ async function unirseSala() {
   }
 
   socket.on("salaEliminada", (err) => {
-    alert("La sala ha sido cerrada por el administrador.")
+    menssaje("error", "La sala ha sido cerrada por el administrador.", 'error');
     socket.disconnect()
     window.location.href = "/"
   })
@@ -588,7 +588,7 @@ async function abandonarSala() {
   if (result.success) {
     socket.emit("abandonarSala", idRoom.textContent)
     socket.disconnect()
-    alert("Has abandonado la sala.")
+    mensaje("Upps", 'Has abandonado la sala', 'error')
     window.location.href = "/index"
   } else {
     console.error("No se pudo abandonar la sala")
@@ -739,14 +739,14 @@ async function eresGanador(data){
   console.log(data);
   const usuario = data.ganador;
   const mensaje = `¡${usuario.username}! Eres el ganador de la partida.`
-  alert(mensaje)
+  mensaje(usuario, mensaje,)
   socket.disconnect()
 }
 
 async function hayGanador(data){
   const usuario = data.ganador
   const mensaje = `¡${usuario.username}! Ha ganado la partida.`
-  alert(mensaje)
+  mensaje('usuario', mensaje, 'success')
   socket.disconnect()
 }
 
@@ -757,6 +757,14 @@ function callBingo(carton, seleccionados, id_room, usuario) {
     carton: carton,
     ganador: usuario
   })
+}
+
+function menssaje(titulo, texto, icono = null) {
+  Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: icono,
+  });
 }
 
 unirseSala()
