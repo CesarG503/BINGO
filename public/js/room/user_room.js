@@ -348,7 +348,6 @@ function renderGameCartones(cartonesData) {
     }
     window.gameCartonesSwiper = new Swiper(".card-wrapper", {
       slidesPerView: slidesToShow,
-      spaceBetween: 20,
       navigation: {
         nextEl: ".swiper-button-next",
         prevEl: ".swiper-button-prev",
@@ -365,10 +364,10 @@ function renderGameCartones(cartonesData) {
         0: {
           slidesPerView: 1,
         },
-        700: {
-          slidesPerView: Math.min(2, slidesToShow),
+        950: {
+          slidesPerView:2,
         },
-        1000: {
+        1250: {
           slidesPerView: slidesToShow,
         },
       },
