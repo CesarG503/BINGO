@@ -287,12 +287,14 @@ async function guardarPerfil() {
 
   // Validaciones básicas antes de enviar
   if (username === "" || email === "") {
-    alert("Por favor completa todos los campos.")
+    const mensaje = "Por favor completa todos los campos.";
+    menssaje('', mensaje, 'warning')
     return
   }
 
   if (!validarEmail(email)) {
-    alert("El email no tiene un formato válido.")
+    const mensaje = "El email no tiene un formato válido.";
+    menssaje('', mensaje, 'warning')
     return
   }
 
@@ -311,7 +313,8 @@ async function guardarPerfil() {
       throw new Error(result.error || "Error al actualizar perfil")
     }
 
-    alert("¡Perfil actualizado correctamente!")
+    const mensaje = "¡Perfil actualizado correctamente!";
+    menssaje('', mensaje, 'success')
 
     // Recargar el perfil para mostrar los cambios
     if (typeof cargarPerfil === "function") {
@@ -321,6 +324,14 @@ async function guardarPerfil() {
     }
   } catch (error) {
     console.error("Error al actualizar el perfil:", error.message, error.stack)
-    alert("Error al actualizar el perfil: " + error.message)
+    const mensaje = "Error al actualizar el perfil: " + error.message;
+    menssaje('', mensaje, 'error')
   }
+}
+function menssaje(titulo, texto, icono = null) {
+  Swal.fire({
+    title: titulo,
+    text: texto,
+    icon: icono,
+  });
 }
