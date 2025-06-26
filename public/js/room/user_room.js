@@ -40,9 +40,6 @@ btnBingo.addEventListener("click", async () => {
   });
 
   callBingo(carton, seleccionados, idRoom.textContent, await getUsuario());
-
-  console.log("Cartón completo:", carton);
-  console.log("Números seleccionados:", seleccionados);
 });
 
 
@@ -518,8 +515,6 @@ async function renderUsuariosEnSala(id_room) {
     return
   }
 
-  console.log("Usuarios recibidos para renderizar:", usuarios)
-
   // Usar el contenedor correcto para los jugadores
   const jugadores_content = document.getElementById("jugadores_content")
   if (!jugadores_content) {
@@ -617,7 +612,7 @@ async function activarControles(id_partida) {
 // Aun no se como guardar las que ya fueron seleccionadas
 document.getElementById("cardList").addEventListener("click", (e) => {
   const target = e.target;
-  console.log(target);
+  //console.log(target);
 
   if (!e.target.classList.contains("seleccionable")) return;
   target.classList.toggle("bolaSeleccionada");

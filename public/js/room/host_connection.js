@@ -1,7 +1,7 @@
 import getCookieValue from "/js/util/get_cookie.js"
 import { iniciarRuletazo, addBallGrid } from "/js/game/game.js"
 
-const btnEliminar = document.querySelector("#btn-eliminar-sala a")
+const btnEliminar = document.querySelector("#btn-eliminar-sala")
 const btnCerrar = document.querySelector("#btn-cerrar-sala")
 const btnIniciar = document.querySelector("#btn-iniciar-sala a")
 const idRoom = document.getElementById("id-room")
