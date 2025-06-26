@@ -277,6 +277,7 @@ function renderSelectedCartones(cartonesData) {
 function renderGameCartones(cartonesData) {
   const container = document.getElementById("gameCartonesDisplay")
 
+  // Generar <li> para Swiper
   container.innerHTML = cartonesData
     .map((cartonData, index) => {
       let carton
@@ -294,54 +295,117 @@ function renderGameCartones(cartonesData) {
       }
 
       return `
-                <div class="col-lg-6 col-md-12 mb-4">
-                    <div class="carton-preview">
-                        <div class="text-center mb-3">
-                            <h5 class="text-white mb-1">Cartón #${index + 1}</h5>
-                            <small class="text-muted">ID: ${cartonData.id_carton}</small>
-                        </div>
-                        
-                        <table class="bingo-table w-100">
-                            <thead>
-                                <tr>
-                                    <th class="bingo-cell bingo-header">B</th>
-                                    <th class="bingo-cell bingo-header">I</th>
-                                    <th class="bingo-cell bingo-header">N</th>
-                                    <th class="bingo-cell bingo-header">G</th>
-                                    <th class="bingo-cell bingo-header">O</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${
-                                  Array.isArray(carton)
-                                    ? carton
-                                        .map(
-                                          (row) => `
-                                        <tr>
-                                            ${
-                                              Array.isArray(row)
-                                                ? row
-                                                    .map(
-                                                      (cell) => `
-                                                    <td class="bingo-cell selectable-cell" data-number="${cell}">${cell === null ? "FREE" : cell}</td>
-                                                `,
-                                                    )
-                                                    .join("")
-                                                : ""
-                                            }
-                                        </tr>
-                                    `,
-                                        )
-                                        .join("")
-                                    : ""
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `
+        <li class="card-item swiper-slide">
+          <div class="carton-preview">
+            <div class="text-center mb-3">
+              <h5 class="text-white mb-1">Cartón #${index + 1}</h5>
+              <small class="text-muted">ID: ${cartonData.id_carton}</small>
+            </div>
+            <table class="tabla-numeros">
+              <thead>
+                <tr>
+                  <th class="bg-primary"><div class="bola bola-b">B</div></th>
+                  <th class="bg-success"><div class="bola bola-i">I</div></th>
+                  <th class="bg-info"><div class="bola bola-n">N</div></th>
+                  <th class="bg-warning"><div class="bola bola-g">G</div></th>
+                  <th class="bg-danger"><div class="bola bola-o">O</div></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${
+                  Array.isArray(carton)
+                    ? carton
+                        .map(
+                          (row) => `
+                        <tr>
+                            ${
+                              Array.isArray(row)
+                                ? row
+                                    .map(
+                                      (cell) => `
+                                    <td class="seleccionable" data-number="${cell}">${cell === null ? "FREE" : cell}</td>
+                                `,
+                                    )
+                                    .join("")
+                                : ""
+                            }
+                        </tr>
+                    `,
+                        )
+                        .join("")
+                    : ""
+                }
+              </tbody>
+            </table>
+          </div>
+        </li>
+      `
     })
     .join("")
+
+  // Inicializar Swiper después de renderizar
+  if (window.Swiper) {
+    if (window.gameCartonesSwiper) {
+      window.gameCartonesSwiper.destroy(true, true)
+    }
+    // Determinar cuántos cartones mostrar simultáneamente (máximo 3)
+    let slidesToShow = 1;
+    const totalCartones = cartonesData.length;
+    if (totalCartones >= 3) {
+      slidesToShow = 3;
+    } else if (totalCartones === 2) {
+      slidesToShow = 2;
+    }
+    window.gameCartonesSwiper = new Swiper(".card-wrapper", {
+      slidesPerView: slidesToShow,
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+        dynamicBullets: true,
+      },
+      loop: false,
+      observer: true,
+      observeParents: true,
+      breakpoints: {
+        0: {
+          slidesPerView: 1,
+        },
+        950: {
+          slidesPerView:2,
+        },
+        1250: {
+          slidesPerView: slidesToShow,
+        },
+      },
+    });
+  }
+
+  if (!window.numerosSeleccionados) window.numerosSeleccionados = {};
+  container.removeEventListener('click', window._cartonCellClickHandler || (()=>{}));
+  window._cartonCellClickHandler = function(e) {
+    const target = e.target;
+    if (!target.classList.contains('seleccionable')) return;
+    const li = target.closest('li.card-item.swiper-slide');
+    if (!li) return;
+    const idCarton = li.querySelector('small.text-muted')?.textContent?.replace('ID: ','').trim();
+    if (!idCarton) return;
+    if (target.textContent === 'FREE') return;
+    if (!window.numerosSeleccionados[idCarton]) window.numerosSeleccionados[idCarton] = [];
+    target.classList.toggle('selected');
+    const number = target.getAttribute('data-number');
+    const row = target.parentElement.rowIndex;
+    const col = target.cellIndex;
+    if (target.classList.contains('selected')) {
+      window.numerosSeleccionados[idCarton].push({ number: Number(number), row, col });
+    } else {
+      window.numerosSeleccionados[idCarton] = window.numerosSeleccionados[idCarton].filter(n => !(n.row === row && n.col === col));
+    }
+  };
+  container.addEventListener('click', window._cartonCellClickHandler);
 }
 
 async function getUsuario() {
