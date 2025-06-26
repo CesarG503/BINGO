@@ -6,6 +6,7 @@ const numerosLlamados = document.getElementById("numeros-llamados")
 const numeroActual = document.getElementById("numero-actual")
 const idRoom = document.getElementById("idRoom")
 
+
 let socket
 let ganador = false;
 let selectedCartones = []
@@ -191,6 +192,7 @@ async function displaySelectedCartones() {
 
     renderSelectedCartones(cartonesData)
     renderGameCartones(cartonesData)
+    
   } catch (error) {
     console.error("Error loading selected cartones:", error)
   }
@@ -299,9 +301,10 @@ function renderGameCartones(cartonesData) {
           <div class="carton-preview">
             <div class="text-center mb-3">
               <h5 class="text-white mb-1">Cartón #${index + 1}</h5>
-              <small class="text-muted">ID: ${cartonData.id_carton}</small>
+              <!-- ID DEL CARTON -->
+              <small class="text-muted" {">ID: ${cartonData.id_carton}</small>
             </div>
-            <table class="tabla-numeros">
+            <table id="carton-${index} class="tabla-numeros">
               <thead>
                 <tr>
                   <th class="bg-primary"><div class="bola bola-b">B</div></th>
@@ -324,13 +327,13 @@ function renderGameCartones(cartonesData) {
                                     .map(
                                       (cell) => `
                                     <td class="seleccionable" data-number="${cell}">${cell === null ? "FREE" : cell}</td>
-                                `,
+                                `
                                     )
                                     .join("")
                                 : ""
                             }
                         </tr>
-                    `,
+                    `
                         )
                         .join("")
                     : ""
@@ -339,7 +342,7 @@ function renderGameCartones(cartonesData) {
             </table>
           </div>
         </li>
-      `
+      `;
     })
     .join("")
 
@@ -369,13 +372,15 @@ function renderGameCartones(cartonesData) {
       },
       loop: false,
       observer: true,
+      centeredSlides: true,
+      spaceBetween: 60,
       observeParents: true,
       breakpoints: {
         0: {
           slidesPerView: 1,
         },
         950: {
-          slidesPerView:2,
+          slidesPerView: 2,
         },
         1250: {
           slidesPerView: slidesToShow,
@@ -555,12 +560,145 @@ async function abandonarSala() {
     console.error("No se pudo abandonar la sala")
   }
 }
-
+// Activar controles
 async function activarControles(id_partida) {
   espera.setAttribute("hidden", "")
   tablero.removeAttribute("hidden")
+  crearLocalStorage();
   renderNumerosLlamados(id_partida)
+  guardarNumero(0, 39) // Ejemplo de guardar un número en el primer arreglo
+  guardarNumero(0, 60) // Ejemplo de guardar un número en el primer arreglo
+  guardarNumero(0, 64) // Ejemplo de guardar un número en el primer arreglo
+  guardarNumero(1, 16) // Ejemplo de guardar otro número en el segundo arreglo
+  guardarNumero(2, 29) // Ejemplo de guardar otro número en el tercer arreglo
+
+  pintarCartones()
 }
+
+// Aun no se como guardar las que ya fueron seleccionadas
+document.getElementById("cardList").addEventListener("click", (e) => {
+  const target = e.target;
+  console.log(target);
+
+  if (!e.target.classList.contains("seleccionable")) return;
+  target.classList.toggle("bolaSeleccionada");
+  
+
+  // if (bolasSeleccionadas.includes(parseInt(target.innerText))) {
+  //   console.log("Se puede seleccionar la bola");
+  //   target.classList.add(fondo[asignarColor(parseInt(target.innerText))]);
+  // } else {
+  //   console.log("Bola no seleccionable");
+  // }
+});
+
+// ###############################
+// ###############################
+// Funciones para colorear bolas y guardar números en arreglos
+// ###############################
+// ###############################
+
+
+function crearLocalStorage() {
+  // Inicializar si no existe
+  if (!localStorage.getItem("misArreglos")) {
+    const inicial = [[], [], [], [], []]; // 5 arreglos vacíos
+    localStorage.setItem("misArreglos", JSON.stringify(inicial));
+  }
+
+}
+
+function guardarNumero(indice, numeroBola) {
+  // Obtener los arreglos o inicializar si no existen
+  let misArreglos = JSON.parse(localStorage.getItem("misArreglos")) || [
+    [],
+    [],
+    [],
+    [],
+    [],
+  ];
+
+  // Verificar que el índice esté dentro del rango
+  if (indice < 0 || indice >= misArreglos.length) {
+    console.error("Índice fuera de rango");
+    return;
+  }
+
+  // Verificar que el número no exista en ese arreglo
+  if (misArreglos[indice].includes(numeroBola)) {
+    console.warn(`El número ${numeroBola} ya está en el arreglo ${indice}`);
+    return;
+  }
+
+  // Agregar el número
+  misArreglos[indice].push(numeroBola);
+
+  // Guardar nuevamente en localStorage
+  localStorage.setItem("misArreglos", JSON.stringify(misArreglos));
+
+  console.log(`Número ${numeroBola} guardado en el arreglo ${indice}`);
+}
+
+
+function pintarCartones() {
+  // Obtener datos desde localStorage
+  const misArreglos = JSON.parse(localStorage.getItem("misArreglos"));
+
+  if (!Array.isArray(misArreglos)) {
+    console.warn("No hay datos válidos en localStorage.");
+    return;
+  }
+
+  // Recorrer cada tabla tipo carton-0, carton-1, etc.
+  misArreglos.forEach((numerosSeleccionados, index) => {
+    const tabla = document.getElementById(`carton-${index}`);
+    if (!tabla) return;
+
+    const celdas = tabla.querySelectorAll("td");
+
+    celdas.forEach((td) => {
+      const valor = td.innerText.trim();
+
+      // Pintar si el valor está en la lista
+      if (numerosSeleccionados.includes(Number(valor))) {
+        td.style.backgroundColor = "#ffe082"; // dorado suave
+        td.style.color = "#000";
+        td.style.fontWeight = "bold";
+        td.style.border = "2px solid #fdd835";
+        td.style.borderRadius = "4px";
+      }
+    });
+  });
+}
+
+function eliminarDB() {
+  localStorage.removeItem("misArreglos");
+  console.log("Base de datos eliminada.");
+}
+
+function eliminarNumero(indice, numero) {
+  // Obtener los datos del localStorage
+  let misArreglos = JSON.parse(localStorage.getItem("misArreglos"));
+
+  if (!Array.isArray(misArreglos)) {
+    console.warn("No hay datos válidos en localStorage.");
+    return;
+  }
+
+  if (indice < 0 || indice >= misArreglos.length) {
+    console.error("Índice fuera de rango.");
+    return;
+  }
+
+  // Filtrar para eliminar el número
+  misArreglos[indice] = misArreglos[indice].filter((n) => n !== numero);
+
+  // Guardar de nuevo en localStorage
+  localStorage.setItem("misArreglos", JSON.stringify(misArreglos));
+
+  console.log(`Número ${numero} eliminado del arreglo ${indice}`);
+}
+
 
 async function eresGanador(data){
   ganador = true;
