@@ -207,16 +207,12 @@ async function inicializar() {
   if (btnEliminar) {
 
     btnEliminar.addEventListener("click", async () => {
-
+      eliminarSala(sala.id_partida, usuario.id_usuario);
     });
   }
   if (btnCerrar) {
 
     btnCerrar.addEventListener("click", async () => {
-      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
-      if (confirmar) {
-        eliminarSala(sala.id_partida, usuario.id_usuario);
-      }
       eliminarSala(sala.id_partida, usuario.id_usuario);
     })
   }
