@@ -13,6 +13,7 @@ const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de En
 const partidasRouter = require('./js/crud/partidas'); // Importar las rutas de Partida.js
 const cartonesRouter = require("./js/crud/cartones")
 const cartonUsuarioRouter = require("./js/crud/carton_usuario")
+const juegoRouter = require("./js/api/juego")
 const nodemiler = require('nodemailer');
 const crypto = require("crypto")
 const { Email } = require('./js/email/email');
@@ -312,6 +313,9 @@ app.use("/api/carton-usuario", cartonUsuarioRouter)
 
 // Usar ruta del CRUD partidas.js
 app.use('/api/partidas', partidasRouter);
+
+//rutas para API de juego
+app.use('/api/juego', juegoRouter);
 
 //Inicializar Socket.IO
 const io = new Server(server);

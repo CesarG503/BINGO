@@ -38,7 +38,7 @@ async function getUsuario() {
 }
 
 async function getNuevoNumero(id_room, id_host) {
-  const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}/extraer`)
+  const response = await fetch(`/api/juego/extraer/${id_room}`)
   if (!response.ok) {
     console.error("Error al obtener un nuevo número")
     return
@@ -52,14 +52,14 @@ export function emitirNumeroNuevo(numero, id_room, id_host) {
 }
 
 async function renderNumerosLlamados(id_room) {
-  const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}`)
+  const response = await fetch(`/api/juego/estado/${id_room}`)
   if (!response.ok) {
     console.error("Error al obtener los números llamados")
     return
   }
 
   const data = await response.json()
-  data.partida.numbers.forEach((numero) => {
+  data.numbers.forEach((numero) => {
     addBallGrid(numero)
   })
 }

@@ -38,8 +38,9 @@ btnBingo.addEventListener("click", async () => {
 
     carton.push(fila);
   });
+  const send_usuario = await getUsuario();
 
-  callBingo(carton, seleccionados, idRoom.textContent, await getUsuario());
+  callBingo(carton, seleccionados, idRoom.textContent, send_usuario);
 });
 
 
@@ -534,22 +535,22 @@ async function renderUsuariosEnSala(id_room) {
 }
 
 async function renderNumerosLlamados(id_room) {
-  const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}`)
+  const response = await fetch(`/api/juego/estado/${id_room}`)
   if (!response.ok) {
     console.error("Error al obtener los números llamados")
     return
   }
   const data = await response.json()
   numerosLlamados.innerHTML = "" // Limpiar la lista antes de renderizar
-  data.partida.numbers.forEach((numero) => {
+  data.numbers.forEach((numero) => {
     const span = document.createElement("span")
     span.textContent = numero
     span.className = "called-number"
     numerosLlamados.insertBefore(span, numerosLlamados.firstChild);
   })
 
-  if (data.partida.numbers.length > 0 && numeroActual.textContent === "--") {
-    numeroActual.textContent = data.partida.numbers[data.partida.numbers.length - 1]
+  if (data.numbers.length > 0 && numeroActual.textContent === "--") {
+    numeroActual.textContent = data.numbers[data.numbers.length - 1]
   }
 }
 

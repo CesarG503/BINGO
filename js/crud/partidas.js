@@ -68,6 +68,16 @@ router.post("/:id/registrarse", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado" })
     }
 
+    //Verificar que la partida está activa
+    const partidaEstado = await pool.query("SELECT estado FROM Partidas WHERE id_partida = $1", [id])
+    if (partidaEstado.rows.length === 0) {
+      return res.status(404).json({ error: "Partida no encontrada" })
+    }
+    
+    if (partidaEstado.rows[0].estado !== 0) {
+      return res.status(403).json({ error: "No se puede registrar si la partida ya está activa" })
+    }
+
     // Verificar que la partida existe
     const partidaCheck = await pool.query("SELECT id_partida FROM Partidas WHERE id_partida = $1", [id])
     if (partidaCheck.rows.length === 0) {
