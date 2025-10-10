@@ -27,4 +27,4 @@ function generateUniqueId(length = 5) {
         return result;
     }
 
-export default {getNext,generateUniqueId};
+module.exports = {getNext,generateUniqueId};

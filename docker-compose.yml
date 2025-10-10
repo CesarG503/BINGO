@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    container_name: app_bingo
+    restart: always
+    ports:
+      - "3001:3000" # host:container
+    environment:
+      - DATA_BASE_URL=postgresql://postgres:adminBingo14@db:5432/bingodb
+      - NODE_ENV=production
+      - DB_HOST=db
+      - GOOGLE_API_KEY="hfsk pvjy gdhe qtxe"
+      - PORT=3000
+      - API_BASE_URL="http://localhost:3001"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  db:
+    image: postgres:16
+    container_name: db_bingo
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: adminBingo14
+      POSTGRES_DB: bingodb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+volumes:
+  postgres_data:

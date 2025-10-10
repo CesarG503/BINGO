@@ -1,7 +1,7 @@
 const express = require('express');
 const pool = require('../db/db');
 const { authenticateToken } = require('../authenthicated');
-const {getNext, generateUniqueId} = require('../ramdon').default;
+const {getNext, generateUniqueId} = require('../ramdon');
 
 const router = express.Router();
 

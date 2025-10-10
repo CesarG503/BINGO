@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 
-export const authenticateToken = (req, res, next) => {
+const authenticateToken = (req, res, next) => {
   let token;
   const authHeader = req.headers['authorization'];
   if (authHeader) {
@@ -24,7 +24,7 @@ export const authenticateToken = (req, res, next) => {
   });
 };
 
-export function validateRole(role) {
+function validateRole(role) {
   return (req, res, next) => {
     const user = req.user;
     if (!user) {
@@ -38,7 +38,7 @@ export function validateRole(role) {
   };
 }
 
-export const authenticateSocket = (socket, next) => {
+const authenticateSocket = (socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) return res.sendStatus(401);
 
@@ -53,3 +53,5 @@ export const authenticateSocket = (socket, next) => {
     next();
   });
 }
+
+module.exports = { authenticateToken, validateRole, authenticateSocket };
