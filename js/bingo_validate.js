@@ -1,22 +1,22 @@
 async function validarCarton(tablero, seleccionados, idPartida) {
     let numerosGanadores = []
-     const respose = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${idPartida}`);
+     const respose = await fetch(`/api/juego/estado/${idPartida}`);
     if (!respose.ok) {
         console.error('Error al obtener los datos de la partida');
         return [];
     }
     const data = await respose.json();
-    if (!data || !data.partida || !data.partida.numbers) {
+    if (!data || !data.numbers) {
         console.error('Datos de la partida no válidos');
         return [];
     }
-    if(data.partida.numbers.length === 0) {
+    if(data.numbers.length === 0) {
         console.error('No hay números en la base de datos');
         return [];
     }
 
     for (let num of seleccionados) {
-        if (num !== "FREE" && !data.partida.numbers.includes(num)) {
+        if (num !== "FREE" && !data.numbers.includes(num)) {
             console.error(`Carton invalido`);
             return [];
         }
@@ -71,6 +71,28 @@ async function validarCarton(tablero, seleccionados, idPartida) {
     return numerosGanadores;
 }
 
+function validarCartonConReferencia(tablero, tableroReferencia, seleccionados) {
+    const n = tablero.length;
+    // Validar que las casillas seleccionadas correspondan a 1 en el tableroReferencia
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            const valor = tablero[i][j];
+            const referencia = tableroReferencia[i][j];
+            if (seleccionados.includes(valor)) {
+                if (referencia !== "1" && valor !== "FREE") {
+                    return false;
+                }
+            } else {
+                if (referencia === "1" && valor !== "FREE") {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 module.exports = {
-    validarCarton
+    validarCarton,
+    validarCartonConReferencia
 };

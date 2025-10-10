@@ -17,7 +17,7 @@ const juegoRouter = require("./js/api/juego")
 const nodemiler = require('nodemailer');
 const crypto = require("crypto")
 const { Email } = require('./js/email/email');
-const {validarCarton} = require('./js/bingo_validate');
+const {validarCarton,validarCartonConReferencia} = require('./js/bingo_validate');
 
 const dotenv = require('dotenv');
 dotenv.config();
