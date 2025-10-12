@@ -11,41 +11,37 @@
 </head>
 
 <body>
-    <!-- Imagen de perfil flotante -->
-    <div class="profile-icon" onclick="toggleProfilePanel()" id="imagenPequeña">
-        <img src="" alt="Perfil" id="mainProfileImg">
-    </div>
-
-    <!-- Panel deslizante de perfil -->
+    <!--BORON PERFIL -->
+    <div class="profile-icon" onclick="toggleProfilePanel()" id="imagenPequeña"></div>
+    <!--FIN DE PERFIL-->
     <div class="profile-panel" id="profilePanel">
         <div class="row align-items-center">
             <div class="col">
-                <button class="bingo-button px-3 py-2" id="botonTienda">
-                    <i class="bi bi-cart-fill"></i>
-                </button>
+                <a href="/tienda" class="btn-custom w-100 tienda" style="max-width: 75px;">
+                    <img src="/img/tienda.png" alt="Tienda">
+                </a>
             </div>
             <div class="col d-flex flex-row-reverse">
-                <button class="bingo-button px-3 py-2" onclick="toggleProfilePanel()" id="botonCerrar">
-                    <i class="bi bi-x-lg"></i>
-                </button>
+                <a onclick="toggleProfilePanel()" id="botonCerrar" class="btn-custom w-100 cerrar"
+                    style="max-width: 75px;">
+                    <img src="/img/cerrar.png" alt="Cerrar">
+                </a>
             </div>
         </div>
 
         <div class="profile-img-container">
-            <div class="d-flex justify-content-center">
-                <img src="" alt="" class="profile-img"
-                    id="mainProfileImg2">
+            <div class="d-flex justify-content-center" id="imgUse">
+                <!-- La imagen se carga dinámicamente -->
             </div>
             <div class="text-center" style="padding-top: 5px;">
-                <button class="btn bingo-button px-4 py-2" onclick="toggleImageDropdown()">
+                <button class="btn bingo-button px-4 py-2 estilo-brillo" onclick="toggleImageDropdown()">
                     <i class="bi bi-pencil-square me-2"></i> Editar Imagen
                 </button>
             </div>
 
-            <!-- donde se crea el menu de imagenes -->
             <div id="imageDropdown" class="image-selector shadow p-3 rounded bg-white" style="display: none;">
                 <div class="d-flex flex-wrap gap-2 justify-content-center" id="listImgs">
-                    
+                    <!-- Las imágenes se generan dinámicamente -->
                 </div>
             </div>
 
@@ -61,8 +57,8 @@
         <div class="info-section">
             <label>Username:</label>
             <div class="d-flex align-items-center">
-                <span id="username" class="editable-text me-2">jenny_w</span>
-                <button class="bingo-button edit-inline-btn" onclick="hacerEditable('username')">
+                <span id="username" class="editable-text me-2">U</span>
+                <button class="bingo-button edit-inline-btn estilo-brillo" onclick="hacerEditable('username')">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
             </div>
@@ -72,20 +68,19 @@
             <label>Email:</label>
             <div class="d-flex align-items-center">
                 <span id="email" class="editable-text me-2"></span>
-                <button class="bingo-button edit-inline-btn" onclick="hacerEditable('email')">
+                <button class="bingo-button edit-inline-btn estilo-brillo" onclick="hacerEditable('email')">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
             </div>
         </div>
 
         <div class="text-center mt-4">
-            <button class="btn bingo-button px-4 py-2" onclick="guardarPerfil()">
+            <button class="btn bingo-button px-4 py-2 estilo-brillo" onclick="guardarPerfil()">
                 <i class="bi bi-save-fill me-2"></i>Guardar cambios
             </button>
         </div>
-
-
     </div>
+    <!--FIN DE PERFIL-->
 
     <script src="/js/perfil/script.js" defer></script>
     <script type="module" src="/js/perfil/perfil.js"></script>

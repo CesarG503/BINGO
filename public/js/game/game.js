@@ -3,7 +3,7 @@ import { emitirNumeroNuevo, btnNuevoNumero } from '/js/room/host_connection.js';
 let carrusel = document.getElementById("carrusel");
 let canva = document.querySelector(".canva");
 const repeticiones = 9;
-const x = 0.5; //Duración de animaciones
+const x = 0.1; //Duración de animaciones
 const desplazamientoX = ((-630 * repeticiones) + 630)  + 'px' //Para calcular el desplazamiento
 let numerosLlamados = new Set(); // Array para almacenar los números llamados
 

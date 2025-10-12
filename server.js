@@ -11,6 +11,7 @@ const path = require('path'); // Importar path para manejar rutas de archivos
 const pool = require('./js/db/db'); // Importar la conexión a la base de datos
 const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de Entrenadores.js
 const partidasRouter = require('./js/crud/partidas'); // Importar las rutas de Partida.js
+const partidaDB = require('./js/db/partida');
 const cartonesRouter = require("./js/crud/cartones")
 const cartonUsuarioRouter = require("./js/crud/carton_usuario")
 const juegoRouter = require("./js/api/juego")
@@ -81,6 +82,32 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Error logging in' });
   }
+});
+
+// Ruta para que el Host/Admin guarde el patrón ganador.
+app.post('/api/partida/patron/:idPartida', authenticateToken, validateRole(0), async (req, res) => {
+    const { idPartida } = req.params;
+    const { patron } = req.body; // El frontend envía { patron: [["1","0",...], ...] }
+
+    // *** NUEVA LÍNEA DE DEPURACIÓN ***
+    console.log('Patrón recibido (tipo):', typeof patron);
+    console.log('Patrón recibido (valor):', patron);
+    console.log('Patrón recibido (JSON String):', JSON.stringify(patron));
+    // **********************************
+
+    // Validación básica
+    if (!patron || !Array.isArray(patron) || patron.length !== 5 || patron.some(row => row.length !== 5)) {
+        return res.status(400).json({ message: 'Patrón no válido. Debe ser una matriz 5x5.' });
+    }
+
+    try {
+        // Usar la función de acceso a datos que creamos
+        await partidaDB.guardarPatronGanador(idPartida, patron); 
+        res.status(200).json({ message: 'Patrón ganador guardado con éxito.' });
+    } catch (error) {
+        console.error('Error al guardar el patrón ganador:', error);
+        res.status(500).json({ message: 'Error interno del servidor al guardar el patrón.' });
+    }
 });
 
 // Configurar la ruta raíz para servir login.html

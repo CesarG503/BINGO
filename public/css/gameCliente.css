@@ -191,22 +191,35 @@ table .bola {
   gap: 20px;
 }
 
-.bolaSeleccionada{
-  background-color:#F9F2F2;
-  color: black;
+.bolaSeleccionada {
+  /* Elimina el background-color y deja solo la imagen */
   font-weight: bold;
+
+  /* Reemplaza con la ruta de tu imagen real del marcador */
+  background-image: url('../img/Pinceles/Pincel1.png'); 
+  
+  /* Ajustes para la imagen */
+  background-size: 90% 90%; /* Ajusta el tamaño para que no cubra los bordes */
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 @keyframes destello {
   0%, 100% {
-    box-shadow: 0 0 10px 5px rgba(251, 255, 2, 0.6),
-                0 0 20px 10px rgba(251, 255, 2, 0.4),
-                0 0 30px 15px rgba(251, 255, 2, 0.2);
+    /* Base: Azul sereno (RGB: 135, 206, 250 - Sky Blue) */
+    box-shadow: 0 0 8px 4px rgba(135, 206, 250, 0.7), 
+                /* Intermedio: Azul grisáceo suave (RGB: 173, 216, 230 - Light Blue) */
+                0 0 16px 8px rgba(173, 216, 230, 0.5),
+                /* Exterior: Casi transparente */
+                0 0 24px 12px rgba(173, 216, 230, 0.3);
   }
   50% {
-    box-shadow: 0 0 20px 10px rgba(251, 255, 2, 0.9),
-                0 0 35px 20px rgba(251, 255, 2, 0.6),
-                0 0 50px 25px rgba(251, 255, 2, 0.3);
+    /* Base: Más brillante */
+    box-shadow: 0 0 15px 7px rgba(135, 206, 250, 0.9),
+                /* Intermedio: Más visible */
+                0 0 25px 12px rgba(173, 216, 230, 0.7),
+                /* Exterior: Ligeramente más opaco */
+                0 0 35px 17px rgba(173, 216, 230, 0.5);
   }
 }
 
