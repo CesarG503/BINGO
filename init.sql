@@ -62,4 +62,4 @@ CREATE TABLE password_reset_tokens (
 
 INSERT INTO Usuarios (username, password, rol, email) VALUES
 ('admin', '$2a$12$nkeTCrCf/HHxQDksPhFl0evtMMSA442/HRgQAEwEgyLHY625D3f9G', 0, 'admin@mail.com'),
-('Gerson', '$2a$12$nkeTCrCf/HHxQDksPhFl0evtMMSA442/HRgQAEwEgyLHY625D3f9G', 0, 'bm609385@gamil.com');
+('Gerson', '$2a$12$nkeTCrCf/HHxQDksPhFl0evtMMSA442/HRgQAEwEgyLHY625D3f9G', 1, 'bm609385@gamil.com');

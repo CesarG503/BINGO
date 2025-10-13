@@ -193,6 +193,7 @@ table .bola {
 
 .bolaSeleccionada {
   /* Elimina el background-color y deja solo la imagen */
+  color: black;
   font-weight: bold;
 
   /* Reemplaza con la ruta de tu imagen real del marcador */

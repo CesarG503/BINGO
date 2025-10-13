@@ -195,7 +195,7 @@ async function inicializar() {
   })
 
   socket.on("ganador", (data) => {
-    jugadorGanador(data.ganador.username, data.carton, data.numerosSeleccionados, data.numerosGanadores);
+    jugadorGanador(data.ganador, data.carton, data.numerosSeleccionados, data.numerosGanadores);
   });
 
   if (btnIniciar) {
@@ -224,7 +224,7 @@ async function inicializar() {
 }
 
 // Mostrar alerta de ganador
-function jugadorGanador(nombre, carton, numerosSeleccionados, numerosGanadores = []) {
+function jugadorGanador(usuario, carton, numerosSeleccionados, numerosGanadores = []) {
   Swal.fire({
     title: "<strong>🎉 ¡Bingo! 🎉</strong>",
     width: 700,
@@ -233,16 +233,17 @@ function jugadorGanador(nombre, carton, numerosSeleccionados, numerosGanadores =
     color: "#fff",
     html: `
       <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
-        <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/3"
+        <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}"
              alt="Ganador"
              style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
         <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>
-        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${nombre}</h1>
+        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${usuario.username}</h1>
         <div id="carton-render"></div>
       </div>
     `,
     showCloseButton: true,
     showConfirmButton: false,
+    allowOutsideClick: false,
     didOpen: () => {
       const contenedor = document.getElementById("carton-render");
       // Pintar el cartón del ganador

@@ -151,6 +151,7 @@ async function unirseSala() {
     if (localStorage.getItem("penalizacion")) {
       localStorage.removeItem("penalizacion") 
     }
+    crearLocalStorage();
   }
 
   const registro = await registrarseSala(sala.id_partida)
@@ -686,18 +687,14 @@ function eliminarNumero(indice, numero) {
 
 async function eresGanador(data){
   ganador = true;
-  console.log(data);
   const usuario = data.ganador;
-  const mensaje = `¡${usuario.username}! Eres el ganador de la partida.`
-  await menssaje(usuario, mensaje,)
-  socket.disconnect()
+
+  await messageGanador(data, usuario, true);
 }
 
 async function hayGanador(data){
   const usuario = data.ganador
-  const mensaje = `¡${usuario.username}! Ha ganado la partida.`
-  await menssaje('usuario', mensaje, 'success')
-  socket.disconnect()
+  await messageGanador(data, usuario)
 }
 
 function callBingo(carton, seleccionados, id_room, usuario) {
@@ -707,6 +704,30 @@ function callBingo(carton, seleccionados, id_room, usuario) {
     carton: carton,
     ganador: usuario
   })
+}
+
+async function messageGanador(data, usuario, you = false) {
+  const mensaje = you ? "<strong>🎉 ¡Bingo! 🎉</strong>" : `<strong>${usuario.username}, ha ganado el juego.</strong>`;
+  Swal.fire({
+    title: mensaje,
+    width: 700,
+    padding: "2.5em",
+    background: "#1A1A1A",
+    color: "#fff",
+    html: `
+      <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
+        <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}"
+             alt="Ganador"
+             style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
+        <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>
+        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${usuario.username}</h1>
+        <div id="carton-render"></div>
+      </div>
+    `,
+    showCloseButton: true,
+    showConfirmButton: false,
+    allowOutsideClick: false,
+  });
 }
 
 async function menssaje(titulo, texto, icono = null) {

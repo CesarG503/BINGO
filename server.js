@@ -163,6 +163,11 @@ app.get('/home', authenticateToken, (req, res) => {
   }
 });
 
+//Ruta pára unirse a una sala como admin
+/*app.get('/room/join', authenticateToken, validateRole(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'home.html'));
+});*/
+
 app.get('/room/user/:roomId', authenticateToken, async (req, res) => {
   const roomId = req.params.roomId;
   res.render('user_room', { id_room: roomId });
@@ -394,7 +399,7 @@ io.on('connection', (socket) => {
   socket.on('callBingo', async (data) => {
     // Validar el cartón del usuario
     const numerosGanadores = await validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
-    if (numerosGanadores.length === 0 || numerosGanadores.length < 4) {
+    if (numerosGanadores.length === 0) {
       return socket.emit('errorCarton', 'Cartón inválido o no hay bingo');
     }
 
