@@ -5,6 +5,9 @@ async function getNext(numeros){
         // Ya se han obtenido todos los números posibles
         return [Array.from(numerosObtenidos), null];
     }
+    if(numerosObtenidos.size === 75){
+        return [Array.from(numerosObtenidos), null];
+    }
     do {
         nextNumber = getRandomInt(1, 76);
     } while (numerosObtenidos.has(nextNumber));
