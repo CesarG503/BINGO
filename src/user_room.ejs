@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/tiendaUser.css">
     <link rel="stylesheet" href="/css/perfil.css">
     <link rel="stylesheet" href="/css/gameCliente.css">
+    <link rel="stylesheet" href="/css/game.css">
    
 </head>
 <body class="bg-dark text-light">
@@ -126,12 +127,37 @@
             </div>
 
 
-            <!-- Número actual -->
-            <div class="row justify-content-center mb-4">
-                <div class="col-md-6">
+            <!-- Número actual y Patrón Ganador -->
+            <div class="row justify-content-center align-items-center mb-4">
+                <!-- Número Actual -->
+                <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
                     <div class="current-number-card text-center">
                         <h3 class="text-white mb-2">Número Actual</h3>
                         <div class="current-number" id="numero-actual">--</div>
+                    </div>
+                </div>
+                <!-- Patrón Ganador -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="formaParaGanar">
+                        <h4 class="text-white mb-3 text-center">Patrón Ganador</h4>
+                        <table class="tabla-bingo-patron border border-2 mx-auto" id="tabla-bingo-patron">
+                            <thead>
+                                <tr>
+                                    <th class="bg-primary-subtle"><div class="bola bola-b">B</div></th>
+                                    <th class="bg-success-subtle"><div class="bola bola-i">I</div></th>
+                                    <th class="bg-info-subtle"><div class="bola bola-n">N</div></th>
+                                    <th class="bg-warning-subtle"><div class="bola bola-g">G</div></th>
+                                    <th class="bg-danger-subtle"><div class="bola bola-o">O</div></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                                <tr><td></td><td></td><td class="free-space">FREE</td><td></td><td></td></tr>
+                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

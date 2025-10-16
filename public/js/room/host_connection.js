@@ -17,7 +17,7 @@ const fondo = [
   "bg-danger",
 ];
 
-let socket
+export let socket
 
 async function getSala() {
   const response = await fetch(`/api/partidas/${idRoom.textContent}`)
@@ -65,12 +65,52 @@ async function renderNumerosLlamados(id_room) {
 }
 
 async function renderUsuariosEnSala() {
-  const usuarios = await usuariosEnSala()
+  const usuarios = await usuariosEnSala();
   if (!usuarios) {
-    console.error("No se pudieron obtener los usuarios en la sala")
-    return
+    console.error("No se pudieron obtener los usuarios en la sala");
+    return;
   }
-  jugadores.textContent = usuarios.length
+  
+  // Actualizar el contador de jugadores
+  const contadorJugadores = document.getElementById("n-jugadores");
+  if(contadorJugadores){
+    contadorJugadores.textContent = usuarios.length;
+  }
+
+  // Renderizar la lista detallada de jugadores
+  const jugadores_content = document.getElementById("jugadores_content");
+  if (!jugadores_content) {
+    console.error('No se encontró el contenedor con id "jugadores_content" en el DOM.');
+    return;
+  }
+  jugadores_content.innerHTML = ""; // Limpiar la lista antes de renderizar
+
+  usuarios.forEach((usuario) => {
+    const datos_jugador = document.createElement("a");
+    const img = document.createElement("img");
+    const span = document.createElement("span");
+
+    datos_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2", "btn-custom", "w-100", "perfil");
+
+    if (usuario.img_id) {
+      img.src = `/img/Flork/${usuario.img_id}.jpg`;
+    } else {
+      // Fallback a un avatar con inicial si no hay img_id
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'user-avatar';
+      avatarDiv.textContent = usuario.username.charAt(0).toUpperCase();
+      datos_jugador.appendChild(avatarDiv);
+    }
+    
+    img.alt = usuario.username;
+    span.textContent = usuario.username;
+
+    if (usuario.img_id) {
+        datos_jugador.appendChild(img);
+    }
+    datos_jugador.appendChild(span);
+    jugadores_content.appendChild(datos_jugador);
+  });
 }
 
 async function usuariosEnSala() {
@@ -233,7 +273,7 @@ function jugadorGanador(usuario, carton, numerosSeleccionados, numerosGanadores 
     color: "#fff",
     html: `
       <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
-        <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}"
+        <img src="/img/Flork/${usuario.img_id}.jpg"
              alt="Ganador"
              style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
         <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>

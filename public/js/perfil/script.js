@@ -62,7 +62,7 @@ function toggleImageDropdown() {
 // ===============================
 // Crea la lista de imágenes (incluye la imagen predeterminada como opción visual)
 // ===============================
-function crearImagenes() {
+async function crearImagenes() {
   const divImgs = document.getElementById("listImgs")
   divImgs.innerHTML = ""
 
@@ -90,15 +90,21 @@ function crearImagenes() {
   }
   divImgs.appendChild(defaultDiv)
 
-  // Agregar las imágenes preestablecidas
-  for (let i = 1; i < 12; i++) {
-    const img = document.createElement("img")
-    img.src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${i}`
-    img.alt = i
-    img.className = "preset-avatar profile-img"
-    img.setAttribute("onclick", "selectPresetImage(this)")
-    img.id = "Avatar"
-    divImgs.appendChild(img)
+  // Agregar las imágenes preestablecidas desde el API
+  try {
+    const response = await fetch('/api/profile-images');
+    const images = await response.json();
+    images.forEach(imgId => {
+      const img = document.createElement("img")
+      img.src = `/img/Flork/${imgId}.jpg`
+      img.alt = imgId
+      img.className = "preset-avatar profile-img"
+      img.setAttribute("onclick", "selectPresetImage(this)")
+      img.id = "Avatar"
+      divImgs.appendChild(img)
+    });
+  } catch (error) {
+    console.error('Error fetching profile images:', error);
   }
 }
 crearImagenes()
@@ -250,6 +256,16 @@ function guardarTexto(input) {
     input.focus()
     input.dataset.saved = "false"
     return
+  }
+
+  if (id === "username") {
+    const usernameRegex = /^[a-zA-Z]+$/;
+    if (!usernameRegex.test(value)) {
+      errorElem.textContent = "El nombre de usuario solo puede contener letras."
+      input.focus()
+      input.dataset.saved = "false"
+      return
+    }
   }
 
   errorElem.remove()

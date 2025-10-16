@@ -191,11 +191,17 @@ async function unirseSala() {
     renderUsuariosEnSala(sala.id_partida)
   })
 
-  socket.on("inicioSala", async () => {
+  socket.on("inicioSala", async (data) => {
     // Guardar cartones en la BD cuando inicie la partida
     await saveCartonesToPartida(sala.id_partida)
     activarControles(sala.id_partida)
+    if (data && data.patron) {
+      renderPatronGanador(data.patron)
+    }
   })
+  socket.on("mostrarPatron", (data) => {
+    if (data && data.patron) renderPatronGanador(data.patron)
+  });
 
   socket.on("nuevoNumero", (numero) => {
     renderNuevoNumero(numero)
@@ -524,7 +530,7 @@ async function renderUsuariosEnSala(id_room) {
     cuadro_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2")
     datos_jugador.classList.add("btn-custom", "w-100", "perfil")
 
-    img.src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`
+    img.src = `/img/Flork/${usuario.img_id}.jpg`
     img.alt = usuario.username
     span.textContent = usuario.username
 
@@ -716,7 +722,7 @@ async function messageGanador(data, usuario, you = false) {
     color: "#fff",
     html: `
       <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
-        <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}"
+        <img src="/img/Flork/${usuario.img_id}.jpg"
              alt="Ganador"
              style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
         <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>
@@ -728,6 +734,32 @@ async function messageGanador(data, usuario, you = false) {
     showConfirmButton: false,
     allowOutsideClick: false,
   });
+}
+
+function renderPatronGanador(patron) {
+  const tabla = document.getElementById('tabla-bingo-patron');
+  if (!tabla) return;
+
+  const celdas = tabla.querySelectorAll('tbody td');
+
+  // Limpiar el patrón anterior
+  celdas.forEach(celda => {
+    if (!celda.classList.contains('free-space')) {
+        celda.classList.remove('seleccionadotd');
+    }
+  });
+
+  const filas = tabla.querySelectorAll('tbody tr');
+
+  for (let i = 0; i < patron.length; i++) {
+    const celdasFila = filas[i].querySelectorAll('td');
+    for (let j = 0; j < patron[i].length; j++) {
+      if (patron[i][j] === '1') {
+        if (i === 2 && j === 2) continue;
+        celdasFila[j].classList.add('seleccionadotd');
+      }
+    }
+  }
 }
 
 async function menssaje(titulo, texto, icono = null) {

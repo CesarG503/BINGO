@@ -21,7 +21,7 @@ async function cargarPerfil() {
     // Función para crear elemento de imagen
     const createImageElement = (img_id, username, size = 200) => {
       return `
-        <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${img_id}"
+        <img src="/img/Flork/${img_id}.jpg"
              alt="${img_id}"
              class="rounded-circle profile-img"
              width="${size}"
@@ -44,7 +44,7 @@ async function cargarPerfil() {
     const iconDiv = document.getElementById("imagenPequeña")
     if (iconDiv) {
       if (data.img_id && data.img_id.trim() !== "") {
-        iconDiv.innerHTML = `<img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${data.img_id}" 
+        iconDiv.innerHTML = `<img src="/img/Flork/${data.img_id}.jpg"
                                            alt="${data.username}" 
                                            class="rounded-circle" 
                                            width="60" 

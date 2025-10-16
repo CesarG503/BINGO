@@ -90,6 +90,7 @@ body {
   width: 150px;
   height: 150px;
   object-fit: cover;
+  object-position: center; /* Asegura que la imagen esté centrada */
   border-radius: 50%;
   border: 4px solid var(--primary-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -172,10 +173,21 @@ input.edit-input {
   position: absolute;
   top: 100%;
   right: 0;
-  width: 250px;
-  background: linear-gradient(135deg, #52526d, #2d2d41);
+  width: 300px; /* Aumentado para más espacio */
+  max-height: 400px; /* Altura máxima para permitir scroll */
+  overflow-y: auto; /* Habilitar scroll vertical */
+  background: linear-gradient(135deg, #2d2d41, #17171f);
   z-index: 1060;
-  border: 1px solid #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+#listImgs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 1rem;
 }
 
 .preset-avatar {
@@ -184,13 +196,25 @@ input.edit-input {
   object-fit: cover;
   border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
   border: 2px solid transparent;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .preset-avatar:hover {
-  transform: scale(1.05);
-  border-color: #4b2ea1;
+  transform: scale(1.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px var(--primary-color);
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(135deg, var(--primary-color), var(--infor-color));
+  border-radius: 50%;
 }
 
 .layout-btn {
@@ -224,6 +248,14 @@ input.edit-input {
   width: 60%;
   max-width: 100px;
   height: auto;
+}
+
+#jugadores_content .btn-custom img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 10px;
 }
 
 .btn-custom span {

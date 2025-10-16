@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { authenticateToken, authenticateSocket, validateRole } = require('./js/authenthicated'); // Importar la función de autenticación
 const { Server } = require('socket.io');
+const fs = require('fs');
 const path = require('path'); // Importar path para manejar rutas de archivos
 const pool = require('./js/db/db'); // Importar la conexión a la base de datos
 const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de Entrenadores.js
@@ -57,12 +58,20 @@ app.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
+    // Obtener una imagen de perfil aleatoria
+    const directoryPath = path.join(__dirname, 'public', 'img', 'Flork');
+    const files = fs.readdirSync(directoryPath);
+    const imageFiles = files.filter(file => file.endsWith('.jpg'));
+    const randomImage = imageFiles[Math.floor(Math.random() * imageFiles.length)];
+    const img_id = randomImage.replace('.jpg', '');
+
     const result = await pool.query(
-      'INSERT INTO Usuarios (username, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [username, email, hashedPassword]
+      'INSERT INTO Usuarios (username, email, password, img_id) VALUES ($1, $2, $3, $4) RETURNING *',
+      [username, email, hashedPassword, img_id]
     );
     res.json({ success: true, user: result.rows[0] });
   } catch (err) {
+    console.error('Error registering user:', err);
     res.status(500).json({ error: 'Error registering user' });
   }
 });
@@ -346,6 +355,18 @@ app.use("/api/carton-usuario", cartonUsuarioRouter)
 // Usar ruta del CRUD partidas.js
 app.use('/api/partidas', partidasRouter);
 
+app.get('/api/profile-images', (req, res) => {
+  const directoryPath = path.join(__dirname, 'public', 'img', 'Flork');
+  fs.readdir(directoryPath, (err, files) => {
+    if (err) {
+      console.error('Error reading profile images directory:', err);
+      return res.status(500).json({ error: 'Unable to scan images directory' });
+    }
+    const imageFiles = files.filter(file => file.endsWith('.jpg')).map(file => file.replace('.jpg', ''));
+    res.json(imageFiles);
+  });
+});
+
 //rutas para API de juego
 app.use('/api/juego', juegoRouter);
 
@@ -379,12 +400,27 @@ io.on('connection', (socket) => {
     socket.leave(data.id_room);
   });
 
-  socket.on('iniciarSala', (data) => {
+  socket.on('iniciarSala', async (data) => {
     if (socket.user.rol !== 0 || socket.user.uid !== data.host) {
       console.log(`Usuario sin permiso accedio para iniciar la sala ${data.id_room}`);
       return socket.emit('error', 'No tienes permiso para iniciar la sala');
     }
-    io.to(data.id_room).emit('inicioSala');
+    try {
+      const patron = await partidaDB.obtenerPatronGanador(data.id_room);
+      io.to(data.id_room).emit('inicioSala', { patron });
+    } catch (error) {
+      console.error('Error al obtener el patrón y emitir inicioSala:', error);
+      // Emitir de todas formas para que el juego comience, pero sin el patrón
+      io.to(data.id_room).emit('inicioSala', { patron: null });
+    }
+  });
+
+  socket.on('patronActualizado', (data) => {
+    if (socket.user.rol !== 0) {
+      return socket.emit('error', 'No tienes permiso para actualizar el patrón.');
+    }
+    // Re-emitir el patrón a todos en la sala, incluyendo al host
+    io.to(data.id_room).emit('mostrarPatron', { patron: data.patron });
   });
 
   socket.on('getNuevoNumero', (data) => {

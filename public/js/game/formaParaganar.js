@@ -1,4 +1,4 @@
-
+import { socket } from '/js/room/host_connection.js';
 
 const tablaPatron = document.getElementById("tabla-bingo-patron");
 const celdasPatron = tablaPatron.querySelectorAll("tbody td");
@@ -23,7 +23,7 @@ function obtenerPatronGanador() {
         const celdas = fila.querySelectorAll("td");
         celdas.forEach((celda, j) => {
             
-            // Si es la casilla central (2, 2), siempre es '1'
+            // Si es la casilla central (2, 2), siempre es '0'
             if (i === 2 && j === 2) {
                 patron[i].push("0");
             } else {
@@ -59,6 +59,10 @@ btnConfirmarPatron.addEventListener("click", async () => {
 
         if (response.ok) {
             Swal.fire('¡Patrón Guardado!', 'La forma ganadora ha sido confirmada.', 'success');
+            // Emitir el evento de socket para actualizar en tiempo real
+            if (socket) {
+                socket.emit('patronActualizado', { id_room: idPartida, patron: patron });
+            }
             // Deshabilitar la selección después de confirmar para evitar cambios accidentales
             celdasPatron.forEach(celda => celda.removeEventListener("click", this));
         } else {

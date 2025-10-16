@@ -64,7 +64,7 @@ function renderUsers() {
             <td>
                 ${
                   user.img_id
-                    ? `<img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${user.img_id}" 
+                    ? `<img src="/img/Flork/${user.img_id}.jpg"
                             alt="${user.username}" class="rounded-circle" width="40" height="40">`
                     : `<div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
                             style="width: 40px; height: 40px; font-weight: bold;">

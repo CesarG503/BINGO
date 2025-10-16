@@ -77,7 +77,7 @@ async function renderUsuariosEnSala() {
         const img = document.createElement('img');
         const p = document.createElement('p');
 
-        img.src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`;
+        img.src = `/img/Flork/${usuario.img_id}.jpg`;
         img.width = '50';
         img.height = '50';
         p.textContent = usuario.username;
