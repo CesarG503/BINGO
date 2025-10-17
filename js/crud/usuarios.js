@@ -92,14 +92,53 @@ router.post('/', async (req, res) => {
 // Actualizar un usuario
 router.put('/:id', authenticateToken, async (req, res) => {
   const { username, password, rol, creditos, img_id, email } = req.body;
+  const targetId = Number(req.params.id);
+  const requester = req.user;
+
+  // Only allow non-admin users to update their own profile. Admins can update any user.
+  if (requester.uid !== targetId && requester.rol !== 0) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   try {
+    // Fetch previous credits to compute delta for logging
+    const prevRes = await pool.query('SELECT creditos FROM Usuarios WHERE id_usuario = $1', [targetId]);
+    const prevCredits = prevRes.rows.length ? Number(prevRes.rows[0].creditos) : null;
+
     const result = await pool.query(
       `UPDATE Usuarios SET username = $1, password = $2, rol = $3, creditos = $4, img_id = $5, email = $6
        WHERE id_usuario = $7 RETURNING *`,
-      [username, password, rol, creditos, img_id, email, req.params.id]
+      [username, password, rol, creditos, img_id, email, targetId]
     );
-    res.send(result.rows[0]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const updated = result.rows[0];
+
+    // If the requester is admin and credits changed, insert a log transaction
+    if (requester.rol === 0 && typeof creditos === 'number' && prevCredits !== null && Number(updated.creditos) !== prevCredits) {
+      const delta = Number(updated.creditos) - prevCredits;
+      const cantidad = Math.abs(delta);
+      const tipo_operacion = delta > 0 ? 'asignacion' : 'descuento';
+
+      if (cantidad > 0) {
+        try {
+          await pool.query(
+            `INSERT INTO LogTransacciones (id_emisor, id_receptor, cantidad, tipo_operacion) VALUES ($1, $2, $3, $4)`,
+            [requester.uid, targetId, cantidad, tipo_operacion]
+          );
+        } catch (logErr) {
+          console.error('Error creando log transacción desde usuarios PUT:', logErr);
+          // don't fail the whole request because of logging error
+        }
+      }
+    }
+
+    res.send(updated);
   } catch (err) {
+    console.error('Error actualizando usuario:', err);
     res.status(500).json({ error: 'Error actualizando usuario' });
   }
 });

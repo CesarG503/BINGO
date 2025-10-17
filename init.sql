@@ -58,6 +58,14 @@ CREATE TABLE password_reset_tokens (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE LogTransacciones (
+    id_log SERIAL PRIMARY KEY,
+    id_emisor INT NOT NULL REFERENCES Usuarios(id_usuario),
+    id_receptor INT NOT NULL REFERENCES Usuarios(id_usuario),
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    tipo_operacion VARCHAR(50) NOT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 -- Usuario administrador por defecto
 
 INSERT INTO Usuarios (username, password, rol, email) VALUES
