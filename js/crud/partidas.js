@@ -50,7 +50,8 @@ router.get("/:id/usuarios", authenticateToken, async (req, res) => {
 
 router.post("/:id/registrarse", authenticateToken, async (req, res) => {
   const { id } = req.params
-  console.log(`Usuario ${req.user.uid} intentando unirse a la partida ${id}`)
+  const { cartones } = req.body
+  //console.log(`Usuario ${req.user.uid} intentando unirse a la partida ${id}`)
   try {
     // Verificar si el usuario ya está en la partida
     const checkUser = await pool.query(`SELECT * FROM partida_usuario WHERE id_partida = $1 AND id_usuario = $2`, [
@@ -83,12 +84,25 @@ router.post("/:id/registrarse", authenticateToken, async (req, res) => {
     if (partidaCheck.rows.length === 0) {
       return res.status(404).json({ error: "Partida no encontrada" })
     }
+     
+    //Verificar que el carton existe y pertenece al usuario
+    for (const id_carton of cartones) {
+      const cartonCheck = await pool.query(
+        `SELECT c.id_carton FROM cartones c
+                 JOIN carton_usuario cu ON c.id_carton = cu.id_carton
+                 WHERE c.id_carton = $1 AND cu.id_usuario = $2`,
+        [id_carton, req.user.uid],
+      )
+      if (cartonCheck.rows.length === 0) {
+        return res.status(404).json({ error: `Cartón ${id_carton} no encontrado o no pertenece al usuario` })
+      }
+    }
 
     // Insertar el usuario en la partida
     await pool.query(
-      `INSERT INTO partida_usuario (id_partida, id_usuario) 
-             VALUES ($1, $2) RETURNING *`,
-      [id, req.user.uid],
+      `INSERT INTO partida_usuario (id_partida, id_usuario, id_cartones) 
+             VALUES ($1, $2, $3) RETURNING *`,
+      [id, req.user.uid, JSON.stringify(cartones)],
     )
     res.status(201).json({ registrado: true })
   } catch (err) {
@@ -135,6 +149,7 @@ router.get("/:id/usuario/cartones", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado en la partida" })
     }
 
+    console.log("Cartones del usuario:", result.rows[0].id_cartones)
     res.json({ id_cartones: result.rows[0].id_cartones })
   } catch (err) {
     console.error("Error obteniendo cartones del usuario:", err)

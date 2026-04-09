@@ -132,13 +132,13 @@ async function unirseSala() {
   }
 
   const registrado = await usuarioRegistrado(sala.id_partida)
-
   if (sala.estado === 1 && registrado) {
     // Si la partida ya comenzó, cargar cartones desde la BD
     const cartonesLoaded = await loadCartonesFromPartida(sala.id_partida)
     if (!cartonesLoaded) {
-      // Si no hay cartones guardados, cargar desde localStorage
-      await loadSelectedCartones()
+      await menssaje("Error", "No se pudieron cargar tus cartones para esta partida.", 'error');
+      window.location.href = "/"
+      return
     }
     activarControles(sala.id_partida)
   } else if (sala.estado !== 0) {
@@ -154,9 +154,9 @@ async function unirseSala() {
     crearLocalStorage();
   }
 
-  const registro = await registrarseSala(sala.id_partida)
+  const registro = await getRegistro(sala.id_partida)
 
-  if (!registro) {
+  if (!registro.registrado) {
     console.error("Error al registrarse en la sala")
     return
   }
@@ -193,7 +193,7 @@ async function unirseSala() {
 
   socket.on("inicioSala", async (data) => {
     // Guardar cartones en la BD cuando inicie la partida
-    await saveCartonesToPartida(sala.id_partida)
+    //await saveCartonesToPartida(sala.id_partida)
     activarControles(sala.id_partida)
     if (data && data.patron) {
       renderPatronGanador(data.patron)
@@ -224,16 +224,22 @@ async function unirseSala() {
 }
 
 async function loadSelectedCartones() {
-  const storedCartones = localStorage.getItem("selectedCartones")
-  if (storedCartones) {
-    selectedCartones = JSON.parse(storedCartones)
+  const response = await fetch(`/api/partidas/${idRoom.textContent}/usuario/cartones`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    console.error("Error al cargar los cartones seleccionados")
+    return
+  }
+  const data = await response.json()
+  if (data.id_cartones && data.id_cartones.length > 0) {
+    selectedCartones = data.id_cartones
     await displaySelectedCartones()
   }
 }
 
 async function displaySelectedCartones() {
   if (selectedCartones.length === 0) return
-
   try {
     const cartonesData = []
     for (const cartonId of selectedCartones) {
@@ -476,14 +482,14 @@ async function usuarioRegistrado(id_room) {
     console.error("Error al verificar si el usuario es miembro de la sala")
     return false
   }
-
+  
   const data = await response.json()
   return data.registrado
 }
 
-async function registrarseSala(id_room) {
-  const response = await fetch(`/api/partidas/${id_room}/registrarse`, {
-    method: "POST",
+async function getRegistro(id_room) {
+  const response = await fetch(`/api/partidas/${id_room}/registrado`, {
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
