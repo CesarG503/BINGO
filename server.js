@@ -159,6 +159,10 @@ app.get('/admin', authenticateToken, validateRole(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'administrador.html'));
 });
 
+app.get('/logs', authenticateToken, validateRole(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'logs.html'));
+});
+
 app.get('/perfil', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'perfil.html'));
 });
@@ -354,6 +358,9 @@ app.use("/api/carton-usuario", cartonUsuarioRouter)
 
 // Usar ruta del CRUD partidas.js
 app.use('/api/partidas', partidasRouter);
+
+const logTransaccionesRouter = require("./js/crud/log_transacciones")
+app.use("/api/log-transacciones", logTransaccionesRouter)
 
 app.get('/api/profile-images', (req, res) => {
   const directoryPath = path.join(__dirname, 'public', 'img', 'Flork');

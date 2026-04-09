@@ -207,20 +207,23 @@ function soloLetras(e) {
 function validarPassword2(input) {
   const valor = input.value;
   const mensaje = document.getElementById('error-password');
-  const confirm = document.getElementById('password-Confirm');
+  const confirm = document.getElementById('passwordConfirm');
 
-  const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{5,}$/;
+  const regex = /^.{5,}$/;
 
   if (!regex.test(valor)) {
-    confirm.disabled = true;
-    confirm.value = '';
-    mensaje.textContent = 'La contraseña debe tener al menos 5 caracteres, una mayúscula, un número y un carácter especial.';
+    if (confirm) {
+      confirm.disabled = true;
+      confirm.value = '';
+    }
+    mensaje.textContent = 'La contraseña debe tener al menos 5 caracteres.';
     mensaje.classList.add('invalid');
     mensaje.classList.remove('valid');
   } else {
+    mensaje.textContent = '';
     mensaje.classList.add('valid');
     mensaje.classList.remove('invalid');
-    confirm.disabled = false;
+    if (confirm) confirm.disabled = false;
   }
 }
 

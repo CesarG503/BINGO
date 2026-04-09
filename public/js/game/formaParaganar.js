@@ -8,6 +8,7 @@ const btnConfirmarPatron = document.getElementById("btn-confirmar-patron");
 celdasPatron.forEach(celda => {
     if (!celda.classList.contains("free-space")) {
         celda.addEventListener("click", () => {
+            console.log("funciona");
             celda.classList.toggle("seleccionadotd");
         });
     }

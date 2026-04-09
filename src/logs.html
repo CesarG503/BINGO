@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logs de Transacciones - Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/logs.css">
+</head>
+<body>
+  <div class="main-container">
+    <div class="header-section">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="header-title">
+          <i class="fas fa-chart-line me-2"></i>
+          Logs de Transacciones
+        </h1>
+        <div>
+          <a href="/index" class="btn btn-back me-2">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+          </a>
+          <button id="refreshBtn" class="btn btn-refresh">
+            <i class="fas fa-sync-alt me-2"></i>Refrescar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="loadingContainer" class="loading-spinner">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+
+    <div id="contentContainer" style="display: none;">
+      <div class="summary-card">
+        <div class="summary-title">Total de Créditos Vendidos</div>
+        <h2 class="summary-amount" id="totalCredits">0</h2>
+      </div>
+
+      <div id="adminsContainer">
+        <!-- Admin cards will be generated here -->
+      </div>
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <i class="fas fa-folder-open fa-5x"></i>
+      <p>No se encontraron transacciones.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/admin/logs.js"></script>
+</body>
+</html>
