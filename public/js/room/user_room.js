@@ -1,19 +1,52 @@
 import getCookieValue from "/js/util/get_cookie.js"
+import {
+  obtenerInfoBola,
+  obtenerLetraColumna,
+  obtenerColorBola,
+  formatearBola,
+  crearElementoBola,
+  limpiarClasesColorBola,
+  BINGO_COLUMNAS,
+  generarCartonGanadorDOM,
+  mostrarModalBolasExtraidas
+} from "/js/util/bingo_helper.js"
+
 const btnAbandonar = document.getElementById("btn-abandonar-sala")
 const espera = document.getElementById("espera")
 const tablero = document.getElementById("tablero")
 const numerosLlamados = document.getElementById("numeros-llamados")
 const numeroActual = document.getElementById("numero-actual")
+const letraActual = document.getElementById("letra-actual")
+const valorActual = document.getElementById("valor-actual")
+const columnaBadge = document.getElementById("columna-badge")
+const totalLlamados = document.getElementById("total-llamados")
 const idRoom = document.getElementById("idRoom")
+const btnVerBolasCliente = document.getElementById("btn-ver-bolas-cliente")
 
 const btnBingo = document.getElementById("btnBingo")
 
+let socket
+let ganador = false;
+let callBingoEnProgreso = false;
+let selectedCartones = []
+let listaNumerosExtraidos = []
+let datosGanadorGuardados = null
+
 btnBingo.addEventListener("click", async () => {
+  if (ganador || callBingoEnProgreso || btnBingo.disabled) {
+    return;
+  }
+
   const tabla = document.querySelector(".swiper-slide-active table");
   if (!tabla) {
     console.warn("No se encontró la tabla activa.");
     return;
   }
+
+  callBingoEnProgreso = true;
+  btnBingo.disabled = true;
+  const originalHtml = btnBingo.innerHTML;
+  btnBingo.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Comprobando...';
 
   const carton = [];
   const seleccionados = [];
@@ -41,12 +74,22 @@ btnBingo.addEventListener("click", async () => {
   const send_usuario = await getUsuario();
 
   callBingo(carton, seleccionados, idRoom.textContent, send_usuario);
+
+  // Timeout de seguridad para reactivar botón si el servidor tarda en responder
+  setTimeout(() => {
+    if (!ganador && callBingoEnProgreso && !localStorage.getItem("penalizacion")) {
+      btnBingo.disabled = false;
+      btnBingo.innerHTML = originalHtml;
+      callBingoEnProgreso = false;
+    }
+  }, 4000);
 });
 
-
-let socket
-let ganador = false;
-let selectedCartones = []
+if (btnVerBolasCliente) {
+  btnVerBolasCliente.addEventListener("click", () => {
+    mostrarModalBolasExtraidas(listaNumerosExtraidos, "Historial de Bolas Extraídas");
+  });
+}
 
 btnAbandonar.addEventListener("click", () => {
   abandonarSala()
@@ -132,8 +175,8 @@ async function unirseSala() {
   }
 
   const registrado = await usuarioRegistrado(sala.id_partida)
-  if (sala.estado === 1 && registrado) {
-    // Si la partida ya comenzó, cargar cartones desde la BD
+  if ((sala.estado === 1 || sala.estado === 2) && registrado) {
+    // Si la partida ya comenzó o finalizó, cargar cartones desde la BD
     const cartonesLoaded = await loadCartonesFromPartida(sala.id_partida)
     if (!cartonesLoaded) {
       await menssaje("Error", "No se pudieron cargar tus cartones para esta partida.", 'error');
@@ -141,8 +184,16 @@ async function unirseSala() {
       return
     }
     activarControles(sala.id_partida)
+
+    if (sala.patron_ganador) {
+      renderPatronGanador(sala.patron_ganador);
+    }
+
+    if (sala.estado === 2) {
+      mostrarEstadoFinalizadoUsuario(sala, usuario);
+    }
   } else if (sala.estado !== 0) {
-    await menssaje("Error", "La sala ya ha comenzado o ya finalizo.", 'error');
+    await menssaje("Error", "La sala ya no se encuentra disponible.", 'error');
     window.location.href = "/"
     return
   } else {
@@ -208,15 +259,32 @@ async function unirseSala() {
   });
 
   socket.on("eresGanador", (data)=>{
+    ganador = true;
+    callBingoEnProgreso = false;
+    mostrarEstadoFinalizadoUsuario({
+      estado: 2,
+      ganador: data.ganador ? data.ganador.id_usuario : null,
+      ganador_username: data.ganador ? data.ganador.username : "Tú"
+    }, data.ganador, data);
     eresGanador(data);
   });
 
   socket.on("ganador", (data) => {
-    if(ganador) return; 
+    if (ganador && Swal.isVisible()) return; 
+    ganador = true;
+    callBingoEnProgreso = false;
+    getUsuario().then(u => {
+      mostrarEstadoFinalizadoUsuario({
+        estado: 2,
+        ganador: data.ganador ? data.ganador.id_usuario : null,
+        ganador_username: data.ganador ? data.ganador.username : "Jugador"
+      }, u, data);
+    });
     hayGanador(data);
   });
 
   socket.on("errorCarton",(data)=>{
+    callBingoEnProgreso = false;
     penalizacion(30);
   });
 
@@ -299,11 +367,11 @@ function renderSelectedCartones(cartonesData) {
                     <table class="bingo-table-preview">
                         <thead>
                             <tr>
-                                <th class="bingo-cell-preview bingo-header-preview">B</th>
-                                <th class="bingo-cell-preview bingo-header-preview">I</th>
-                                <th class="bingo-cell-preview bingo-header-preview">N</th>
-                                <th class="bingo-cell-preview bingo-header-preview">G</th>
-                                <th class="bingo-cell-preview bingo-header-preview">O</th>
+                                <th class="bingo-cell-preview bingo-header-b">B</th>
+                                <th class="bingo-cell-preview bingo-header-i">I</th>
+                                <th class="bingo-cell-preview bingo-header-n">N</th>
+                                <th class="bingo-cell-preview bingo-header-g">G</th>
+                                <th class="bingo-cell-preview bingo-header-o">O</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -317,8 +385,8 @@ function renderSelectedCartones(cartonesData) {
                                           Array.isArray(row)
                                             ? row
                                                 .map(
-                                                  (cell) => `
-                                                <td class="bingo-cell-preview">${cell === null ? "FREE" : cell}</td>
+                                                  (cell, colIdx) => `
+                                                <td class="bingo-cell-preview col-preview-${['b','i','n','g','o'][colIdx]}">${cell === null ? "FREE" : cell}</td>
                                             `,
                                                 )
                                                 .join("")
@@ -368,11 +436,11 @@ function renderGameCartones(cartonesData) {
             <table id="carton-${cartonData.id_carton}" data-id-carton="${cartonData.id_carton}" class="tabla-numeros">
               <thead>
                 <tr>
-                  <th class="bg-primary"><div class="bola bola-b">B</div></th>
-                  <th class="bg-success"><div class="bola bola-i">I</div></th>
-                  <th class="bg-info"><div class="bola bola-n">N</div></th>
-                  <th class="bg-warning"><div class="bola bola-g">G</div></th>
-                  <th class="bg-danger"><div class="bola bola-o">O</div></th>
+                  <th class="bg-primary-subtle th-col-b"><div class="bola bola-b">B</div></th>
+                  <th class="bg-success-subtle th-col-i"><div class="bola bola-i">I</div></th>
+                  <th class="bg-info-subtle th-col-n"><div class="bola bola-n">N</div></th>
+                  <th class="bg-warning-subtle th-col-g"><div class="bola bola-g">G</div></th>
+                  <th class="bg-danger-subtle th-col-o"><div class="bola bola-o">O</div></th>
                 </tr>
               </thead>
               <tbody>
@@ -386,9 +454,10 @@ function renderGameCartones(cartonesData) {
                               Array.isArray(row)
                                 ? row
                                     .map(
-                                      (cell) => `
-                                    <td class="seleccionable" data-number="${cell}">${cell === null ? "FREE" : cell}</td>
-                                `
+                                      (cell, colIdx) => {
+                                        const colLetra = ['b','i','n','g','o'][colIdx];
+                                        return `<td class="seleccionable col-bingo-${colLetra}" data-number="${cell}" data-col="${colLetra}">${cell === null ? "FREE" : cell}</td>`;
+                                      }
                                     )
                                     .join("")
                                 : ""
@@ -570,7 +639,7 @@ async function renderUsuariosEnSala(id_room) {
     if (isHost) {
       const badge = document.createElement("span");
       badge.className = "player-chip-badge badge-host";
-      badge.innerHTML = "👑 Host";
+      badge.innerHTML = '<i class="fas fa-crown text-warning me-1"></i>Host';
       info.appendChild(badge);
     } else if (isMe) {
       const badge = document.createElement("span");
@@ -618,6 +687,38 @@ async function renderUsuariosEnSala(id_room) {
   }
 }
 
+function renderBolaPreview(numero) {
+  if (!numeroActual) return;
+  if (!numero || numero === "--") {
+    limpiarClasesColorBola(numeroActual);
+    numeroActual.className = "bola-selec bola-espera";
+    if (letraActual) letraActual.textContent = "--";
+    if (valorActual) valorActual.textContent = "--";
+    if (columnaBadge) {
+      columnaBadge.className = "badge bg-secondary px-3 py-1 fs-6";
+      columnaBadge.innerHTML = "Esperando bola...";
+    }
+    return;
+  }
+
+  const info = obtenerInfoBola(numero);
+  limpiarClasesColorBola(numeroActual);
+  numeroActual.className = `bola-selec ${info.colorClass}`;
+
+  if (letraActual) letraActual.textContent = info.letra;
+  if (valorActual) valorActual.textContent = info.numero;
+
+  // Animación suave de aparición/rebote
+  numeroActual.classList.remove("bola-pop");
+  void numeroActual.offsetWidth; // Forzar reflujo del DOM
+  numeroActual.classList.add("bola-pop");
+
+  if (columnaBadge) {
+    columnaBadge.className = `badge badge-columna ${info.colorClass}-badge px-3 py-1 fs-6 shadow-sm`;
+    columnaBadge.innerHTML = `<i class="fas fa-tag me-1"></i>${info.nombre} &bull; Número ${info.numero}`;
+  }
+}
+
 async function renderNumerosLlamados(id_room) {
   const response = await fetch(`/api/juego/estado/${id_room}`)
   if (!response.ok) {
@@ -626,24 +727,47 @@ async function renderNumerosLlamados(id_room) {
   }
   const data = await response.json()
   numerosLlamados.innerHTML = "" // Limpiar la lista antes de renderizar
-  data.numbers.forEach((numero) => {
-    const span = document.createElement("span")
-    span.textContent = numero
-    span.className = "called-number"
-    numerosLlamados.insertBefore(span, numerosLlamados.firstChild);
+  const numbers = data.numbers || data.numeros_llamados || [];
+  listaNumerosExtraidos = numbers.map(n => Number(n)).filter(n => !isNaN(n));
+
+  numbers.forEach((numero, idx) => {
+    const isLatest = (idx === numbers.length - 1);
+    const ball = crearElementoBola(numero, { isLatest: isLatest });
+    numerosLlamados.insertBefore(ball, numerosLlamados.firstChild);
   })
 
-  if (data.numbers.length > 0 && numeroActual.textContent === "--") {
-    numeroActual.textContent = data.numbers[data.numbers.length - 1]
+  if (totalLlamados) {
+    totalLlamados.textContent = numbers.length;
+  }
+
+  if (numbers.length > 0) {
+    renderBolaPreview(numbers[numbers.length - 1]);
+  } else {
+    renderBolaPreview("--");
   }
 }
 
 async function renderNuevoNumero(numero) {
-  numeroActual.textContent = numero
-  const span = document.createElement("span")
-  span.className = "called-number"
-  span.textContent = numero
-  numerosLlamados.insertBefore(span, numerosLlamados.firstChild);
+  renderBolaPreview(numero);
+
+  const num = Number(numero);
+  if (!isNaN(num) && !listaNumerosExtraidos.includes(num)) {
+    listaNumerosExtraidos.push(num);
+  }
+
+  // Quitar la marca de última bola anterior
+  const prevLatest = numerosLlamados.querySelector(".is-latest");
+  if (prevLatest) {
+    prevLatest.classList.remove("is-latest");
+  }
+
+  const ball = crearElementoBola(numero, { isLatest: true });
+  numerosLlamados.insertBefore(ball, numerosLlamados.firstChild);
+
+  if (totalLlamados) {
+    const current = parseInt(totalLlamados.textContent, 10) || 0;
+    totalLlamados.textContent = current + 1;
+  }
 }
 
 async function abandonarSala() {
@@ -697,6 +821,7 @@ document.getElementById("cardList").addEventListener("click", (e) => {
   //console.log(target);
 
   target.classList.toggle("bolaSeleccionada");
+  target.classList.toggle("selected");
 
   if (target.classList.contains("bolaSeleccionada")) {
     guardarNumero(idCarton, numero);
@@ -770,14 +895,16 @@ function eliminarNumero(indice, numero) {
 
 async function eresGanador(data){
   ganador = true;
+  callBingoEnProgreso = false;
   const usuario = data.ganador;
-
   await messageGanador(data, usuario, true);
 }
 
 async function hayGanador(data){
-  const usuario = data.ganador
-  await messageGanador(data, usuario)
+  ganador = true;
+  callBingoEnProgreso = false;
+  const usuario = data.ganador;
+  await messageGanador(data, usuario, false);
 }
 
 function callBingo(carton, seleccionados, id_room, usuario) {
@@ -789,27 +916,111 @@ function callBingo(carton, seleccionados, id_room, usuario) {
   })
 }
 
+function mostrarEstadoFinalizadoUsuario(sala, usuario, dataGanador = null) {
+  ganador = true;
+  callBingoEnProgreso = false;
+  if (dataGanador) {
+    datosGanadorGuardados = dataGanador;
+  }
+
+  const esMiVictoria = usuario && sala && (String(sala.ganador) === String(usuario.id_usuario));
+
+  if (btnBingo) {
+    btnBingo.disabled = true;
+    if (esMiVictoria) {
+      btnBingo.innerHTML = '<i class="fas fa-trophy me-2 text-warning"></i>¡ERES EL GANADOR!';
+      btnBingo.classList.remove("btn-danger", "btn-secondary");
+      btnBingo.classList.add("btn-success");
+    } else {
+      btnBingo.innerHTML = '<i class="fas fa-flag-checkered me-2"></i>Partida Finalizada';
+      btnBingo.classList.remove("btn-danger", "btn-success");
+      btnBingo.classList.add("btn-secondary");
+    }
+  }
+
+  const banner = document.getElementById("user-banner-ganador");
+  const titulo = document.getElementById("user-banner-titulo");
+  const subtitulo = document.getElementById("user-banner-subtitulo");
+
+  if (banner) {
+    banner.classList.remove("d-none");
+    if (esMiVictoria) {
+      if (titulo) titulo.innerHTML = '<i class="fas fa-trophy text-warning me-2"></i>¡FELICIDADES, ERES EL GANADOR!';
+      if (subtitulo) subtitulo.innerHTML = '<span class="badge bg-success fs-6">Victoria Confirmada</span>';
+    } else {
+      const gName = sala.ganador_username || (datosGanadorGuardados && datosGanadorGuardados.ganador && datosGanadorGuardados.ganador.username) || "Otro jugador";
+      if (titulo) titulo.innerHTML = '<i class="fas fa-flag-checkered text-info me-2"></i>Partida Finalizada';
+      if (subtitulo) subtitulo.innerHTML = `Ganador de la partida: <strong class="text-warning">${gName}</strong>`;
+    }
+  }
+
+  const btnVerCarton = document.getElementById("btn-user-ver-carton");
+  if (btnVerCarton) {
+    btnVerCarton.onclick = () => {
+      if (datosGanadorGuardados) {
+        messageGanador(datosGanadorGuardados, datosGanadorGuardados.ganador, esMiVictoria);
+      } else {
+        menssaje("Ganador", `El ganador de esta partida fue ${sala.ganador_username || 'un jugador'}.`, "info");
+      }
+    };
+  }
+
+  const btnBannerBolas = document.getElementById("btn-user-banner-bolas");
+  if (btnBannerBolas) {
+    btnBannerBolas.onclick = () => {
+      mostrarModalBolasExtraidas(listaNumerosExtraidos, "Historial de Bolas Extraídas");
+    };
+  }
+}
+
 async function messageGanador(data, usuario, you = false) {
-  const mensaje = you ? "<strong>🎉 ¡Bingo! 🎉</strong>" : `<strong>${usuario.username}, ha ganado el juego.</strong>`;
+  if (data) {
+    datosGanadorGuardados = data;
+  }
+  const mensaje = you ? "<strong>🎉 ¡Bingo! ¡Eres el Ganador! 🎉</strong>" : `<strong>${usuario.username} ha ganado la partida</strong>`;
   Swal.fire({
     title: mensaje,
-    width: 700,
-    padding: "2.5em",
-    background: "#1A1A1A",
+    width: "min(94vw, 560px)",
+    padding: "1.25em 0.75em",
+    background: "#1c1f2e",
     color: "#fff",
+    customClass: {
+      popup: "swal-carton-ganador-popup"
+    },
     html: `
-      <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
-        <img src="/img/Flork/${usuario.img_id}.jpg"
+      <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff; width: 100%;">
+        <img src="/img/Flork/${usuario.img_id || 1}.jpg"
              alt="Ganador"
-             style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
-        <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>
-        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${usuario.username}</h1>
-        <div id="carton-render"></div>
+             onerror="this.src='/img/Flork/1.jpg'"
+             style="width: 85px; height: 85px; border-radius: 50%; margin-bottom: 12px; border: 3px solid #00ff88; box-shadow: 0 0 15px rgba(0,255,136,0.4);" />
+        <p style="font-size: 1.05em; margin: 0; color: #94a3b8;">${you ? '¡Tu cartón ha completado el patrón ganador!' : 'El jugador ganador es:'}</p>
+        <h2 style="margin: 6px 0 14px; font-size: 1.8em; color: #00f0ff; font-weight: bold;">${usuario.username}</h2>
+        <div id="carton-render" style="width: 100%; display: flex; justify-content: center;"></div>
+        <div class="mt-3">
+          <button id="btn-swal-ver-bolas-user" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-list-ol me-2"></i>Ver Bolas Extraídas (${listaNumerosExtraidos.length})
+          </button>
+        </div>
       </div>
     `,
     showCloseButton: true,
-    showConfirmButton: false,
-    allowOutsideClick: false,
+    showConfirmButton: true,
+    confirmButtonText: "Entendido",
+    confirmButtonColor: "#059669",
+    allowOutsideClick: true,
+    didOpen: () => {
+      const contenedor = document.getElementById("carton-render");
+      if (contenedor && data && data.carton) {
+        const cartonDOM = generarCartonGanadorDOM(data.carton, data.numerosSeleccionados, data.numerosGanadores);
+        contenedor.appendChild(cartonDOM);
+      }
+      const btnBolas = document.getElementById("btn-swal-ver-bolas-user");
+      if (btnBolas) {
+        btnBolas.addEventListener("click", () => {
+          mostrarModalBolasExtraidas(listaNumerosExtraidos, "Historial de Bolas Extraídas");
+        });
+      }
+    },
   });
 }
 

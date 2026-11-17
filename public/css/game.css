@@ -164,8 +164,8 @@ td.selected {
 
 .contenedor {
   display: grid;
-  margin-top: 100px;
-  margin-bottom: 100px;
+  grid-template-rows: 80px 105px 1fr;
+  margin: 0;
 }
 
 .numeros {
@@ -233,8 +233,9 @@ table .bola {
 }
 
 .bola-selec{
-  width: 200px;
-  height: 200px;
+  width: 175px;
+  height: 175px;
+  aspect-ratio: 1 / 1;
   position: relative;
   display: flex;
   justify-content: center;
@@ -245,7 +246,8 @@ table .bola {
   text-align: center;
   color: black !important;
   text-shadow: 1px 1px 2px white;
-
+  margin: 0 auto;
+  user-select: none;
   box-shadow:
     inset -4px -4px 8px rgba(0, 0, 0, 0.6), /* sombra interna */
     0 4px 10px rgba(0, 0, 0, 0.6); /* sombra exterior */
@@ -261,9 +263,39 @@ table .bola {
   pointer-events: none;
 }
 
-.contenedor{
-  display: grid;
-  grid-template-rows: 200px minmax(85px, 120px) 1fr;
+.bola-selec.bola-espera {
+  background: radial-gradient(circle at 50% 50%, #ffffff 40%, #2f2f42 40%) !important;
+}
+
+.bola-selec .bola-letra {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1;
+  color: black !important;
+  text-shadow: 1px 1px 2px white;
+  margin-bottom: 2px;
+  z-index: 1;
+}
+
+.bola-selec .bola-numero {
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 0.95;
+  color: black !important;
+  text-shadow: 1px 1px 2px white;
+  z-index: 1;
+}
+
+.bola-pop {
+  animation: bolaBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes bolaBounce {
+  0% { transform: scale(0.65); opacity: 0.3; }
+  60% { transform: scale(1.12); opacity: 1; }
+  85% { transform: scale(0.96); }
+  100% { transform: scale(1); }
 }
 
 /* Tabla de bingo patrón */
@@ -481,39 +513,1013 @@ table .bola {
 /* ==========================================================================
    COLORES EXACTOS RETRO-SCI-FI PARA ENCABEZADOS Y BINGOS
    ========================================================================== */
+.tabla-numeros th.bg-primary-subtle,
+.tabla-numeros th.bg-primary,
+.tabla-numeros th.th-col-b,
 .tabla-numeros td.bg-primary-subtle,
 .tabla-bingo-patron th.bg-primary-subtle {
   background: rgba(88, 80.4, 67.6, 1) !important;
+  border-bottom: 2px solid #DCC9A9 !important;
   color: #fff !important;
 }
 
+.tabla-numeros th.bg-success-subtle,
+.tabla-numeros th.bg-success,
+.tabla-numeros th.th-col-i,
 .tabla-numeros td.bg-success-subtle,
 .tabla-bingo-patron th.bg-success-subtle {
   background: rgba(31.2, 41.6, 32.4, 1) !important;
+  border-bottom: 2px solid #4E6851 !important;
   color: #fff !important;
 }
 
+.tabla-numeros th.bg-info-subtle,
+.tabla-numeros th.bg-info,
+.tabla-numeros th.th-col-n,
 .tabla-numeros td.bg-info-subtle,
 .tabla-bingo-patron th.bg-info-subtle {
   background: rgba(30, 52.8, 55.2, 1) !important;
+  border-bottom: 2px solid #4B848A !important;
   color: #fff !important;
 }
 
+.tabla-numeros th.bg-warning-subtle,
+.tabla-numeros th.bg-warning,
+.tabla-numeros th.th-col-g,
 .tabla-numeros td.bg-warning-subtle,
 .tabla-bingo-patron th.bg-warning-subtle {
   background: rgba(100.4, 78, 35.6, 1) !important;
+  border-bottom: 2px solid #FBC359 !important;
   color: #fff !important;
 }
 
+.tabla-numeros th.bg-danger-subtle,
+.tabla-numeros th.bg-danger,
+.tabla-numeros th.th-col-o,
 .tabla-numeros td.bg-danger-subtle,
 .tabla-bingo-patron th.bg-danger-subtle {
   background: rgba(92.4, 0.4, 1.2, 1) !important;
+  border-bottom: 2px solid #E70103 !important;
   color: #fff !important;
 }
 
-.tabla-numeros td {
+.tabla-numeros td:not(.bolaSeleccionada):not(.selected) {
   background: rgba(255, 255, 255, 0.02) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: #fff !important;
 }
+
+/* ==========================================================================
+   COLUMNAS Y CELDAS DE CARTONES DE BINGO (JUGADOR)
+   ========================================================================== */
+.tabla-numeros td.col-bingo-b:not(.bolaSeleccionada):not(.selected) {
+  border: 1px solid rgba(220, 201, 169, 0.18) !important;
+}
+.tabla-numeros td.col-bingo-i:not(.bolaSeleccionada):not(.selected) {
+  border: 1px solid rgba(78, 104, 81, 0.22) !important;
+}
+.tabla-numeros td.col-bingo-n:not(.bolaSeleccionada):not(.selected) {
+  border: 1px solid rgba(75, 132, 138, 0.22) !important;
+}
+.tabla-numeros td.col-bingo-g:not(.bolaSeleccionada):not(.selected) {
+  border: 1px solid rgba(251, 195, 89, 0.22) !important;
+}
+.tabla-numeros td.col-bingo-o:not(.bolaSeleccionada):not(.selected) {
+  border: 1px solid rgba(231, 1, 3, 0.22) !important;
+}
+
+.tabla-numeros td.col-bingo-b:not(.bolaSeleccionada):not(.selected):hover {
+  background: rgba(220, 201, 169, 0.14) !important;
+  box-shadow: 0 0 10px rgba(220, 201, 169, 0.3) !important;
+}
+.tabla-numeros td.col-bingo-i:not(.bolaSeleccionada):not(.selected):hover {
+  background: rgba(78, 104, 81, 0.18) !important;
+  box-shadow: 0 0 10px rgba(78, 104, 81, 0.3) !important;
+}
+.tabla-numeros td.col-bingo-n:not(.bolaSeleccionada):not(.selected):hover {
+  background: rgba(75, 132, 138, 0.18) !important;
+  box-shadow: 0 0 10px rgba(75, 132, 138, 0.3) !important;
+}
+.tabla-numeros td.col-bingo-g:not(.bolaSeleccionada):not(.selected):hover {
+  background: rgba(251, 195, 89, 0.18) !important;
+  box-shadow: 0 0 10px rgba(251, 195, 89, 0.3) !important;
+}
+.tabla-numeros td.col-bingo-o:not(.bolaSeleccionada):not(.selected):hover {
+  background: rgba(231, 1, 3, 0.18) !important;
+  box-shadow: 0 0 10px rgba(231, 1, 3, 0.3) !important;
+}
+
+/* ==========================================================================
+   ESTADO SELECCIONADO / MANCHA DE MARCADOR EN CARTONES (BOLA SELECCIONADA)
+   ========================================================================== */
+.tabla-numeros td.bolaSeleccionada,
+.tabla-numeros td.selected,
+td.seleccionable.bolaSeleccionada,
+td.seleccionable.selected,
+.bolaSeleccionada {
+  position: relative !important;
+  background-image: url('/img/Pinceles/Pincel1.png'), radial-gradient(circle, rgba(251, 195, 89, 0.95) 0%, rgba(200, 140, 30, 0.85) 65%, rgba(100, 70, 10, 0.6) 100%) !important;
+  background-size: 92% 92%, cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  font-size: 1.25rem !important;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.9) !important;
+  border: 2px solid #ffffff !important;
+  box-shadow: 0 0 16px rgba(251, 195, 89, 0.9), inset 0 0 6px rgba(0, 0, 0, 0.4) !important;
+  transform: scale(1.08) !important;
+  z-index: 5 !important;
+  animation: stampIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes stampIn {
+  0% { transform: scale(1.3) rotate(-3deg); opacity: 0.8; }
+  50% { transform: scale(0.95) rotate(1deg); }
+  100% { transform: scale(1.08) rotate(0deg); }
+}
+
+/* Manchas de color personalizadas y vivas según la columna */
+.tabla-numeros td.col-bingo-b.bolaSeleccionada,
+.tabla-numeros td.col-bingo-b.selected {
+  background-image: url('/img/Pinceles/Pincel1.png'), radial-gradient(circle, rgba(220, 201, 169, 0.96) 0%, rgba(175, 155, 120, 0.9) 65%, rgba(88, 80, 68, 0.7) 100%) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(220, 201, 169, 0.9), inset 0 0 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.tabla-numeros td.col-bingo-i.bolaSeleccionada,
+.tabla-numeros td.col-bingo-i.selected {
+  background-image: url('/img/Pinceles/Pincel1.png'), radial-gradient(circle, rgba(135, 195, 142, 0.96) 0%, rgba(78, 104, 81, 0.9) 65%, rgba(31, 42, 32, 0.7) 100%) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(124, 184, 132, 0.9), inset 0 0 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.tabla-numeros td.col-bingo-n.bolaSeleccionada,
+.tabla-numeros td.col-bingo-n.selected {
+  background-image: url('/img/Pinceles/Pincel1.png'), radial-gradient(circle, rgba(105, 215, 225, 0.96) 0%, rgba(75, 132, 138, 0.9) 65%, rgba(30, 53, 55, 0.7) 100%) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(94, 202, 212, 0.9), inset 0 0 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.tabla-numeros td.col-bingo-g.bolaSeleccionada,
+.tabla-numeros td.col-bingo-g.selected {
+  background-image: url('/img/Pinceles/Pincel1.png'), radial-gradient(circle, rgba(251, 205, 99, 0.96) 0%, rgba(200, 140, 30, 0.9) 65%, rgba(100, 78, 36, 0.7) 100%) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(251, 195, 89, 0.9), inset 0 0 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+.tabla-numeros td.col-bingo-o.bolaSeleccionada,
+.tabla-numeros td.col-bingo-o.selected {
+  background-image: url('/img/Pinceles/Pincel1.png'), radial-gradient(circle, rgba(255, 95, 95, 0.96) 0%, rgba(231, 1, 3, 0.9) 65%, rgba(92, 0, 1, 0.7) 100%) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(231, 1, 3, 0.9), inset 0 0 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ==========================================================================
+   BOLAS EN LISTA DE NÚMEROS LLAMADOS (DISEÑO DEL ANFITRIÓN)
+   ========================================================================== */
+.bola-llamada {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  flex-shrink: 0;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  border-radius: 50% !important;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease !important;
+  user-select: none;
+  animation: bolaPopIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes bolaPopIn {
+  from {
+    transform: scale(0.3) translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.bola-llamada:hover {
+  transform: scale(1.22) translateY(-2px) !important;
+  z-index: 10;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.8) !important;
+}
+
+.bola-llamada.is-latest {
+  box-shadow: 0 0 0 3px #ffffff, 0 6px 16px rgba(0, 0, 0, 0.8) !important;
+  animation: bolaPopIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), pulseLatest 2s infinite ease-in-out;
+}
+
+@keyframes pulseLatest {
+  0%, 100% { box-shadow: 0 0 0 3px #ffffff, 0 4px 12px rgba(255, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 0 4px #FBC359, 0 6px 20px rgba(251, 195, 89, 0.7); }
+}
+
+.bola-letra-mini {
+  font-size: 0.65rem !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  color: black !important;
+  text-shadow: 1px 1px 1px white !important;
+  z-index: 1;
+}
+
+.bola-numero-mini {
+  font-size: 1.1rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  color: black !important;
+  text-shadow: 1px 1px 1px white !important;
+  margin-top: 1px;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   BADGES DE COLUMNA PARA INDICAR CLARAMENTE LA COLUMNA DE LA BOLA
+   ========================================================================== */
+.badge-columna {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+}
+
+.bola-b-badge {
+  background: linear-gradient(135deg, #786b55, #585043) !important;
+  color: #fff !important;
+  border: 1px solid #DCC9A9 !important;
+  box-shadow: 0 0 8px rgba(220, 201, 169, 0.3);
+}
+
+.bola-i-badge {
+  background: linear-gradient(135deg, #3d5540, #293a2c) !important;
+  color: #fff !important;
+  border: 1px solid #7cb884 !important;
+  box-shadow: 0 0 8px rgba(124, 184, 132, 0.3);
+}
+
+.bola-n-badge {
+  background: linear-gradient(135deg, #39676c, #26464a) !important;
+  color: #fff !important;
+  border: 1px solid #5ecad4 !important;
+  box-shadow: 0 0 8px rgba(94, 202, 212, 0.3);
+}
+
+.bola-g-badge {
+  background: linear-gradient(135deg, #b88626, #7a5814) !important;
+  color: #fff !important;
+  border: 1px solid #FBC359 !important;
+  box-shadow: 0 0 8px rgba(251, 195, 89, 0.3);
+}
+
+.bola-o-badge {
+  background: linear-gradient(135deg, #b00103, #6e0001) !important;
+  color: #fff !important;
+  border: 1px solid #ff6e6e !important;
+  box-shadow: 0 0 8px rgba(231, 1, 3, 0.3);
+}
+
+/* ==========================================================================
+   CASILLAS GANADORAS Y TABLA DEL GANADOR EN POPUP Y EN JUEGO
+   ========================================================================== */
+.tabla-ganador {
+  width: 100% !important;
+  max-width: 330px !important;
+  margin: 0 auto !important;
+  border-collapse: separate !important;
+  border-spacing: 4px !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+  border: 2px solid rgba(0, 240, 255, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  table-layout: fixed !important;
+  box-sizing: border-box !important;
+}
+
+.tabla-ganador th {
+  padding: 4px 2px !important;
+  border-radius: 6px !important;
+  text-align: center !important;
+}
+
+.tabla-ganador th .bola {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 0.9rem !important;
+  margin: 0 auto !important;
+}
+
+.tabla-ganador td {
+  width: 20% !important;
+  height: 44px !important;
+  max-width: 54px !important;
+  min-width: 0 !important;
+  padding: 2px !important;
+  border-radius: 6px !important;
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.tabla-numeros td.celda-ganadora,
+td.celda-ganadora {
+  background-image: url('/img/Pinceles/Pincel1.png'), radial-gradient(circle, #00ff88 0%, #059669 60%, #064e3b 100%) !important;
+  background-size: 94% 94%, cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  color: #000000 !important;
+  font-weight: 950 !important;
+  font-size: 1.25rem !important;
+  text-shadow: 0 0 3px #ffffff, 0 0 6px #00ff88 !important;
+  border: 3px solid #00ff88 !important;
+  box-shadow: 0 0 20px #00ff88, inset 0 0 10px #00ff88 !important;
+  transform: scale(1.1) !important;
+  z-index: 10 !important;
+  animation: pulseGanador 1.5s infinite alternate ease-in-out !important;
+}
+
+@keyframes pulseGanador {
+  0% {
+    box-shadow: 0 0 10px #00ff88, inset 0 0 6px #00ff88;
+    transform: scale(1.06);
+  }
+  100% {
+    box-shadow: 0 0 24px #00ffaa, 0 0 10px #ffffff, inset 0 0 14px #00ff88;
+    transform: scale(1.12);
+  }
+}
+
+/* ==========================================================================
+   SWEETALERT POPUP RESPONSIVE (MÓVILES)
+   ========================================================================== */
+.swal-carton-ganador-popup {
+  width: min(94vw, 560px) !important;
+  max-width: 95vw !important;
+  padding: 1.5rem 1rem !important;
+  border-radius: 18px !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+  border: 2px solid rgba(0, 240, 255, 0.4) !important;
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.25) !important;
+}
+
+@media screen and (max-width: 576px) {
+  .swal-carton-ganador-popup {
+    padding: 1rem 0.5rem !important;
+    width: 96vw !important;
+  }
+  .swal-carton-ganador-popup .swal2-title {
+    font-size: 1.35rem !important;
+  }
+  .swal-carton-ganador-popup #contenido-ganador img {
+    width: 75px !important;
+    height: 75px !important;
+    margin-bottom: 8px !important;
+  }
+  .swal-carton-ganador-popup #contenido-ganador h2,
+  .swal-carton-ganador-popup #contenido-ganador h1 {
+    font-size: 1.45rem !important;
+    margin: 4px 0 8px !important;
+  }
+  .tabla-ganador {
+    max-width: 275px !important;
+    border-spacing: 2px !important;
+    padding: 4px !important;
+  }
+  .tabla-ganador th {
+    padding: 2px 1px !important;
+  }
+  .tabla-ganador th .bola {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.75rem !important;
+  }
+  .tabla-ganador td {
+    height: 36px !important;
+    font-size: 0.85rem !important;
+    border-radius: 5px !important;
+  }
+  .tabla-numeros td.celda-ganadora,
+  td.celda-ganadora {
+    font-size: 0.9rem !important;
+    border-width: 2px !important;
+    transform: scale(1.05) !important;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .tabla-ganador {
+    max-width: 245px !important;
+    border-spacing: 1.5px !important;
+    padding: 3px !important;
+  }
+  .tabla-ganador th .bola {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 0.68rem !important;
+  }
+  .tabla-ganador td {
+    height: 32px !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+/* ==========================================================================
+   BOTONES ARCADE CON FEELING / FEEDBACK TÁCTIL (HOST)
+   ========================================================================== */
+
+/* Botón de Lanzar Nueva Bola */
+.btn-arcade-lanzar {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  max-width: 250px !important;
+  padding: 13px 22px !important;
+  background: linear-gradient(180deg, #10b981 0%, #059669 45%, #047857 100%) !important;
+  color: #ffffff !important;
+  font-family: inherit !important;
+  font-size: 1.15rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+  border: 2px solid #34d399 !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 
+    0 6px 0 #064e3b,
+    0 10px 22px rgba(16, 185, 129, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+  transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  animation: arcadePulseGreen 2.5s infinite ease-in-out !important;
+}
+
+.btn-arcade-lanzar:hover:not(:disabled) {
+  background: linear-gradient(180deg, #34d399 0%, #10b981 45%, #059669 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 8px 0 #064e3b,
+    0 14px 28px rgba(16, 185, 129, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  color: #ffffff !important;
+}
+
+.btn-arcade-lanzar:active:not(:disabled) {
+  transform: translateY(4px) !important;
+  box-shadow: 
+    0 2px 0 #064e3b,
+    0 4px 10px rgba(16, 185, 129, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.btn-arcade-lanzar:disabled {
+  background: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #9ca3af !important;
+  box-shadow: 0 4px 0 #1f2937 !important;
+  text-shadow: none !important;
+  cursor: not-allowed !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+@keyframes arcadePulseGreen {
+  0%, 100% {
+    box-shadow: 
+      0 6px 0 #064e3b,
+      0 10px 22px rgba(16, 185, 129, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  }
+  50% {
+    box-shadow: 
+      0 6px 0 #064e3b,
+      0 14px 30px rgba(0, 255, 136, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+}
+
+/* Botón de Confirmar / Cambiar Patrón Ganador */
+.btn-arcade-patron {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: 250px !important;
+  padding: 10px 18px !important;
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%) !important;
+  color: #1c1917 !important;
+  font-family: inherit !important;
+  font-size: 1.05rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  border: 2px solid #fde68a !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 
+    0 5px 0 #92400e,
+    0 8px 18px rgba(245, 158, 11, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.btn-arcade-patron:hover {
+  background: linear-gradient(180deg, #fde68a 0%, #fbbf24 50%, #f59e0b 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 7px 0 #92400e,
+    0 12px 24px rgba(245, 158, 11, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  color: #000000 !important;
+}
+
+.btn-arcade-patron:active {
+  transform: translateY(4px) !important;
+  box-shadow: 
+    0 1px 0 #92400e,
+    0 3px 8px rgba(245, 158, 11, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Botón compacto en esquina superior derecha para el Historial de Bolas */
+.btn-compact-bolas {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1.5px solid #00f0ff !important;
+  color: #00f0ff !important;
+  border-radius: 999px !important;
+  padding: 5px 14px !important;
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.25) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.btn-compact-bolas:hover {
+  background: #00f0ff !important;
+  color: #000000 !important;
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.6) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-compact-bolas:active {
+  transform: translateY(1px) !important;
+}
+
+/* Banner de estado persistente */
+.game-finished-banner {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.25), rgba(16, 185, 129, 0.15));
+  border: 2px solid #059669;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 0 24px rgba(5, 150, 105, 0.3);
+  animation: fadeInDown 0.4s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   VISTA DE ADMINISTRADOR: PROYECCIÓN 100% PANTALLA SIN SCROLLBARS
+   ========================================================================== */
+body.host-playing,
+body:has(#game-controls:not(.visually-hidden)) {
+  overflow: hidden !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body:has(#game-controls:not(.visually-hidden)) nav.navbar,
+body.host-playing nav.navbar {
+  min-height: 42px !important;
+  max-height: 44px !important;
+  padding-top: 0.2rem !important;
+  padding-bottom: 0.2rem !important;
+  flex-shrink: 0 !important;
+}
+
+#game-controls:not(.visually-hidden) {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: calc(100vh - 54px) !important;
+  max-height: calc(100vh - 54px) !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+#game-controls:not(.visually-hidden) .interfaz {
+  flex: 1 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  display: grid !important;
+  grid-template-columns: 1fr 240px !important;
+  gap: 16px !important;
+  padding: 10px 18px !important;
+  margin: 4px 16px 12px 16px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  background: linear-gradient(145deg, #171720 0%, #29293d 100%) !important;
+  border-radius: 18px !important;
+}
+
+/* COLUMNA IZQUIERDA: Carril, Tubo y Tablero de 75 Números (Contenedor) */
+#game-controls:not(.visually-hidden) .contenedor {
+  height: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* 1. Carril de bolas ampliado */
+#game-controls:not(.visually-hidden) .canva {
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden;
+  width: 680px !important;
+  max-width: 96% !important;
+  height: clamp(92px, 12vh, 106px) !important;
+  padding: 0 6px !important;
+  margin: 4px auto 0 auto !important;
+  background: linear-gradient(135deg, #1f1f2e, #2d2d41) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  position: relative !important;
+  z-index: 10 !important;
+  flex-shrink: 0 !important;
+  transition: box-shadow 0.3s ease !important;
+}
+
+#game-controls:not(.visually-hidden) .canva.canva-visible-overflow,
+#game-controls:not(.visually-hidden) .canva.overflow-visible {
+  overflow: visible !important;
+}
+
+#game-controls:not(.visually-hidden) .carrusel {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+#game-controls:not(.visually-hidden) .carrusel .bola {
+  height: clamp(60px, 8vh, 68px) !important;
+  width: clamp(60px, 8vh, 68px) !important;
+  min-width: clamp(60px, 8vh, 68px) !important;
+  font-size: clamp(1.2rem, 1.6vh, 1.45rem) !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+/* Bola seleccionada en 3D unclipped al salir de la ruleta */
+#seleccionado {
+  z-index: 999 !important;
+  position: relative !important;
+}
+
+/* 2. Tubo decorativo entre el carril y el contenedor */
+#game-controls:not(.visually-hidden) .tubo {
+  position: relative !important;
+  width: 100% !important;
+  height: clamp(65px, 8.5vh, 85px) !important;
+  min-height: 60px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: clamp(54px, 7vh, 82px) 0 0 0 !important;
+  padding: 0 !important;
+  z-index: 15 !important;
+  flex-shrink: 0 !important;
+}
+
+#game-controls:not(.visually-hidden) .tubo-css {
+  position: absolute !important;
+  width: 140px !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+  background: linear-gradient(
+    to right,
+    #2a2a32 0%,
+    #555566 12%,
+    #9999aa 28%,
+    #e2e8f0 50%,
+    #9999aa 72%,
+    #555566 88%,
+    #2a2a32 100%
+  ) !important;
+  box-shadow:
+    inset 0 3px 6px rgba(255, 255, 255, 0.35),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+    0 8px 18px rgba(0, 0, 0, 0.6) !important;
+  z-index: 15 !important;
+}
+
+/* Boca superior del tubo (collar con amplio espacio para que la bola resalte) */
+#game-controls:not(.visually-hidden) .tubo-css::before {
+  content: '' !important;
+  position: absolute !important;
+  top: -8px !important;
+  left: -12px !important;
+  width: 164px !important;
+  height: 22px !important;
+  border-radius: 11px !important;
+  background: linear-gradient(
+    to right,
+    #222, #666, #bbb, #fff, #bbb, #666, #222
+  ) !important;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.6),
+    inset 0 2px 4px rgba(255, 255, 255, 0.6) !important;
+  z-index: 16 !important;
+}
+  background: linear-gradient(
+    to right,
+    #222, #666, #bbb, #fff, #bbb, #666, #222
+  ) !important;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.6),
+    inset 0 2px 4px rgba(255, 255, 255, 0.6) !important;
+  z-index: 16 !important;
+}
+
+/* Base inferior del tubo (collar que emboca en la tabla/contenedor) */
+#game-controls:not(.visually-hidden) .tubo-css::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -6px !important;
+  left: -10px !important;
+  width: 160px !important;
+  height: 18px !important;
+  border-radius: 9px !important;
+  background: linear-gradient(
+    to right,
+    #222, #555, #999, #eee, #999, #555, #222
+  ) !important;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.7),
+    inset 0 2px 3px rgba(255, 255, 255, 0.4) !important;
+  z-index: 16 !important;
+}
+
+/* 3. Tablero de 75 números (Contenedor de bolas) */
+#game-controls:not(.visually-hidden) .numeros {
+  flex: 1 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-numeros {
+  width: 100% !important;
+  height: auto !important;
+  flex: 1 !important;
+  max-height: clamp(420px, 60vh, 580px) !important;
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 4px !important;
+  border-radius: 14px !important;
+  margin: 0 auto !important;
+  border: 2px solid rgba(251, 191, 36, 0.35) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-numeros tbody {
+  height: 100% !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-numeros tr {
+  height: 20% !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-numeros td {
+  height: 20% !important;
+  padding: 2px !important;
+  vertical-align: middle !important;
+  text-align: center !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-sizing: border-box !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-numeros td .bola {
+  margin: 0 auto !important;
+  width: clamp(48px, 4.2vw, 64px) !important;
+  height: clamp(48px, 4.2vw, 64px) !important;
+  font-size: clamp(1.2rem, 1.55vw, 1.65rem) !important;
+  font-weight: 850 !important;
+  box-shadow: inset -3px -3px 6px rgba(0,0,0,0.6), 0 3px 8px rgba(0,0,0,0.5) !important;
+}
+
+/* COLUMNA DERECHA: Botones y Selección del Patrón */
+#game-controls:not(.visually-hidden) .col-lateral-host {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+#game-controls:not(.visually-hidden) .botones {
+  height: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 10px 12px !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-sizing: border-box !important;
+}
+
+/* 1. Tabla del patrón de bingo (compacta) */
+#game-controls:not(.visually-hidden) .formaParaGanar {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-bingo-patron {
+  width: 100% !important;
+  max-width: 155px !important;
+  border-spacing: 2px !important;
+  border-collapse: separate !important;
+  margin: 0 auto !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-bingo-patron th {
+  height: clamp(18px, 2.4vh, 24px) !important;
+  padding: 1px !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-bingo-patron th .bola {
+  width: clamp(16px, 2vh, 20px) !important;
+  height: clamp(16px, 2vh, 20px) !important;
+  font-size: clamp(0.55rem, 0.9vh, 0.65rem) !important;
+  margin: 0 auto !important;
+}
+
+#game-controls:not(.visually-hidden) .tabla-bingo-patron td {
+  height: clamp(16px, 2.2vh, 20px) !important;
+  padding: 0 !important;
+  font-size: 0.65rem !important;
+  border-radius: 4px !important;
+}
+
+/* 2. Botón confirmar forma (Secundario, sobrio, no llamativo) */
+.btn-subtle-patron {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #94a3b8 !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  padding: 4px 14px !important;
+  border-radius: 20px !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  letter-spacing: 0.4px !important;
+  margin-top: 2px !important;
+  margin-bottom: 4px !important;
+}
+
+.btn-subtle-patron:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #f8fafc !important;
+  transform: none !important;
+}
+
+/* 3. Contenedor y Gran Bola Actual Seleccionada (HÉROE ENFOCADO) */
+#game-controls:not(.visually-hidden) .bola-actual-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 4px 0 !important;
+}
+
+#game-controls:not(.visually-hidden) .badge-bola-actual {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+  color: #38bdf8 !important;
+  background: rgba(14, 165, 233, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  border-radius: 999px !important;
+  padding: 3px 12px !important;
+  margin-bottom: 6px !important;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.2) !important;
+}
+
+#game-controls:not(.visually-hidden) .bola-selec {
+  width: clamp(160px, 22vh, 210px) !important;
+  height: clamp(160px, 22vh, 210px) !important;
+  min-width: clamp(160px, 22vh, 210px) !important;
+  min-height: clamp(160px, 22vh, 210px) !important;
+  max-width: 220px !important;
+  max-height: 220px !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 50% !important;
+  font-size: clamp(3.8rem, 6.5vh, 5.2rem) !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  color: #0f172a !important;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8) !important;
+  margin: 0 auto !important;
+  flex-shrink: 0 !important;
+  user-select: none !important;
+  position: relative !important;
+  box-shadow:
+    0 0 35px rgba(0, 240, 255, 0.45),
+    inset -8px -8px 16px rgba(0, 0, 0, 0.65),
+    0 12px 28px rgba(0, 0, 0, 0.75) !important;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+#game-controls:not(.visually-hidden) .bola-selec::after {
+  content: "" !important;
+  position: absolute !important;
+  width: 78% !important;
+  height: 78% !important;
+  border-radius: 50% !important;
+  border: 5px solid rgba(255, 255, 255, 0.95) !important;
+  box-sizing: border-box !important;
+  pointer-events: none !important;
+}
+
+/* 4. Botón lanzar nueva bola */
+#game-controls:not(.visually-hidden) .btn-arcade-lanzar {
+  width: 100% !important;
+  max-width: 200px !important;
+  padding: clamp(9px, 1.4vh, 13px) 16px !important;
+  font-size: clamp(0.95rem, 1.5vh, 1.15rem) !important;
+}
+
+
+
 

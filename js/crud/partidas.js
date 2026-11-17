@@ -44,11 +44,13 @@ router.get("/:id", authenticateToken, async (req, res) => {
   const rawId = req.params.id ? req.params.id.trim() : ""
   try {
     const result = await pool.query(
-      `SELECT p.id_partida, p.estado, p.host, p.numeros_llamados, p.ganador,
+      `SELECT p.id_partida, p.estado, p.host, p.numeros_llamados, p.ganador, p.patron_ganador,
               u.username AS host_name,
+              g.username AS ganador_username, g.img_id AS ganador_img_id,
               (SELECT COUNT(*)::int FROM partida_usuario pu WHERE UPPER(pu.id_partida) = UPPER(p.id_partida)) AS total_jugadores
        FROM Partidas p
        LEFT JOIN Usuarios u ON p.host = u.id_usuario
+       LEFT JOIN Usuarios g ON p.ganador = g.id_usuario
        WHERE UPPER(p.id_partida) = UPPER($1)`,
       [rawId]
     )

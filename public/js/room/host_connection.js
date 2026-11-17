@@ -1,11 +1,13 @@
 import getCookieValue from "/js/util/get_cookie.js"
 import { iniciarRuletazo, addBallGrid } from "/js/game/game.js"
+import { generarCartonGanadorDOM, mostrarModalBolasExtraidas } from "/js/util/bingo_helper.js"
 
 const btnEliminar = document.querySelector("#btn-eliminar-sala")
 const btnCerrar = document.querySelector("#btn-cerrar-sala")
 const btnIniciar = document.querySelector("#btn-iniciar-sala a")
 const idRoom = document.getElementById("id-room")
 export const btnNuevoNumero = document.getElementById("btn-new-number")
+const btnVerBolasHost = document.getElementById("btn-ver-bolas-host")
 const jugadores = document.getElementById("n-jugadores")
 const controles = document.getElementById("game-controls")
 const lobby = document.getElementById("waiting-room")
@@ -18,6 +20,9 @@ const fondo = [
 ];
 
 export let socket
+export let listaNumerosLlamadosHost = []
+let juegoTerminadoHost = false
+let datosGanadorHost = null
 
 async function getSala() {
   const response = await fetch(`/api/partidas/${idRoom.textContent}`)
@@ -37,6 +42,13 @@ async function getUsuario() {
   return await response.json()
 }
 
+function actualizarBadgeBolasHost() {
+  const badge = document.getElementById("host-bolas-badge")
+  if (badge) {
+    badge.textContent = listaNumerosLlamadosHost.length
+  }
+}
+
 async function getNuevoNumero(id_room, id_host) {
   const response = await fetch(`/api/juego/extraer/${id_room}`)
   if (!response.ok) {
@@ -44,10 +56,20 @@ async function getNuevoNumero(id_room, id_host) {
     return
   }
   const data = await response.json()
+  const num = Number(data.extraido)
+  if (!isNaN(num) && !listaNumerosLlamadosHost.includes(num)) {
+    listaNumerosLlamadosHost.push(num)
+    actualizarBadgeBolasHost()
+  }
   iniciarRuletazo(data.extraido, id_room, id_host)
 }
 
 export function emitirNumeroNuevo(numero, id_room, id_host) {
+  const num = Number(numero)
+  if (!isNaN(num) && !listaNumerosLlamadosHost.includes(num)) {
+    listaNumerosLlamadosHost.push(num)
+    actualizarBadgeBolasHost()
+  }
   socket.emit("getNuevoNumero", { extraido: numero, id_room: id_room, host: id_host })
 }
 
@@ -59,7 +81,10 @@ async function renderNumerosLlamados(id_room) {
   }
 
   const data = await response.json()
-  data.numbers.forEach((numero) => {
+  const nums = data.numbers || data.numeros_llamados || []
+  listaNumerosLlamadosHost = nums.map(n => Number(n)).filter(n => !isNaN(n))
+  actualizarBadgeBolasHost()
+  nums.forEach((numero) => {
     addBallGrid(numero)
   })
 }
@@ -126,7 +151,7 @@ async function renderUsuariosEnSala() {
     if (isHost) {
       const badge = document.createElement("span");
       badge.className = "player-chip-badge badge-host";
-      badge.innerHTML = "👑 Host";
+      badge.innerHTML = '<i class="fas fa-crown text-warning me-1"></i>Host';
       info.appendChild(badge);
     } else if (isMe) {
       const badge = document.createElement("span");
@@ -233,15 +258,19 @@ async function iniciarSala(id_room, id_usuario) {
 }
 
 async function activarControles(id_room, id_host) {
+  document.body.classList.add("host-playing")
   lobby.classList.add("visually-hidden")
   controles.classList.remove("visually-hidden")
 
   renderNumerosLlamados(id_room)
 
-  btnNuevoNumero.addEventListener("click", async () => {
-    btnNuevoNumero.disabled = true
-    await getNuevoNumero(id_room, id_host)
-  })
+  if (!btnNuevoNumero.dataset.bound) {
+    btnNuevoNumero.dataset.bound = "true"
+    btnNuevoNumero.addEventListener("click", async () => {
+      btnNuevoNumero.disabled = true
+      await getNuevoNumero(id_room, id_host)
+    })
+  }
 }
 
 async function inicializar() {
@@ -265,8 +294,11 @@ async function inicializar() {
     return
   }
   //Validacion de estado
-  else if (sala.estado === 1) {
+  if (sala.estado === 1) {
     activarControles(sala.id_partida, usuario.id_usuario)
+  } else if (sala.estado === 2) {
+    activarControles(sala.id_partida, usuario.id_usuario)
+    mostrarEstadoFinalizadoHost(sala)
   } else if (sala.estado !== 0) {
     await menssaje("Error", "La sala ya finalizo.", "error");
     window.location.href = "/"
@@ -296,6 +328,13 @@ async function inicializar() {
   })
 
   socket.on("ganador", (data) => {
+    if (juegoTerminadoHost && Swal.isVisible()) return; // Prevenir spam de popups
+    juegoTerminadoHost = true;
+    datosGanadorHost = data;
+    mostrarEstadoFinalizadoHost({
+      ganador_username: data.ganador ? data.ganador.username : "Jugador",
+      ganador: data.ganador ? data.ganador.id_usuario : null
+    });
     jugadorGanador(data.ganador, data.carton, data.numerosSeleccionados, data.numerosGanadores);
   });
 
@@ -305,7 +344,6 @@ async function inicializar() {
     })
   }
   if (btnEliminar) {
-
     btnEliminar.addEventListener("click", async () => {
       const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
       if (confirmar) {
@@ -314,7 +352,6 @@ async function inicializar() {
     });
   }
   if (btnCerrar) {
-
     btnCerrar.addEventListener("click", async () => {
       const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
       if (confirmar) {
@@ -322,137 +359,104 @@ async function inicializar() {
       }
     })
   }
+
+  if (btnVerBolasHost) {
+    btnVerBolasHost.addEventListener("click", () => {
+      mostrarModalBolasExtraidas(listaNumerosLlamadosHost, "Historial de Bolas Extraídas");
+    });
+  }
 }
 
-// Mostrar alerta de ganador
+function mostrarEstadoFinalizadoHost(sala) {
+  juegoTerminadoHost = true;
+  if (btnNuevoNumero) {
+    btnNuevoNumero.disabled = true;
+    btnNuevoNumero.textContent = "Partida Finalizada";
+    btnNuevoNumero.classList.remove("btn-success");
+    btnNuevoNumero.classList.add("btn-secondary");
+  }
+
+  const banner = document.getElementById("host-banner-ganador");
+  const nombreGanador = document.getElementById("host-ganador-nombre");
+  if (banner) {
+    banner.classList.remove("d-none");
+    if (nombreGanador) {
+      const gName = sala.ganador_username || (datosGanadorHost && datosGanadorHost.ganador && datosGanadorHost.ganador.username) || "Jugador";
+      nombreGanador.innerHTML = `Ganador: <strong class="text-warning">${gName}</strong>`;
+    }
+  }
+
+  const btnVerCarton = document.getElementById("btn-ver-carton-ganador");
+  if (btnVerCarton) {
+    btnVerCarton.onclick = () => {
+      if (datosGanadorHost) {
+        jugadorGanador(
+          datosGanadorHost.ganador,
+          datosGanadorHost.carton,
+          datosGanadorHost.numerosSeleccionados,
+          datosGanadorHost.numerosGanadores
+        );
+      } else {
+        menssaje("Información", `El ganador de esta partida fue ${sala.ganador_username || 'un jugador'}.`, "info");
+      }
+    };
+  }
+
+  const btnBannerBolas = document.getElementById("btn-banner-ver-bolas");
+  if (btnBannerBolas) {
+    btnBannerBolas.onclick = () => {
+      mostrarModalBolasExtraidas(listaNumerosLlamadosHost, "Historial de Bolas Extraídas");
+    };
+  }
+}
+
+// Mostrar alerta de ganador con cartón y opción de revisar bolas
 function jugadorGanador(usuario, carton, numerosSeleccionados, numerosGanadores = []) {
   Swal.fire({
     title: "<strong>🎉 ¡Bingo! 🎉</strong>",
-    width: 700,
-    padding: "2.5em",
-    background: "#1A1A1A",
+    width: "min(94vw, 560px)",
+    padding: "1.25em 0.75em",
+    background: "#1c1f2e",
     color: "#fff",
+    customClass: {
+      popup: "swal-carton-ganador-popup"
+    },
     html: `
-      <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
-        <img src="/img/Flork/${usuario.img_id}.jpg"
+      <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff; width: 100%;">
+        <img src="/img/Flork/${usuario.img_id || 1}.jpg"
              alt="Ganador"
-             style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
-        <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>
-        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${usuario.username}</h1>
-        <div id="carton-render"></div>
+             onerror="this.src='/img/Flork/1.jpg'"
+             style="width: 85px; height: 85px; border-radius: 50%; margin-bottom: 12px; border: 3px solid #00ff88; box-shadow: 0 0 15px rgba(0,255,136,0.4);" />
+        <p style="font-size: 1.05em; margin: 0; color: #94a3b8;">El jugador ganador es:</p>
+        <h2 style="margin: 6px 0 14px; font-size: 1.8em; color: #00f0ff; font-weight: bold;">${usuario.username}</h2>
+        <div id="carton-render" style="width: 100%; display: flex; justify-content: center;"></div>
+        <div class="mt-3">
+          <button id="btn-swal-ver-bolas" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-list-ol me-2"></i>Ver Bolas Extraídas (${listaNumerosLlamadosHost.length})
+          </button>
+        </div>
       </div>
     `,
     showCloseButton: true,
-    showConfirmButton: false,
-    allowOutsideClick: false,
+    showConfirmButton: true,
+    confirmButtonText: "Entendido",
+    confirmButtonColor: "#059669",
+    allowOutsideClick: true,
     didOpen: () => {
       const contenedor = document.getElementById("carton-render");
-      // Pintar el cartón del ganador
-      const cartonHTML = generarCartonHTML(carton, 0, numerosSeleccionados, numerosGanadores);
-      contenedor.appendChild(cartonHTML);
+      if (contenedor && carton) {
+        const cartonDOM = generarCartonGanadorDOM(carton, numerosSeleccionados, numerosGanadores);
+        contenedor.appendChild(cartonDOM);
+      }
+      const btnBolas = document.getElementById("btn-swal-ver-bolas");
+      if (btnBolas) {
+        btnBolas.addEventListener("click", () => {
+          mostrarModalBolasExtraidas(listaNumerosLlamadosHost, "Historial de Bolas Extraídas");
+        });
+      }
     },
   });
 }
-
-
-// Crear el HTML del cartón
-function generarCartonHTML(cartonData, index = 0, numerosSeleccionados = [], numerosGanadores = []) {
-  const container = document.createElement("div");
-  container.className = "tablas-numeros text-center";
-  container.id = "carton-" + (index + 1);
-
-  const carton = document.createElement("div");
-  carton.className = "carton visible g-col-12 g-col-md-6 g-col-xl-4";
-  carton.style.width = "100%";
-
-  const table = document.createElement("table");
-  table.className = "tabla-numeros";
-  table.style.width = "100%";
-
-  const letras = ["b", "i", "n", "g", "o"];
-
-  // Encabezado
-  const thead = document.createElement("thead");
-  const trHead = document.createElement("tr");
-
-  for (let i = 0; i < letras.length; i++) {
-    const th = document.createElement("th");
-    th.className = fondo[i] || ""; // Por si fondo[i] no existe
-    const div = document.createElement("div");
-    div.className = "bola bola-" + letras[i];
-    div.textContent = letras[i].toUpperCase();
-    th.appendChild(div);
-    trHead.appendChild(th);
-  }
-
-  thead.appendChild(trHead);
-  table.appendChild(thead);
-
-  // Cuerpo de tabla
-  const tbody = document.createElement("tbody");
-  for (let i = 0; i < cartonData.length; i++) {
-    const tr = document.createElement("tr");
-    for (let j = 0; j < cartonData[i].length; j++) {
-      const td = document.createElement("td");
-      const valor = cartonData[i][j];
-      td.textContent = valor;
-      td.setAttribute("data-valor", valor);
-      td.className = "seleccionable";
-
-      // Estilo si fue seleccionado
-      if (numerosSeleccionados.includes(valor)) {
-        td.style.backgroundColor = "#F9F2F2";
-        td.style.color = "black";
-        td.style.fontWeight = "bold";
-      }
-
-      // Pintar "FREE" al centro (3,3)
-      if (valor === "FREE") {
-        td.style.backgroundColor = "#F9F2F2";
-        td.style.color = "black";
-        td.style.fontWeight = "bold";
-      }
-
-      tr.appendChild(td);
-    }
-    tbody.appendChild(tr);
-  }
-
-  table.appendChild(tbody);
-  carton.appendChild(table);
-  container.appendChild(carton);
-
-  // Pintar ganadores
-  pintarGanadores(container, numerosGanadores);
-
-  return container;
-}
-
-
-function pintarGanadores(cartonElement, numerosGanadores = []) {
-  const celdas = cartonElement.querySelectorAll("td[data-valor]");
-
-  celdas.forEach((td) => {
-    const valor = td.getAttribute("data-valor");
-
-    // Pintar si el valor está en los ganadores
-    if (valor !== "FREE" && numerosGanadores.includes(Number(valor))) {
-      td.style.backgroundColor = "orange";
-      td.style.color = "black";
-      td.style.fontWeight = "bold";
-      td.style.border = "2px solid #333";
-    }
-
-    // Pintar "FREE" solo si hay 4 ganadores (FREE completa la línea)
-    if (valor === "FREE" && numerosGanadores.length === 4) {
-      td.style.backgroundColor = "orange";
-      td.style.color = "black";
-      td.style.fontWeight = "bold";
-      td.style.border = "2px solid #333";
-    }
-  });
-}
-
 
 async function menssaje(titulo, texto, icono = null) {
   await Swal.fire({

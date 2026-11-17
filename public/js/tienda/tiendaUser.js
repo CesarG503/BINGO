@@ -384,11 +384,11 @@ function renderUserCartones() {
         <table class="bingo-table">
           <thead>
             <tr>
-              <th class="bingo-cell bingo-header">B</th>
-              <th class="bingo-cell bingo-header">I</th>
-              <th class="bingo-cell bingo-header">N</th>
-              <th class="bingo-cell bingo-header">G</th>
-              <th class="bingo-cell bingo-header">O</th>
+              <th class="bingo-cell bingo-header-b">B</th>
+              <th class="bingo-cell bingo-header-i">I</th>
+              <th class="bingo-cell bingo-header-n">N</th>
+              <th class="bingo-cell bingo-header-g">G</th>
+              <th class="bingo-cell bingo-header-o">O</th>
             </tr>
           </thead>
           <tbody>

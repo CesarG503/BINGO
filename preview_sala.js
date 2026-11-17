@@ -68,19 +68,52 @@ const mockCarton2 = [
   [15, 30, 45, 60, 75]
 ];
 
+let mockNumerosLlamados = [];
+
+let mockPartida = {
+  id_partida: 'SALA-BINGO-42',
+  host: 1,
+  host_name: 'Host_Admin',
+  estado: 0,
+  numeros_llamados: mockNumerosLlamados,
+  patron_ganador: [
+    ["1", "0", "0", "0", "1"],
+    ["0", "1", "0", "1", "0"],
+    ["0", "0", "0", "0", "0"],
+    ["0", "1", "0", "1", "0"],
+    ["1", "0", "0", "0", "1"]
+  ],
+  ganador: null,
+  ganador_username: null,
+  ganador_img_id: null
+};
+
 // Mock API Endpoints
 app.get('/api/partidas/:id', (req, res) => {
   res.json({
     id_partida: req.params.id,
-    host: 1,
-    estado: 0,
-    numeros_llamados: []
+    host: mockPartida.host,
+    host_name: mockPartida.host_name,
+    estado: mockPartida.estado,
+    numeros_llamados: mockNumerosLlamados,
+    patron_ganador: mockPartida.patron_ganador,
+    ganador: mockPartida.ganador,
+    ganador_username: mockPartida.ganador_username,
+    ganador_img_id: mockPartida.ganador_img_id,
+    total_jugadores: mockUsuarios.length
   });
+});
+
+app.post('/api/partida/patron/:id', (req, res) => {
+  if (req.body && req.body.patron) {
+    mockPartida.patron_ganador = req.body.patron;
+  }
+  res.json({ success: true, message: 'Patrón guardado con éxito' });
 });
 
 app.get('/api/usuarios/actual', (req, res) => {
   const referer = req.headers.referer || '';
-  if (referer.includes('/room/host')) {
+  if (req.cookies.isHost === '1' || referer.includes('/room/host')) {
     return res.json({
       id_usuario: 1,
       username: 'Host_Admin',
@@ -124,16 +157,27 @@ app.get('/api/cartones/:id', (req, res) => {
 });
 
 app.get('/api/juego/estado/:id', (req, res) => {
-  res.json({ numeros_llamados: [] });
+  res.json({ id: req.params.id, numbers: mockNumerosLlamados, numeros_llamados: mockNumerosLlamados });
 });
 
 app.put('/api/partidas/:id/estado', (req, res) => {
-  res.json({ success: true });
+  if (req.body && typeof req.body.estado !== 'undefined') {
+    mockPartida.estado = Number(req.body.estado);
+  }
+  res.json({ success: true, estado: mockPartida.estado });
 });
 
 app.get('/api/juego/extraer/:id', (req, res) => {
-  const num = Math.floor(Math.random() * 75) + 1;
-  res.json({ extraido: num });
+  if (mockNumerosLlamados.length >= 75) {
+    mockNumerosLlamados = [];
+  }
+  let num;
+  do {
+    num = Math.floor(Math.random() * 75) + 1;
+  } while (mockNumerosLlamados.includes(num));
+
+  mockNumerosLlamados.push(num);
+  res.json({ extraido: num, numbers: mockNumerosLlamados });
 });
 
 app.delete('/api/partidas/:id/abandonar', (req, res) => {
@@ -184,11 +228,16 @@ app.get('/api/qr/:roomId', async (req, res) => {
 });
 
 // View Routes
+app.get('/home', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'admin_home.html'));
+});
+
 app.get('/', (req, res) => {
   res.redirect('/room/user/SALA-BINGO-42');
 });
 
 app.get('/room/user/:roomId', (req, res) => {
+  res.clearCookie('isHost');
   res.render('user_room', { id_room: req.params.roomId }, (err, html) => {
     if (err) return res.status(500).send(err.message);
     const modifiedHtml = html.replace('<body class="bg-dark text-light">', '<body class="bg-dark text-light">' + bannerHtml);
@@ -197,6 +246,7 @@ app.get('/room/user/:roomId', (req, res) => {
 });
 
 app.get('/room/host/:roomId', async (req, res) => {
+  res.cookie('isHost', '1', { path: '/' });
   const roomId = req.params.roomId;
   const apiBaseUrl = process.env.API_BASE_URL || `http://${req.get('host')}`;
   const joinUrl = `${apiBaseUrl}/join/${roomId}`;
@@ -218,7 +268,14 @@ app.get('/room/host/:roomId', async (req, res) => {
     qr_code: qrCodeData
   }, (err, html) => {
     if (err) return res.status(500).send(err.message);
-    const modifiedHtml = html.replace(/<body([^>]*)>/, '<body$1>' + bannerHtml);
+    let modifiedHtml = html;
+    if (mockPartida.estado === 1) {
+      modifiedHtml = modifiedHtml
+        .replace('<body class="bg-dark text-light">', '<body class="bg-dark text-light host-playing">')
+        .replace('<div id="waiting-room" class="waiting-room">', '<div id="waiting-room" class="waiting-room visually-hidden">')
+        .replace('<div id="waiting-room">', '<div id="waiting-room" class="visually-hidden">')
+        .replace('<div id="game-controls" class="visually-hidden">', '<div id="game-controls">');
+    }
     res.send(modifiedHtml);
   });
 });
@@ -233,8 +290,46 @@ io.on('connection', (socket) => {
       usuarios: mockUsuarios
     });
   });
+
+  socket.on('patronActualizado', (data) => {
+    if (data && data.patron) {
+      mockPartida.patron_ganador = data.patron;
+    }
+    io.to(data.id_room).emit('mostrarPatron', { patron: data.patron });
+  });
+
   socket.on('iniciarSala', (data) => {
-    io.to(data.id_room).emit('inicioSala');
+    mockPartida.estado = 1;
+    io.to(data.id_room).emit('inicioSala', { patron: mockPartida.patron_ganador });
+  });
+
+  socket.on('getNuevoNumero', (data) => {
+    io.to(data.id_room).emit('nuevoNumero', data.extraido);
+  });
+
+  socket.on('callBingo', (data) => {
+    if (mockPartida.estado === 2) {
+      return socket.emit('errorCarton', 'La partida ya ha finalizado');
+    }
+    mockPartida.estado = 2;
+    mockPartida.ganador = data.ganador ? data.ganador.id_usuario : 2;
+    mockPartida.ganador_username = data.ganador ? data.ganador.username : 'Flork_Master';
+    mockPartida.ganador_img_id = data.ganador ? data.ganador.img_id : '1';
+
+    const winNums = (data.numerosSeleccionados && data.numerosSeleccionados.length > 0)
+      ? data.numerosSeleccionados
+      : (mockNumerosLlamados.slice(0, 4));
+
+    const winData = {
+      ganador: data.ganador || { id_usuario: 2, username: 'Flork_Master', img_id: '1' },
+      numerosGanadores: winNums,
+      numerosSeleccionados: data.numerosSeleccionados || [],
+      carton: data.carton || mockCarton1,
+      id_room: data.id_room
+    };
+
+    socket.emit('eresGanador', winData);
+    io.to(data.id_room).emit('ganador', winData);
   });
 });
 

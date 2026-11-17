@@ -25,8 +25,13 @@
       <span class="navbar-brand fs-4 fw-bold text-white">Bingo</span>
     </div>
   
-    <!-- Navegación -->
-    <div class="d-flex gap-3 flex-wrap">
+    <!-- Navegación y Botón Discreto de Historial de Bolas -->
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <button class="btn btn-sm btn-compact-bolas" id="btn-ver-bolas-host" title="Ver historial de bolas extraídas">
+        <i class="fas fa-history text-warning me-1"></i>
+        <span>Historial Bolas</span>
+        <span class="badge bg-warning text-dark ms-1 rounded-pill" id="host-bolas-badge">0</span>
+      </button>
       <button class="nav-item rounded-pill px-3 btn btn-outline-danger py-1 text-white text-decoration-none" id="btn-cerrar-sala">Cerrar Sala</button>
     </div>
   </nav>
@@ -46,7 +51,7 @@
                 <i class="fas fa-gamepad me-2 text-warning"></i>Código de la Sala
               </h4>
               <span class="badge bg-primary-neon rounded-pill px-3 py-1 fs-6">
-                👥 <span id="n-jugadores">0</span> Conectados
+                <i class="fas fa-users me-1 text-info"></i><span id="n-jugadores">0</span> Conectados
               </span>
             </div>
             
@@ -106,8 +111,8 @@
                               <span id="count-number">0</span>
                           </span>
                       </div>
-                      <div class="player-search-wrapper ms-sm-auto">
-                          <input type="text" id="player-search" class="players-search-box" placeholder="🔍 Buscar jugador..." autocomplete="off">
+                      <div class="player-search-wrapper ms-sm-auto position-relative">
+                          <input type="text" id="player-search" class="players-search-box" placeholder="Buscar jugador..." autocomplete="off">
                       </div>
                   </div>
                   <div class="players-body p-3">
@@ -125,8 +130,21 @@
   </div>
 <!-- Pantalla de juego -->
 <div id="game-controls" class="visually-hidden">
-  <div class="interfaz container mx-auto grid border border-2 border-neon-complete border-info mt-3">
-    <div class="container contenedor g-col-10 " >
+  <div id="host-banner-ganador" class="game-finished-banner d-none mx-3 my-1 text-center py-2 px-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="text-start">
+        <h5 class="text-success mb-0 fw-bold"><i class="fas fa-trophy text-warning me-2"></i>¡Partida Finalizada!</h5>
+        <span class="text-white-50 small" id="host-ganador-nombre">Ganador: -</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-info py-1" id="btn-ver-carton-ganador"><i class="fas fa-eye me-1"></i>Ver Cartón</button>
+        <button class="btn btn-sm btn-outline-light py-1" id="btn-banner-ver-bolas"><i class="fas fa-list me-1"></i>Bolas Extraídas</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="interfaz border border-2 border-neon-complete border-info">
+    <div class="contenedor">
       <!-- RULETAZO CON LOS NUMEROS-->
       <div class="canva mx-auto">
         <div class="carrusel" id="carrusel">
@@ -142,11 +160,11 @@
         </div>
       </div>
       <!-- TUBO -->
-      <div class="tubo row">
-          <div class="tubo-css"></div>
+      <div class="tubo">
+        <div class="tubo-css"></div>
       </div>
       <!-- TABLA CON LOS NUMEROS -->
-      <div class="container numeros">
+      <div class="numeros">
         <table class="tabla-numeros border border-3 ">
           <tbody id="tableBall"> <!--EL navegador me agregar el tbody :)-->
             <tr class="">
@@ -255,7 +273,7 @@
       </div>
     </div>
   
-   <div class="g-col-2">
+   <div class="col-lateral-host">
       <div class="botones">
         <div class="formaParaGanar" >
           <table class="tabla-bingo-patron border border-2" id="tabla-bingo-patron">
@@ -307,10 +325,17 @@
             </tbody>
           </table>
         </div>
-          <button class="btn btn-warning btn-lg" id="btn-confirmar-patron">Confirmar Forma</button>
+        <button class="btn btn-subtle-patron" id="btn-confirmar-patron">
+          <i class="fas fa-check-circle me-1"></i>Confirmar Forma
+        </button>
 
+        <div class="bola-actual-container">
           <div class="bola-selec bola-i" id="bola-selec">Bola</div>
-          <button class="btn btn-success btn-lg" id="btn-new-number">NUEVA BOLA</button>
+        </div>
+
+        <button class="btn btn-arcade-lanzar" id="btn-new-number">
+          <i class="fas fa-dice me-2"></i>NUEVA BOLA
+        </button>
   
       </div>
    </div>

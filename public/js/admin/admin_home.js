@@ -57,7 +57,7 @@ async function createRoom(event) {
 
         const roomInfo = await response.json();
         console.log("Sala creada:", roomInfo);
-        window.location.href = `/room/host/${roomData["id"]}?modo=normal`;
+        window.location.href = `/room/host/${roomData["id"]}`;
     } catch (error) {
         console.error("Error al crear la sala:", error);
         if (typeof Swal !== "undefined") {

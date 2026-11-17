@@ -2,123 +2,113 @@ import { emitirNumeroNuevo, btnNuevoNumero } from '/js/room/host_connection.js';
 
 let carrusel = document.getElementById("carrusel");
 let canva = document.querySelector(".canva");
-const repeticiones = 9;
-const x = 3; //Duración de animaciones
-const desplazamientoX = ((-630 * repeticiones) + 630)  + 'px' //Para calcular el desplazamiento
 let numerosLlamados = new Set(); // Array para almacenar los números llamados
 
-//Se recibe el numero seleccionado por el host
+// Se recibe el numero seleccionado por el host
 export async function iniciarRuletazo(select, id_room, id_host) {
-  // limpiamos el carrusel para no tener bugs
-  carrusel.innerHTML = null;
+  // Aseguramos estado inicial limpio del carrusel y overflow
+  if (canva) {
+    canva.classList.remove("canva-visible-overflow");
+    canva.style.overflow = "hidden";
+  }
+  carrusel.innerHTML = "";
+  gsap.set(carrusel, { x: 0 });
 
-  // Agregar conjunto final con el número seleccionado en el centro
+  // Agregar conjunto de bolas para la ruleta
   carrusel.append(...createSeleccionado(select));
 
-  // Creamos una nueva promesa para poder eliminar los numeros generados
+  const seleccionado = document.getElementById("seleccionado");
+  if (!seleccionado) {
+    console.error("No se encontró la bola seleccionada");
+    btnNuevoNumero.disabled = false;
+    return;
+  }
+
+  // Calculamos el desplazamiento exacto para centrar #seleccionado en el punto medio del carril
+  const canvaCenter = canva.clientWidth / 2;
+  const seleccionadoCenter = seleccionado.offsetLeft + (seleccionado.offsetWidth / 2);
+  const targetX = Math.round(canvaCenter - seleccionadoCenter);
+
+  // 1. Giro suave de la ruleta: desacelera gradualmente y se detiene EXACTAMENTE en la bola elegida
   await new Promise((resolve) => {
-    gsap
-      .timeline({ onComplete: resolve })
-      .to(carrusel, {
-        x: desplazamientoX,
-        duration: x,
-        ease: "power4.out",
-      })
+    gsap.to(carrusel, {
+      x: targetX,
+      duration: 3.2,
+      ease: "power3.out", // Desaceleración fluida y natural, sin paradas en seco
+      onComplete: resolve,
     });
-    eliminarNumber();
-    
-    // Para que la pelota salga de su lugar
-    await new Promise((resolve) => {
-      gsap.timeline({ onComplete: resolve })
-      .to(carrusel, {
-        x: "0",
-        duration: 0,
-      })
-      .call(() => {
-        visibleCanva()
-      });
-    });
+  });
 
-      emitirNumeroNuevo(select, id_room, id_host);
+  // Ocultamos todas las bolas que quedaron fuera de la ventana visible del carril
+  // antes de activar overflow: visible, evitando que aparezcan flotando a los lados
+  const canvaRect = canva.getBoundingClientRect();
+  const bolas = [...carrusel.children];
+  bolas.forEach((b) => {
+    if (b === seleccionado) return;
+    const bRect = b.getBoundingClientRect();
+    if (bRect.right < canvaRect.left + 8 || bRect.left > canvaRect.right - 8) {
+      b.style.visibility = "hidden";
+    }
+  });
 
-      await new Promise((resolve) => {
-      gsap
-      .timeline({ onComplete: resolve })
-      .to("#seleccionado", {
-        //boxShadow: "0 0 25px 10px #fff",
-        scale: 2.5,
-        y: 20,
-        duration: x,
-        ease: "elastic.out",
+  // 2. Elección suave y elegante de la bola (sin movimientos bruscos a los lados)
+  setCanvaOverflow(true); // Permite que solo la bola elegida crezca sin ser recortada
+  emitirNumeroNuevo(select, id_room, id_host);
+
+  await new Promise((resolve) => {
+    gsap.timeline({ onComplete: resolve })
+      // A) Resalte suave y orgánico de la bola elegida
+      .to(seleccionado, {
+        scale: 2.15,
+        y: 28, // Desciende suavemente al espacio libre sobre el tubo
+        boxShadow: "0 0 28px 8px rgba(0, 240, 255, 0.65)",
+        duration: 0.75,
+        ease: "back.out(1.2)",
       })
-      .to("#seleccionado", {
-        y: "+=150",
-        scale: 1.2,
+      // B) Pausa suave para apreciar claramente el número
+      .to(seleccionado, {
+        scale: 2.15,
+        duration: 0.55,
+      })
+      // C) Descenso fluido por el tubo hacia el contenedor
+      .to(seleccionado, {
+        y: "+=160",
+        scale: 1.0,
         autoAlpha: 0,
-        duration: 1,
-        ease: "bounce.out",
+        duration: 0.8,
+        ease: "power2.in",
       })
       .call(() => {
         addBallGrid(select);
-        visibleCanva();
-        carrusel.append(...crearBolasExtras());
-      })
-      .to(carrusel, {
-        x: "-=630",
-        duration: x,
-        delay: 2,
-        ease: "power4.out",
+        setCanvaOverflow(false);
       });
   });
+
   btnNuevoNumero.disabled = false; // Habilitar el botón de nuevo número
 }
 
-// Devuelve una colección de bolas,
+// Devuelve una colección de bolas para el giro
 function createSeleccionado(numero) {
-  //se le pasa el numero que retorne la API
-  let bolasTotal = repeticiones * 9
+  const bolasAntes = 60; // Cantidad suficiente para un giro dinámico y fluido
+  const bolasDespues = 8; // Mantiene el carril derecho completamente poblado al detenerse
+  const totalBolas = bolasAntes + 1 + bolasDespues;
   const wrapper = document.createElement("div");
-  for (let i = 0; i < bolasTotal; i++) {
+
+  for (let i = 0; i < totalBolas; i++) {
     const bola = document.createElement("div");
     bola.classList.add("bola");
-    if (i === bolasTotal-5) {
+    if (i === bolasAntes) {
       bola.innerText = numero;
       bola.style.zIndex = "2";
       bola.setAttribute("id", "seleccionado");
     } else {
       bola.innerText = getRandomInteger(1, 75);
     }
-    bola.classList.add(asignarColor(bola.innerText));
+    bola.classList.add(asignarColor(Number(bola.innerText)));
     wrapper.appendChild(bola);
   }
 
   return wrapper.children;
-}
-
-// Devuelve una colección de bolas,
-function crearBolasExtras() {
-
-  const wrapper = document.createElement("div");
-  for (let i = 0; i < 9; i++) {
-    const bola = document.createElement("div");
-    bola.classList.add("bola");
-    bola.innerText = getRandomInteger(1, 75);
-    bola.classList.add(asignarColor(bola.innerText));
-    wrapper.appendChild(bola);
-  }
-
-  return wrapper.children;
-}
-
-
-// Eliminar numeros generados aleatoriamente y resete
-function eliminarNumber() {
-  const carrusel = document.getElementById("carrusel");
-  const hijos = [...carrusel.children];
-
-  for (let i = 0; i < hijos.length - 9; i++) {
-    carrusel.removeChild(hijos[i]);
-  }
 }
 
 // Funciones auxiliares
@@ -184,56 +174,45 @@ export async function addBallGrid(numeroBola) {
   }
 
 
-  indexFila = numeroBola - index * 15; //Calculamos el indice en el que tiene que entrar
-  console.log(indexFila);
-  table.children[index].children[indexFila].appendChild(ball);
+  indexFila = numeroBola - index * 15; // Calculamos el indice en el que tiene que entrar
+  const cell = table.children[index]?.children[indexFila];
+  if (cell) {
+    cell.innerHTML = "";
+    cell.appendChild(ball);
+  }
+
   ball.style.scale = 0;
   await new Promise((resolve) => {
-    gsap
-      .timeline({ onComplete: resolve })
-      .to(ball, {
-        y: -20, // Se eleva un poco
-        scale: 1.2, // Se estira un poco
-        duration: 0.3, // Corto para sensación rápida
+    gsap.timeline({ onComplete: resolve })
+      .to([ball, bolaSelec], {
+        y: -16,
+        scale: 1.15,
+        duration: 0.25,
         ease: "power2.out",
       })
-      .to(ball, {
+      .to([ball, bolaSelec], {
         y: 0,
-        scale: 0.95, // Rebote pequeño al tocar el suelo
+        scale: 0.96,
         duration: 0.2,
         ease: "bounce.out",
       })
-      .to(ball, {
+      .to([ball, bolaSelec], {
         scale: 1,
         duration: 0.2,
-        ease: "elastic.out(1, 0.3)",
-      });
-  });
-  await new Promise((resolve) => {
-    gsap
-      .timeline({ onComplete: resolve })
-      .to(bolaSelec, {
-        y: -20, // Se eleva un poco
-        scale: 1.2, // Se estira un poco
-        duration: 0.3, // Corto para sensación rápida
-        ease: "power2.out",
-      })
-      .to(bolaSelec, {
-        y: 0,
-        scale: 0.95, // Rebote pequeño al tocar el suelo
-        duration: 0.2,
-        ease: "bounce.out",
-      })
-      .to(bolaSelec, {
-        scale: 1,
-        duration: 0.2,
-        ease: "elastic.out(1, 0.3)",
+        ease: "elastic.out(1, 0.4)",
       });
   });
   numerosLlamados.add(numeroBola); 
 }
 
-function visibleCanva(){
-  const current = canva.style.overflow;
-  canva.style.overflow = current === "visible" ? "hidden" : "visible";
+function setCanvaOverflow(visible) {
+  if (canva) {
+    if (visible) {
+      canva.classList.add("canva-visible-overflow");
+      canva.style.overflow = "visible";
+    } else {
+      canva.classList.remove("canva-visible-overflow");
+      canva.style.overflow = "hidden";
+    }
+  }
 }

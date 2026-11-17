@@ -397,7 +397,8 @@ function renderUserCartones() {
                                       if (cell === null || cell === "FREE" || isCenter) {
                                         return `<td class="bingo-cell free-cell">FREE</td>`
                                       }
-                                      return `<td class="bingo-cell">${cell}</td>`
+                                      const colLetter = ['b','i','n','g','o'][colIndex]
+                                      return `<td class="bingo-cell col-cell-${colLetter}">${cell}</td>`
                                     })
                                     .join("")
                                 : ""

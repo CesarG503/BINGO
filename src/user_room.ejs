@@ -85,7 +85,7 @@
                                     </span>
                                 </div>
                                 <div class="player-search-wrapper">
-                                    <input type="text" id="player-search" class="players-search-box" placeholder="🔍 Buscar jugador..." autocomplete="off">
+                                    <input type="text" id="player-search" class="players-search-box" placeholder="Buscar jugador..." autocomplete="off">
                                 </div>
                             </div>
                         </div>
@@ -136,14 +136,40 @@
                 </h1>
             </div>
 
+            <!-- Banner persistente de partida finalizada -->
+            <div id="user-banner-ganador" class="game-finished-banner d-none mb-4 text-center">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="text-start">
+                        <h4 class="text-success mb-1 fw-bold" id="user-banner-titulo">
+                            <i class="fas fa-trophy text-warning me-2"></i>¡Partida Finalizada!
+                        </h4>
+                        <span class="text-white-50 fs-6" id="user-banner-subtitulo">Ganador: -</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-info" id="btn-user-ver-carton"><i class="fas fa-eye me-1"></i>Ver Cartón Ganador</button>
+                        <button class="btn btn-sm btn-outline-light" id="btn-user-banner-bolas"><i class="fas fa-list me-1"></i>Bolas Extraídas</button>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Número actual y Patrón Ganador -->
             <div class="row justify-content-center align-items-center mb-4">
-                <!-- Número Actual -->
+                <!-- Número Actual (Diseño idéntico a las bolas del Anfitrión) -->
                 <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
-                    <div class="current-number-card text-center">
-                        <h3 class="text-white mb-2">Número Actual</h3>
-                        <div class="current-number" id="numero-actual">--</div>
+                    <div class="current-number-card text-center d-flex flex-column align-items-center justify-content-center p-3">
+                        <h3 class="text-white mb-2 fs-5">
+                            <i class="fas fa-bullhorn me-2 text-warning"></i>Número Actual
+                        </h3>
+                        <div class="bola-preview-container my-2">
+                            <div class="bola-selec bola-espera" id="numero-actual">
+                                <span class="bola-letra" id="letra-actual">--</span>
+                                <span class="bola-numero" id="valor-actual">--</span>
+                            </div>
+                        </div>
+                        <div id="columna-badge-container" class="mt-2">
+                            <span id="columna-badge" class="badge bg-secondary px-3 py-1 fs-6">Esperando bola...</span>
+                        </div>
                     </div>
                 </div>
                 <!-- Patrón Ganador -->
@@ -175,14 +201,22 @@
             <div class="row justify-content-center mb-5">
                 <div class="col-lg-10">
                     <div class="called-numbers-card">
-                        <div class="called-numbers-header">
-                            <h4 class="text-white mb-0">
+                        <div class="called-numbers-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <h4 class="text-white mb-0 fs-5">
                                 <i class="fas fa-list me-2 text-warning"></i>Números Llamados
                             </h4>
+                            <div class="d-flex align-items-center gap-2">
+                                <button id="btn-ver-bolas-cliente" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-eye me-1"></i>Historial de Bolas
+                                </button>
+                                <span id="total-llamados-badge" class="badge bg-dark border border-secondary text-white-50 px-3 py-1 fs-6">
+                                    Total: <span id="total-llamados" class="text-warning fw-bold">0</span> bolas
+                                </span>
+                            </div>
                         </div>
-                        <div class="called-numbers-body">
+                        <div class="called-numbers-body p-3">
                             <div id="numeros-llamados" class="called-numbers-grid">
-                                <!-- Los números llamados aparecen aquí -->
+                                <!-- Las bolas llamadas aparecen aquí con diseño de bolas del anfitrión -->
                             </div>
                         </div>
                     </div>

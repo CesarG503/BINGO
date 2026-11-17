@@ -549,22 +549,50 @@ io.on('connection', (socket) => {
   });
 
   socket.on('callBingo', async (data) => {
-    // Validar el cartón del usuario
-    const numerosGanadores = await validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
-    if (numerosGanadores.length === 0) {
-      return socket.emit('errorCarton', 'Cartón inválido o no hay bingo');
-    }
+    try {
+      // 1. Verificar si la partida ya finalizó
+      const partidaCheck = await pool.query(
+        "SELECT estado, ganador FROM Partidas WHERE UPPER(id_partida) = UPPER($1)",
+        [data.id_room]
+      );
+      if (partidaCheck.rows.length === 0) {
+        return socket.emit('errorCarton', 'Partida no encontrada');
+      }
+      if (partidaCheck.rows[0].estado === 2) {
+        return socket.emit('errorCarton', 'La partida ya ha finalizado');
+      }
 
-    const newData = {
-      ganador: data.ganador,
-      numerosGanadores: numerosGanadores,
-      numerosSeleccionados: data.numerosSeleccionados,
-      carton: data.carton,
-      id_room: data.id_room,
+      // 2. Validar el cartón del usuario
+      const numerosGanadores = await validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
+      if (!numerosGanadores || numerosGanadores.length === 0) {
+        return socket.emit('errorCarton', 'Cartón inválido o no hay bingo');
+      }
+
+      // 3. Actualizar estado de forma atómica en la base de datos
+      const userId = (data.ganador && data.ganador.id_usuario) || socket.user.uid;
+      const updateResult = await pool.query(
+        "UPDATE Partidas SET estado = 2, ganador = $1 WHERE UPPER(id_partida) = UPPER($2) AND estado != 2 RETURNING *",
+        [userId, data.id_room]
+      );
+
+      if (updateResult.rows.length === 0) {
+        return socket.emit('errorCarton', 'Otro jugador ya ha cantado Bingo');
+      }
+
+      const newData = {
+        ganador: data.ganador,
+        numerosGanadores: numerosGanadores,
+        numerosSeleccionados: data.numerosSeleccionados,
+        carton: data.carton,
+        id_room: data.id_room,
+      };
+      
+      socket.emit("eresGanador", newData);
+      io.to(data.id_room).emit('ganador', newData);
+    } catch (err) {
+      console.error("Error en callBingo:", err);
+      socket.emit('errorCarton', 'Error al procesar el bingo');
     }
-    
-    socket.emit("eresGanador", newData );
-    io.to(data.id_room).emit('ganador', newData);
   });
 
   // Manejar eventos de desconexion
