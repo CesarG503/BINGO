@@ -19,8 +19,17 @@ router.post("/nueva", authenticateToken, validateRole(0), async (req, res) => {
 })
 
 router.get("/:id", authenticateToken, async (req, res) => {
+  const rawId = req.params.id ? req.params.id.trim() : ""
   try {
-    const result = await pool.query("SELECT * FROM Partidas WHERE id_partida = $1", [req.params.id])
+    const result = await pool.query(
+      `SELECT p.id_partida, p.estado, p.host, p.numeros_llamados, p.ganador,
+              u.username AS host_name,
+              (SELECT COUNT(*)::int FROM partida_usuario pu WHERE UPPER(pu.id_partida) = UPPER(p.id_partida)) AS total_jugadores
+       FROM Partidas p
+       LEFT JOIN Usuarios u ON p.host = u.id_usuario
+       WHERE UPPER(p.id_partida) = UPPER($1)`,
+      [rawId]
+    )
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Partida no encontrada" })
     }
@@ -32,14 +41,15 @@ router.get("/:id", authenticateToken, async (req, res) => {
 })
 
 router.get("/:id/usuarios", authenticateToken, async (req, res) => {
+  const rawId = req.params.id ? req.params.id.trim() : ""
   try {
     // Unir con la tabla Usuarios para obtener información de los usuarios en la partida
     const usuarios = await pool.query(
       `SELECT u.username, u.email, u.img_id
              FROM partida_usuario pu
              JOIN Usuarios u ON pu.id_usuario = u.id_usuario
-             WHERE pu.id_partida = $1`,
-      [req.params.id],
+             WHERE UPPER(pu.id_partida) = UPPER($1)`,
+      [rawId],
     )
     res.send(usuarios.rows)
   } catch (err) {
@@ -49,19 +59,34 @@ router.get("/:id/usuarios", authenticateToken, async (req, res) => {
 })
 
 router.post("/:id/registrarse", authenticateToken, async (req, res) => {
-  const { id } = req.params
+  const rawId = req.params.id ? req.params.id.trim() : ""
   const { cartones } = req.body
-  //console.log(`Usuario ${req.user.uid} intentando unirse a la partida ${id}`)
   try {
-    // Verificar si el usuario ya está en la partida
-    const checkUser = await pool.query(`SELECT * FROM partida_usuario WHERE id_partida = $1 AND id_usuario = $2`, [
-      id,
-      req.user.uid,
-    ])
-
-    if (checkUser.rows.length > 0) {
-      return res.status(201).json({ registrado: false })
+    // Verificar que la partida existe (búsqueda sin distinción de mayúsculas/minúsculas)
+    const partidaCheck = await pool.query(
+      "SELECT id_partida, estado FROM Partidas WHERE UPPER(id_partida) = UPPER($1)",
+      [rawId]
+    )
+    if (partidaCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Partida no encontrada" })
     }
+
+    const realId = partidaCheck.rows[0].id_partida
+    const estado = partidaCheck.rows[0].estado
+
+    if (estado !== 0) {
+      return res.status(403).json({ error: "No se puede registrar si la partida ya está activa o ha finalizado" })
+    }
+
+    if (!Array.isArray(cartones) || cartones.length < 1 || cartones.length > 4) {
+      return res.status(400).json({ error: "Debes seleccionar entre 1 y 4 cartones" })
+    }
+
+    // Verificar si el usuario ya está en la partida
+    const checkUser = await pool.query(
+      `SELECT * FROM partida_usuario WHERE id_partida = $1 AND id_usuario = $2`,
+      [realId, req.user.uid]
+    )
 
     // Verificar que el usuario existe
     const userCheck = await pool.query("SELECT id_usuario FROM Usuarios WHERE id_usuario = $1", [req.user.uid])
@@ -69,28 +94,12 @@ router.post("/:id/registrarse", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado" })
     }
 
-    //Verificar que la partida está activa
-    const partidaEstado = await pool.query("SELECT estado FROM Partidas WHERE id_partida = $1", [id])
-    if (partidaEstado.rows.length === 0) {
-      return res.status(404).json({ error: "Partida no encontrada" })
-    }
-    
-    if (partidaEstado.rows[0].estado !== 0) {
-      return res.status(403).json({ error: "No se puede registrar si la partida ya está activa" })
-    }
-
-    // Verificar que la partida existe
-    const partidaCheck = await pool.query("SELECT id_partida FROM Partidas WHERE id_partida = $1", [id])
-    if (partidaCheck.rows.length === 0) {
-      return res.status(404).json({ error: "Partida no encontrada" })
-    }
-     
-    //Verificar que el carton existe y pertenece al usuario
+    // Verificar que el carton existe y pertenece al usuario
     for (const id_carton of cartones) {
       const cartonCheck = await pool.query(
         `SELECT c.id_carton FROM cartones c
-                 JOIN carton_usuario cu ON c.id_carton = cu.id_carton
-                 WHERE c.id_carton = $1 AND cu.id_usuario = $2`,
+         JOIN carton_usuario cu ON c.id_carton = cu.id_carton
+         WHERE c.id_carton = $1 AND cu.id_usuario = $2`,
         [id_carton, req.user.uid],
       )
       if (cartonCheck.rows.length === 0) {
@@ -98,13 +107,22 @@ router.post("/:id/registrarse", authenticateToken, async (req, res) => {
       }
     }
 
+    if (checkUser.rows.length > 0) {
+      // Si el usuario ya está en la partida, actualizamos sus cartones
+      await pool.query(
+        `UPDATE partida_usuario SET id_cartones = $1 WHERE id_partida = $2 AND id_usuario = $3`,
+        [JSON.stringify(cartones), realId, req.user.uid]
+      )
+      return res.status(200).json({ registrado: true, actualizado: true, id_partida: realId })
+    }
+
     // Insertar el usuario en la partida
     await pool.query(
       `INSERT INTO partida_usuario (id_partida, id_usuario, id_cartones) 
              VALUES ($1, $2, $3) RETURNING *`,
-      [id, req.user.uid, JSON.stringify(cartones)],
+      [realId, req.user.uid, JSON.stringify(cartones)],
     )
-    res.status(201).json({ registrado: true })
+    res.status(201).json({ registrado: true, id_partida: realId })
   } catch (err) {
     console.error("Error uniendo a la partida:", err)
     res.status(500).json({ error: "Error uniendo a la partida" })
@@ -215,14 +233,14 @@ router.put("/:id/estado", authenticateToken, validateRole(0), async (req, res) =
 
 //Obtener si un usuario está registrado en una partida
 router.get("/:id/registrado", authenticateToken, async (req, res) => {
-  const { id } = req.params
+  const rawId = req.params.id ? req.params.id.trim() : ""
   try {
-    const result = await pool.query(`SELECT * FROM partida_usuario WHERE id_partida = $1 AND id_usuario = $2`, [
-      id,
-      req.user.uid,
-    ])
+    const result = await pool.query(
+      `SELECT * FROM partida_usuario WHERE UPPER(id_partida) = UPPER($1) AND id_usuario = $2`,
+      [rawId, req.user.uid]
+    )
     if (result.rows.length > 0) {
-      return res.status(200).json({ registrado: true })
+      return res.status(200).json({ registrado: true, id_cartones: result.rows[0].id_cartones })
     } else {
       return res.status(200).json({ registrado: false })
     }

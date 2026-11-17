@@ -8,6 +8,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
     <script src="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/js/retrosci-fi.js" defer></script>
     <link rel="stylesheet" href="/css/perfil.css">
@@ -18,14 +19,18 @@
 
 <body>
 
-    <button class="btn-custom logout" onclick="logout()" style="max-width: 75px;"><img src="/img/logout.png"
+    <button class="btn-custom logout" id="logoutBtn" onclick="logout()" style="max-width: 75px;"><img src="/img/logout.png"
             alt="Logout"></button>
 
     <div class="container layout-btn">
         <div class="row g-2 justify-content-center">
             <div class="container sala">
                 <h1>Entra a una sala!</h1>
-                <input type="text" class="room-id" id="room-id" placeholder="Ingrese ID de la sala">
+                <div class="room-input-wrapper position-relative mx-auto" style="max-width: 420px;">
+                    <input type="text" class="room-id" id="room-id" placeholder="Código de sala (ej. ABC12)" maxlength="15" autocomplete="off" spellcheck="false">
+                    <span id="roomInputSpinner" class="spinner-border spinner-border-sm text-info room-spinner position-absolute" style="display: none; right: 15px; top: 16px;"></span>
+                </div>
+                <div id="roomFeedback" class="room-feedback mt-2" style="display: none;"></div>
             </div>
             <div id="btn-unirse" class="col-6 col-sm-4 col-md-3 col-lg-2 btn-unirse">
                 <a type="button" class="btn-custom w-100 home" id="joinRoomBtn">
@@ -47,35 +52,51 @@
             </div>
         </div>
     </div>
-    <!-- panel de carnotes-->
-    <div class="container my-5" id="cartonesSection" style="display: none;">
-        <div class="row mb-4">
-            <div class="col-12 text-center">
-                <h2 class="text-white mb-4">
-                    <i class="fas fa-ticket-alt me-2 text-warning"></i>Mis Cartones
-                </h2>
-                <p class="text-white-50">Selecciona los cartones con los que quieres jugar (mínimo 1, máximo 4)</p>
-                <div class="selected-info mb-3">
-                    <span class="badge bg-info fs-6" id="selectedCount">0 cartones seleccionados</span>
+    <!-- panel de cartones (desaturado y responsive) -->
+    <div class="container my-3 px-2 px-sm-3" id="cartonesSection" style="display: none;">
+        <!-- Barra superior compacta -->
+        <div class="cartones-header-bar d-flex justify-content-between align-items-center p-2 px-3 mb-3 rounded">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-sm" id="btnChangeRoom" title="Cambiar de sala">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="d-flex align-items-baseline gap-1">
+                    <span class="text-white-50 small">Sala:</span>
+                    <span id="contextRoomId" class="text-warning fw-bold">---</span>
                 </div>
+            </div>
+
+            <!-- Contador de selección -->
+            <div>
+                <span class="badge bg-secondary fs-6 px-3 py-1" id="selectedCount">0/4</span>
+            </div>
+
+            <!-- Botones de utilidad compactos -->
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-info btn-sm" id="btnRandomCartones" title="Seleccionar al azar">
+                    <i class="fas fa-dice"></i><span class="d-none d-sm-inline ms-1">Azar</span>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" id="btnClearCartones" title="Limpiar selección">
+                    <i class="fas fa-eraser"></i>
+                </button>
             </div>
         </div>
 
-        <div class="row" id="userCartonesContainer">
+        <!-- Contenedor de cartones -->
+        <div class="row g-2 g-md-3 justify-content-center" id="userCartonesContainer">
             <div class="col-12 text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Cargando...</span>
-                </div>
-                <p class="text-white mt-2">Cargando tus cartones...</p>
+                <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+                <p class="text-white-50 mt-2 small">Cargando cartones...</p>
             </div>
         </div>
 
-        <div class="text-center mt-4">
-            <button class="btn btn-success btn-lg" id="confirmCartonesBtn" disabled>
-                <i class="fas fa-check me-2"></i>Confirmar Selección
+        <!-- Barra inferior de confirmación (Sticky en móvil) -->
+        <div class="cartones-footer-bar text-center mt-3 pt-2">
+            <button class="btn btn-secondary px-3 me-2" id="cancelCartonesBtn">
+                Cancelar
             </button>
-            <button class="btn btn-secondary btn-lg ms-2" id="cancelCartonesBtn">
-                <i class="fas fa-times me-2"></i>Cancelar
+            <button class="btn btn-success px-4" id="confirmCartonesBtn" disabled>
+                Entrar a la Sala
             </button>
         </div>
     </div>

@@ -371,9 +371,3 @@ function showError(message) {
     text: message,
   })
 }
-
-
-function logout() {
-  document.cookie = "token=; expires=Thu, 01 Jan 1970";
-  window.location.href = "login.html"
-}
