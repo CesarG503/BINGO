@@ -1084,4 +1084,11 @@ body {
 .position-sticky { position: sticky !important; }
 .top-0 { top: 0 !important; }
 
+.waiting-room .container {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  max-width: 1080px !important;
+}
+
+
 

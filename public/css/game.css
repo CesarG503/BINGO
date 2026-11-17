@@ -72,31 +72,31 @@
 .bola-b {
   background: radial-gradient(circle at 50% 50%, 
               #ffffff 40%, 
-              #DCC9A9 40%);
+              #DCC9A9 40%) !important;
 }
 
 .bola-i {
   background: radial-gradient(circle at 50% 50%, 
               #ffffff 40%, 
-              #4E6851 40%);
+              #4E6851 40%) !important;
 }
 
 .bola-n {
   background: radial-gradient(circle at 50% 50%, 
               #ffffff 40%, 
-              #4B848A 40%);
+              #4B848A 40%) !important;
 }
 
 .bola-g {
   background: radial-gradient(circle at 50% 50%, 
               #ffffff 40%, 
-              #FBC359 40%);
+              #FBC359 40%) !important;
 }
 
 .bola-o {
   background: radial-gradient(circle at 50% 50%, 
               #ffffff 40%, 
-              #E70103 40%);
+              #E70103 40%) !important;
 }
 
 .bola-black {
@@ -472,7 +472,8 @@ table .bola {
 .navbar.bg-secondary {
   background: #1a1a1a !important;
   background-color: #1a1a1a !important;
-  border-color: rgba(220, 201, 169, 0.4) !important;
+  border: none !important;
+  border-radius: 0 !important;
   color: #fff !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
 }
