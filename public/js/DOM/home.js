@@ -58,7 +58,11 @@ function renderActiveGamesButton() {
       </a>
     `
     const tiendaBtn = container.children[1]
-    container.insertBefore(resumeBtn, tiendaBtn ? tiendaBtn.nextSibling : null)
+    if (tiendaBtn) {
+      container.insertBefore(resumeBtn, tiendaBtn.nextSibling)
+    } else {
+      container.appendChild(resumeBtn)
+    }
   }
 }
 
@@ -83,6 +87,8 @@ async function showActiveGames() {
     showCancelButton: true,
     confirmButtonText: "Reanudar",
     cancelButtonText: "Cancelar",
+    background: "#1A1A1A",
+    color: "#fff",
   })
 
   if (selectedGame) {
@@ -194,6 +200,8 @@ async function validateAndJoinRoom() {
         confirmButtonText: "Ir a la Tienda",
         showCancelButton: true,
         cancelButtonText: "Cerrar",
+        background: "#1A1A1A",
+        color: "#fff",
       }).then((result) => {
         if (result.isConfirmed) {
           window.location.href = "/tienda"
@@ -240,16 +248,25 @@ async function loadUserCartones() {
     userCartones = await response.json()
   } catch (error) {
     console.error("Error loading user cartones:", error)
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "No se pudieron cargar tus cartones. Inténtalo de nuevo.",
-    })
+    userCartones = []
+    if (window.Swal) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudieron cargar tus cartones. Inténtalo de nuevo.",
+        background: "#1A1A1A",
+        color: "#fff",
+      })
+    }
   }
 }
 
-function showCartonesSelection(partida) {
-  currentRoomData = partida
+function showCartonesSelection(roomOrPartida) {
+  if (typeof roomOrPartida === "string") {
+    currentRoomData = { id_partida: roomOrPartida }
+  } else {
+    currentRoomData = roomOrPartida
+  }
 
   // Ocultar botón de logout y perfil mientras se eligen cartones
   const logoutBtn = document.getElementById("logoutBtn") || document.querySelector(".btn-custom.logout")
@@ -264,12 +281,14 @@ function showCartonesSelection(partida) {
 
   // Actualizar ID de la sala en la barra superior
   const contextRoomId = document.getElementById("contextRoomId")
-  if (contextRoomId) contextRoomId.textContent = partida.id_partida
+  if (contextRoomId && currentRoomData) {
+    contextRoomId.textContent = currentRoomData.id_partida
+  }
 
   // Si no había selección previa o no es válida, seleccionar los primeros (hasta 4) por defecto
   if (selectedCartones.length === 0 && userCartones.length > 0) {
     const autoPickCount = Math.min(userCartones.length, MAX_CARTONES)
-    selectedCartones = userCartones.slice(0, autoPickCount).map(c => c.id_carton)
+    selectedCartones = userCartones.slice(0, autoPickCount).map((c) => c.id_carton)
   }
 
   if (layoutBtn) layoutBtn.style.display = "none"
@@ -413,6 +432,8 @@ function toggleCartonSelection(cartonId) {
         text: `Máximo ${MAX_CARTONES} cartones por partida.`,
         timer: 1800,
         showConfirmButton: false,
+        background: "#1A1A1A",
+        color: "#fff",
       })
       return
     }
@@ -496,6 +517,8 @@ async function confirmAndEnterRoom() {
       icon: "error",
       title: "Error",
       text: "No se identificó la sala actual.",
+      background: "#1A1A1A",
+      color: "#fff",
     })
     return
   }
@@ -507,6 +530,8 @@ async function confirmAndEnterRoom() {
       icon: "warning",
       title: "Selección Requerida",
       text: `Debes seleccionar entre ${MIN_CARTONES} y ${MAX_CARTONES} cartones para jugar.`,
+      background: "#1A1A1A",
+      color: "#fff",
     })
     return
   }
@@ -534,10 +559,12 @@ async function confirmAndEnterRoom() {
         icon: "error",
         title: "No se pudo ingresar",
         text: errData.error || "Hubo un problema al registrar tus cartones en la sala.",
+        background: "#1A1A1A",
+        color: "#fff",
       })
       if (confirmBtn) {
         confirmBtn.disabled = false
-        confirmBtn.innerHTML = `<i class="fas fa-play me-2"></i>Entrar a la Sala`
+        confirmBtn.innerHTML = `Entrar a la Sala`
       }
       return
     }
@@ -551,16 +578,18 @@ async function confirmAndEnterRoom() {
       icon: "error",
       title: "Error de Conexión",
       text: "No se pudo conectar con el servidor. Inténtalo de nuevo.",
+      background: "#1A1A1A",
+      color: "#fff",
     })
     if (confirmBtn) {
       confirmBtn.disabled = false
-      confirmBtn.innerHTML = `<i class="fas fa-play me-2"></i>Entrar a la Sala`
+      confirmBtn.innerHTML = `Entrar a la Sala`
     }
   }
 }
 
 // Inicialización de Eventos del DOM
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Referencias a elementos
   roomInput = document.getElementById("room-id")
   btnJoinRoom = document.getElementById("joinRoomBtn")
@@ -621,9 +650,73 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Cargar partidas activas
   loadActiveGames()
+
+  // Manejo de parámetros URL (integración con escaneo QR)
+  const urlParams = new URLSearchParams(window.location.search)
+  const errorParam = urlParams.get("error")
+  const joinParam = urlParams.get("join")
+
+  if (errorParam) {
+    let title = "Atención"
+    let text = "Ocurrió un problema al procesar la sala."
+
+    switch (errorParam) {
+      case "room_not_found":
+        title = "Sala no encontrada"
+        text = "La sala solicitada no existe o fue cerrada."
+        break
+      case "room_started":
+        title = "Partida en curso"
+        text = "La partida ya ha iniciado y no permite nuevos participantes."
+        break
+      case "invalid_room":
+        title = "Código inválido"
+        text = "El formato o identificador de sala no es válido."
+        break
+      case "room_finished":
+        title = "Partida finalizada"
+        text = "Esta partida de bingo ya ha concluido."
+        break
+      case "room_full":
+        title = "Sala llena"
+        text = "La sala ha alcanzado la capacidad máxima de jugadores."
+        break
+      case "server_error":
+        title = "Error del servidor"
+        text = "No se pudo conectar con el servidor para verificar la sala."
+        break
+      default:
+        text = `Código de error: ${errorParam}`
+        break
+    }
+
+    if (window.Swal) {
+      window.Swal.fire({
+        icon: "error",
+        title: title,
+        text: text,
+        background: "#1A1A1A",
+        color: "#fff",
+        confirmButtonColor: "#0dcaf0",
+      })
+    } else {
+      alert(`${title}: ${text}`)
+    }
+
+    window.history.replaceState({}, document.title, window.location.pathname)
+  } else if (joinParam) {
+    const cleanJoinId = joinParam.trim()
+    if (cleanJoinId) {
+      if (roomInput) {
+        roomInput.value = cleanJoinId.toUpperCase()
+      }
+      await validateAndJoinRoom()
+    }
+  }
 })
 
 // Hacer las funciones necesarias accesibles globalmente
 window.toggleCartonSelection = toggleCartonSelection
 window.showActiveGames = showActiveGames
 window.resumeGame = resumeGame
+window.showCartonesSelection = showCartonesSelection

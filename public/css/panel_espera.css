@@ -1,19 +1,110 @@
- .esperando {
+.esperando {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
     background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%) !important;
     color: white;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    padding: 1rem 0.5rem 3rem 0.5rem;
     z-index: 9999; 
-    font-size: 1.5rem;
+    font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+    .esperando {
+        padding: 1.5rem 1.5rem 3.5rem 1.5rem;
+        font-size: 1.15rem;
+    }
+}
+
+.shadow-neon {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.25);
+}
+
+.shadow-neon:hover {
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.45);
+}
+
+.text-glow {
+    text-shadow: 0 0 12px rgba(255, 193, 7, 0.7);
+}
+
+.qr-box {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.qr-box:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.6) !important;
+}
+
+#qrcode-display img, #qrcode-display canvas,
+#qrcode-modal-display img, #qrcode-modal-display canvas {
+    display: block;
+    margin: 0 auto;
 }
 
 .swal2-container {
   z-index: 10000; 
 }
+
+#btn-toggle-qr {
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+#btn-toggle-qr:hover {
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+}
+
+.players-card {
+    border-radius: 16px;
+    background: rgba(18, 26, 44, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+@media (max-width: 576px) {
+    .esperando {
+        padding: 0.75rem 0.4rem 3rem 0.4rem;
+    }
+    .players-header h4 {
+        font-size: 1rem !important;
+    }
+    .display-6 {
+        font-size: 1.45rem !important;
+    }
+    #qrcode-display {
+        min-width: 140px !important;
+        min-height: 140px !important;
+    }
+    .qr-box {
+        padding: 0.6rem !important;
+    }
+    #btn-toggle-qr {
+        font-size: 0.82rem;
+        padding: 0.35rem 0.9rem !important;
+    }
+    #btn-iniciar-sala {
+        width: 100% !important;
+        max-width: 280px;
+    }
+    .input-group input#qr-room-url {
+        font-size: 0.75rem !important;
+    }
+}
+
+

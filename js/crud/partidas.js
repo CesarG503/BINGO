@@ -18,6 +18,28 @@ router.post("/nueva", authenticateToken, validateRole(0), async (req, res) => {
   }
 })
 
+router.post("/nueva-qr", authenticateToken, validateRole(0), async (req, res) => {
+  const { id_partida } = req.body
+  const partidaIdRegex = /^[a-zA-Z0-9_-]{1,20}$/
+  if (!id_partida || typeof id_partida !== "string" || !partidaIdRegex.test(id_partida)) {
+    return res.status(400).json({ error: "ID de partida no válido" })
+  }
+
+  try {
+    const result = await pool.query(`INSERT INTO Partidas (id_partida, host) VALUES ($1, $2) RETURNING *`, [
+      id_partida,
+      req.user.uid,
+    ])
+    res.status(201).json({
+      ...result.rows[0],
+      modo: "qr",
+    })
+  } catch (err) {
+    console.error("Error creando partida con QR:", err)
+    res.status(500).json({ error: "Error creando partida" })
+  }
+})
+
 router.get("/:id", authenticateToken, async (req, res) => {
   const rawId = req.params.id ? req.params.id.trim() : ""
   try {
