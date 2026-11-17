@@ -18,6 +18,7 @@ async function loadActiveGames() {
 
 function renderActiveGamesButton() {
   const container = document.querySelector(".layout-btn .row")
+  if (!container) return
 
   const existingBtn = document.getElementById("resume-game-btn")
   if (existingBtn) {
@@ -35,7 +36,11 @@ function renderActiveGamesButton() {
             </a>
         `
     const tiendaBtn = container.children[1] 
-    container.insertBefore(resumeBtn, tiendaBtn.nextSibling)
+    if (tiendaBtn) {
+      container.insertBefore(resumeBtn, tiendaBtn.nextSibling)
+    } else {
+      container.appendChild(resumeBtn)
+    }
   }
 }
 
@@ -79,43 +84,53 @@ const layoutBtn = document.querySelector(".layout-btn")
 
 let userCartones = []
 let selectedCartones = []
+let currentJoiningRoomId = null
+let listenersInitialized = false
 const MAX_CARTONES = 4
 const MIN_CARTONES = 1
 
 // Declare Swal variable
 const Swal = window.Swal
 
-btnJoinRoom.addEventListener("click", async () => {
-  const id = roomId.value.trim()
-  if (id === "") {
-    Swal.fire({
-      icon: "warning",
-      title: "ID de Sala Requerido",
-      text: "Por favor, ingresa un ID de sala válido.",
-    })
-    return
-  }
+if (btnJoinRoom) {
+  btnJoinRoom.addEventListener("click", async () => {
+    const id = roomId ? roomId.value.trim() : ""
+    if (id === "") {
+      Swal.fire({
+        icon: "warning",
+        title: "ID de Sala Requerido",
+        text: "Por favor, ingresa un ID de sala válido.",
+        background: "#1A1A1A",
+        color: "#fff",
+      })
+      return
+    }
 
-  // Cargar cartones del usuario antes de mostrar la selección
-  await loadUserCartones()
+    // Cargar cartones del usuario antes de mostrar la selección
+    await loadUserCartones()
 
-  if (userCartones.length === 0) {
-    Swal.fire({
-      icon: "warning",
-      title: "Sin Cartones",
-      text: "No tienes cartones disponibles. Ve a la tienda para comprar algunos.",
-      confirmButtonText: "Ir a la Tienda",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = "/tienda"
-      }
-    })
-    return
-  }
+    if (userCartones.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Sin Cartones",
+        text: "No tienes cartones disponibles. Ve a la tienda para comprar algunos.",
+        confirmButtonText: "Ir a la Tienda",
+        showCancelButton: true,
+        cancelButtonText: "Cancelar",
+        background: "#1A1A1A",
+        color: "#fff",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/tienda"
+        }
+      })
+      return
+    }
 
-  // Mostrar sección de selección de cartones
-  showCartonesSelection(id)
-})
+    // Mostrar sección de selección de cartones
+    showCartonesSelection(id)
+  })
+}
 
 async function loadUserCartones() {
   try {
@@ -140,60 +155,99 @@ async function loadUserCartones() {
     userCartones = await response.json()
   } catch (error) {
     console.error("Error loading user cartones:", error)
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "No se pudieron cargar tus cartones. Inténtalo de nuevo.",
+    userCartones = []
+    if (window.Swal) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudieron cargar tus cartones. Inténtalo de nuevo.",
+        background: "#1A1A1A",
+        color: "#fff",
+      })
+    }
+  }
+}
+
+function initCartonSelectionListeners() {
+  if (listenersInitialized) return
+  listenersInitialized = true
+
+  const confirmBtn = document.getElementById("confirmCartonesBtn")
+  const cancelBtn = document.getElementById("cancelCartonesBtn")
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", async () => {
+      if (!currentJoiningRoomId) return
+
+      if (selectedCartones.length >= MIN_CARTONES && selectedCartones.length <= MAX_CARTONES) {
+        confirmBtn.disabled = true
+        try {
+          const response = await fetch(`/api/partidas/${currentJoiningRoomId}/registrarse`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ cartones: selectedCartones }),
+          })
+
+          if (!response.ok) {
+            const errText = await response.text()
+            console.error("Error registrando cartones:", errText)
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "No se pudieron registrar tus cartones. Inténtalo de nuevo.",
+              background: "#1A1A1A",
+              color: "#fff",
+            })
+            confirmBtn.disabled = false
+            return
+          }
+          window.location.href = `/room/user/${currentJoiningRoomId}`
+        } catch (error) {
+          console.error("Error en registro de cartones:", error)
+          confirmBtn.disabled = false
+          Swal.fire({
+            icon: "error",
+            title: "Error de Conexión",
+            text: "No se pudo conectar con el servidor.",
+            background: "#1A1A1A",
+            color: "#fff",
+          })
+        }
+      }
+    })
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      hideCartonesSelection()
     })
   }
 }
 
-function showCartonesSelection(roomId) {
-  layoutBtn.style.display = "none"
-  cartonesSection.style.display = "block"
+function showCartonesSelection(roomIdToJoin) {
+  currentJoiningRoomId = roomIdToJoin
+  initCartonSelectionListeners()
+
+  if (layoutBtn) layoutBtn.style.display = "none"
+  if (cartonesSection) cartonesSection.style.display = "block"
 
   renderUserCartones()
-
-  // Event listeners para los botones
-  document.getElementById("confirmCartonesBtn").addEventListener("click", async () => {
-    if (selectedCartones.length >= MIN_CARTONES && selectedCartones.length <= MAX_CARTONES) {
-      //Guardar cartones seleccionados en la base de datos y redirigir a la sala
-      const response = await fetch(`/api/partidas/${roomId}/registrarse`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ cartones: selectedCartones }),
-      })
-
-      if (!response.ok) {
-        console.error("Error registrando cartones:", text)
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "No se pudieron registrar tus cartones. Inténtalo de nuevo.",
-        })
-        return
-      }
-      window.location.href = `/room/user/${roomId}`
-    }
-  })
-
-  document.getElementById("cancelCartonesBtn").addEventListener("click", () => {
-    hideCartonesSelection()
-  })
+  updateSelectedCount()
 }
 
 function hideCartonesSelection() {
-  layoutBtn.style.display = "grid"
-  cartonesSection.style.display = "none"
+  if (layoutBtn) layoutBtn.style.display = "grid"
+  if (cartonesSection) cartonesSection.style.display = "none"
   selectedCartones = []
   updateSelectedCount()
 }
 
 function renderUserCartones() {
   const container = document.getElementById("userCartonesContainer")
+  if (!container) return
 
   if (userCartones.length === 0) {
     container.innerHTML = `
@@ -289,8 +343,8 @@ function toggleCartonSelection(cartonId) {
   if (index > -1) {
     // Deseleccionar
     selectedCartones.splice(index, 1)
-    cartonElement.classList.remove("selected")
-    indicator.style.display = "none"
+    if (cartonElement) cartonElement.classList.remove("selected")
+    if (indicator) indicator.style.display = "none"
   } else {
     // Seleccionar
     if (selectedCartones.length >= MAX_CARTONES) {
@@ -300,13 +354,15 @@ function toggleCartonSelection(cartonId) {
         text: `Solo puedes seleccionar máximo ${MAX_CARTONES} cartones.`,
         timer: 2000,
         showConfirmButton: false,
+        background: "#1A1A1A",
+        color: "#fff",
       })
       return
     }
 
     selectedCartones.push(cartonId)
-    cartonElement.classList.add("selected")
-    indicator.style.display = "flex"
+    if (cartonElement) cartonElement.classList.add("selected")
+    if (indicator) indicator.style.display = "flex"
   }
 
   updateSelectedCount()
@@ -315,6 +371,7 @@ function toggleCartonSelection(cartonId) {
 function updateSelectedCount() {
   const countElement = document.getElementById("selectedCount")
   const confirmBtn = document.getElementById("confirmCartonesBtn")
+  if (!countElement || !confirmBtn) return
 
   countElement.textContent = `${selectedCartones.length} cartones seleccionados`
 
@@ -332,11 +389,97 @@ function updateSelectedCount() {
 }
 
 // Cargar partidas activas cuando se carga la página
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   loadActiveGames()
+
+  const urlParams = new URLSearchParams(window.location.search)
+  const errorParam = urlParams.get("error")
+  const joinParam = urlParams.get("join")
+
+  if (errorParam) {
+    let title = "Atención"
+    let text = "Ocurrió un problema al procesar la sala."
+
+    switch (errorParam) {
+      case "room_not_found":
+        title = "Sala no encontrada"
+        text = "La sala solicitada no existe o fue cerrada."
+        break
+      case "room_started":
+        title = "Partida en curso"
+        text = "La partida ya ha iniciado y no permite nuevos participantes."
+        break
+      case "invalid_room":
+        title = "Código inválido"
+        text = "El formato o identificador de sala no es válido."
+        break
+      case "room_finished":
+        title = "Partida finalizada"
+        text = "Esta partida de bingo ya ha concluido."
+        break
+      case "room_full":
+        title = "Sala llena"
+        text = "La sala ha alcanzado la capacidad máxima de jugadores."
+        break
+      case "server_error":
+        title = "Error del servidor"
+        text = "No se pudo conectar con el servidor para verificar la sala."
+        break
+      default:
+        text = `Código de error: ${errorParam}`
+        break
+    }
+
+    if (window.Swal) {
+      window.Swal.fire({
+        icon: "error",
+        title: title,
+        text: text,
+        background: "#1A1A1A",
+        color: "#fff",
+        confirmButtonColor: "#0dcaf0",
+      })
+    } else {
+      alert(`${title}: ${text}`)
+    }
+
+    window.history.replaceState({}, document.title, window.location.pathname)
+  } else if (joinParam) {
+    const cleanJoinId = joinParam.trim()
+    if (cleanJoinId) {
+      if (roomId) {
+        roomId.value = cleanJoinId
+      }
+
+      await loadUserCartones()
+
+      if (!userCartones || userCartones.length === 0) {
+        if (window.Swal) {
+          window.Swal.fire({
+            icon: "warning",
+            title: "Sin Cartones Disponibles",
+            text: "No tienes cartones disponibles para unirte a esta sala. ¿Deseas adquirir algunos en la tienda?",
+            showCancelButton: true,
+            confirmButtonText: "Ir a la Tienda",
+            cancelButtonText: "Cancelar",
+            background: "#1A1A1A",
+            color: "#fff",
+            confirmButtonColor: "#0dcaf0",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              window.location.href = "/tienda"
+            }
+          })
+        }
+      } else {
+        showCartonesSelection(cleanJoinId)
+      }
+    }
+  }
 })
 
 // Hacer las funciones globales
 window.toggleCartonSelection = toggleCartonSelection
 window.showActiveGames = showActiveGames
 window.resumeGame = resumeGame
+window.showCartonesSelection = showCartonesSelection

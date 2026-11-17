@@ -52,7 +52,14 @@ document.getElementById('sign-in-form').addEventListener('submit', async (e) => 
     document.cookie = `token=${data.token}; ${expires} path=/;`; // Almacenar la cookie con el token
     messageElement.textContent = 'Inicio de sesion Exitoso!';
     messageElement.style.color = 'green';
-    window.location.href = '/index'; // redirigir a la pagina principal con la sesion iniciada 
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get('redirect');
+    if (redirect && redirect.startsWith('/') && !redirect.startsWith('//') && !redirect.startsWith('/\\')) {
+      window.location.href = redirect;
+    } else {
+      window.location.href = '/index'; // redirigir a la pagina principal con la sesion iniciada 
+    }
   } else {
     messageElement.textContent = 'Correo o contraseña Incorrectos.';
     messageElement.style.color = 'red';
