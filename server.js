@@ -27,7 +27,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src'));
 const server = httpServer.createServer(app);
@@ -260,18 +260,64 @@ app.get('/join/:roomId', async (req, res) => {
   return res.redirect(`/?redirect=/join/${encodeURIComponent(roomId)}&roomId=${encodeURIComponent(roomId)}&fromQR=1`);
 });
 
+// Función para resolver la URL base del juego/QR de forma dinámica y configurable
+function getBaseUrl(req) {
+  // 1. Variable de entorno explícita con máxima prioridad (QR_BASE_URL o APP_URL)
+  const customQrUrl = process.env.QR_BASE_URL || process.env.APP_URL;
+  if (customQrUrl && typeof customQrUrl === 'string' && customQrUrl.trim() !== '') {
+    return customQrUrl.trim().replace(/\/+$/, '');
+  }
+
+  // 2. Parámetro query origin/baseUrl enviado explícitamente desde el cliente (opcional)
+  if (req && req.query) {
+    const queryOrigin = req.query.origin || req.query.baseUrl;
+    if (queryOrigin && typeof queryOrigin === 'string' && /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(queryOrigin.trim())) {
+      return queryOrigin.trim().replace(/\/+$/, '');
+    }
+  }
+
+  // 3. Variable de entorno API_BASE_URL (en .env)
+  const envApiUrl = process.env.API_BASE_URL && typeof process.env.API_BASE_URL === 'string'
+    ? process.env.API_BASE_URL.trim().replace(/\/+$/, '')
+    : null;
+
+  const reqHost = req ? (req.headers && req.headers['x-forwarded-host'] || (typeof req.get === 'function' ? req.get('host') : req.headers && req.headers.host)) : null;
+
+  if (envApiUrl) {
+    const isEnvLocalhost = /localhost|127\.0\.0\.1/i.test(envApiUrl);
+    const isReqLocalhost = !reqHost || /localhost|127\.0\.0\.1/i.test(reqHost);
+
+    // Si envApiUrl no es localhost o si la petición también es localhost, se usa envApiUrl.
+    // Pero si envApiUrl es localhost y la petición proviene de un host real/red local,
+    // priorizamos el host real de la petición para que los móviles puedan conectarse.
+    if (!isEnvLocalhost || isReqLocalhost) {
+      return envApiUrl;
+    }
+  }
+
+  // 4. Detección automática por la petición entrante (protocolo + host)
+  if (req && reqHost) {
+    const protoHeader = req.headers && req.headers['x-forwarded-proto'] || (typeof req.protocol === 'string' ? req.protocol : 'http');
+    const protocol = protoHeader.split(',')[0].trim();
+    return `${protocol}://${reqHost}`;
+  }
+
+  // 5. Fallback por defecto
+  return envApiUrl || `http://localhost:${process.env.PORT || 3000}`;
+}
+
 // Endpoint API para obtener el código QR de una sala
 app.get('/api/qr/:roomId', async (req, res) => {
   const { roomId } = req.params;
-  const apiBaseUrl = process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
-  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  const baseUrl = getBaseUrl(req);
+  const joinUrl = `${baseUrl}/join/${roomId}`;
   try {
     const qrDataUrl = await QRCode.toDataURL(joinUrl, {
       width: 320,
       margin: 1,
       color: { dark: '#0f172a', light: '#ffffff' }
     });
-    res.json({ qr_code: qrDataUrl, join_url: joinUrl, api_base_url: apiBaseUrl });
+    res.json({ qr_code: qrDataUrl, join_url: joinUrl, api_base_url: baseUrl });
   } catch (err) {
     console.error('Error generating QR:', err);
     res.status(500).json({ error: 'Error generating QR code' });
@@ -280,8 +326,8 @@ app.get('/api/qr/:roomId', async (req, res) => {
 
 app.get('/room/host/:roomId', authenticateToken, validateRole(0), async (req, res) => {
   const roomId = req.params.roomId;
-  const apiBaseUrl = process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
-  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  const baseUrl = getBaseUrl(req);
+  const joinUrl = `${baseUrl}/join/${roomId}`;
   let qrCodeData = '';
   try {
     qrCodeData = await QRCode.toDataURL(joinUrl, {
@@ -294,7 +340,7 @@ app.get('/room/host/:roomId', authenticateToken, validateRole(0), async (req, re
   }
   res.render('host_room', { 
     id_room: roomId, 
-    api_base_url: apiBaseUrl, 
+    api_base_url: baseUrl, 
     join_url: joinUrl, 
     qr_code: qrCodeData 
   });
@@ -333,7 +379,7 @@ app.post("/send-password-reset", async (req, res) => {
       expiresAt,
     ])
 
-    const baseUrl = process.env.API_BASE_URL || (process.env.NODE_ENV === "production" ? "https://bingo-ivxo.onrender.com" : `http://localhost:${PORT}`)
+    const baseUrl = getBaseUrl(req);
 
     const resetUrl = `${baseUrl}/cambio-password?token=${resetToken}`
 
@@ -610,7 +656,8 @@ app.use((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server running on ${process.env.API_BASE_URL}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Configured Base URL: ${process.env.QR_BASE_URL || process.env.API_BASE_URL || '(dynamic detection enabled)'}`);
 });
 
 module.exports = app; // Exportar la instancia de app, para ser usada en conexion.js

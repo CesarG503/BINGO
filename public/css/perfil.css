@@ -771,6 +771,13 @@ body {
   min-height: 175px;
 }
 
+.bola-preview-container .bola-selec {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
 .current-number {
   font-size: 3rem;
   font-weight: bold;

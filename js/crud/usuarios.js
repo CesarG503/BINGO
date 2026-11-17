@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../db/db'); // Importar la conexión a la base de datos
 const { authenticateToken, validateRole } = require('../authenthicated'); // Importar la función de autenticación
+const bcrypt = require('bcryptjs');
 
 const router = express.Router();
 
@@ -150,6 +151,36 @@ router.delete('/:id', authenticateToken, validateRole(0), async (req, res) => {
     res.send(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: 'Error borrando usuario' });
+  }
+});
+
+// Admin: cambiar contraseña de un usuario directamente (sin correo)
+router.put('/:id/password', authenticateToken, validateRole(0), async (req, res) => {
+  const targetId = Number(req.params.id);
+  const { newPassword } = req.body;
+
+  if (!newPassword || typeof newPassword !== 'string' || newPassword.trim().length < 6) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+  }
+
+  try {
+    const targetResult = await pool.query('SELECT rol FROM Usuarios WHERE id_usuario = $1', [targetId]);
+    if (targetResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
+
+    await pool.query(
+      'UPDATE Usuarios SET password = $1 WHERE id_usuario = $2',
+      [hashedPassword, targetId]
+    );
+
+    console.log(`Admin ${req.user.uid} cambió la contraseña del usuario ${targetId}`);
+    res.json({ success: true, message: 'Contraseña actualizada correctamente' });
+  } catch (err) {
+    console.error('Error cambiando contraseña:', err);
+    res.status(500).json({ error: 'Error al cambiar la contraseña' });
   }
 });
 

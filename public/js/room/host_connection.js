@@ -488,22 +488,70 @@ async function cuestion(texto) {
   return result.isConfirmed;
 }
 
-// Cargar o regenerar QR si no viene renderizado del servidor
+// Cargar o regenerar QR si no viene renderizado del servidor o si el origen cambió
 async function checkOrGenerateQR() {
   const qrImg = document.getElementById("qr-code-img");
-  if (qrImg && (!qrImg.getAttribute("src") || qrImg.getAttribute("src") === "")) {
+  const joinInput = document.getElementById("join-url-input");
+  const idPartida = idRoom ? idRoom.textContent.trim() : "";
+
+  if (!idPartida) return;
+
+  const currentJoinUrl = joinInput ? joinInput.value.trim() : "";
+  const clientOrigin = window.location.origin;
+
+  // Detectar si el QR no tiene imagen o si apunta a localhost mientras el navegador accede desde otra IP o dominio
+  const hasEmptyQR = !qrImg || !qrImg.getAttribute("src") || qrImg.getAttribute("src") === "";
+  const isUrlLocalhost = currentJoinUrl.includes("localhost") || currentJoinUrl.includes("127.0.0.1");
+  const isClientRemote = !clientOrigin.includes("localhost") && !clientOrigin.includes("127.0.0.1");
+  const needsSync = hasEmptyQR || (isUrlLocalhost && isClientRemote);
+
+  if (needsSync) {
     try {
-      const idPartida = idRoom.textContent.trim();
-      const response = await fetch(`/api/qr/${idPartida}`);
+      const response = await fetch(`/api/qr/${idPartida}?origin=${encodeURIComponent(clientOrigin)}`);
       if (response.ok) {
         const data = await response.json();
-        if (data.qr_code) {
+        if (data.qr_code && qrImg) {
           qrImg.src = data.qr_code;
+        }
+        if (data.join_url && joinInput) {
+          joinInput.value = data.join_url;
         }
       }
     } catch (e) {
-      console.warn("No se pudo cargar el QR secundario:", e);
+      console.warn("No se pudo regenerar el QR adaptativo:", e);
     }
+  }
+
+  // Manejar botón para copiar enlace de invitación
+  const btnCopy = document.getElementById("btn-copy-join-url");
+  if (btnCopy && joinInput) {
+    btnCopy.addEventListener("click", async () => {
+      const urlToCopy = joinInput.value.trim() || `${window.location.origin}/join/${idPartida}`;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(urlToCopy);
+        } else {
+          joinInput.select();
+          document.execCommand("copy");
+        }
+
+        if (typeof Swal !== "undefined") {
+          Swal.fire({
+            icon: "success",
+            title: "¡Enlace copiado!",
+            text: urlToCopy,
+            timer: 2000,
+            showConfirmButton: false,
+            background: "#1A1A1A",
+            color: "#fff"
+          });
+        } else {
+          alert(`¡Enlace copiado!\n${urlToCopy}`);
+        }
+      } catch (err) {
+        console.error("Error al copiar enlace:", err);
+      }
+    });
   }
 }
 

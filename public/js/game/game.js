@@ -131,7 +131,8 @@ function asignarColor(numeroBola) {
 }
 
 function limpiarClaseColor(bolaElement) {
-  const clasesColor = ["bola-b", "bola-i", "bola-n", "bola-g", "bola-o"];
+  if (!bolaElement) return;
+  const clasesColor = ["bola-b", "bola-i", "bola-n", "bola-g", "bola-o", "bola-espera", "bola-black"];
   bolaElement.classList.remove(...clasesColor);
 }
 
@@ -144,33 +145,52 @@ export async function addBallGrid(numeroBola) {
   const ball = document.createElement("div");
   const bolaSelec = document.getElementById("bola-selec");
   ball.innerText = numeroBola;
-  bolaSelec.textContent = numeroBola;
+
+  const letras = ["B", "I", "N", "G", "O"];
+  let letra = "B";
+  let colorClass = "bola-b";
 
   if (numeroBola > 0 && numeroBola <= 15) {
-    ball.classList.add("bola", "bola-b");
-    limpiarClaseColor(bolaSelec);
-    bolaSelec.classList.add("bola-selec", "bola-b");
+    letra = "B";
+    colorClass = "bola-b";
     index = 0;
   } else if (numeroBola > 15 && numeroBola <= 30) {
-    ball.classList.add("bola", "bola-i");
-    limpiarClaseColor(bolaSelec);
-    bolaSelec.classList.add("bola-selec", "bola-i");
+    letra = "I";
+    colorClass = "bola-i";
     index = 1;
   } else if (numeroBola > 30 && numeroBola <= 45) {
-    ball.classList.add("bola", "bola-n");
-    limpiarClaseColor(bolaSelec);
-    bolaSelec.classList.add("bola-selec", "bola-n");
+    letra = "N";
+    colorClass = "bola-n";
     index = 2;
   } else if (numeroBola > 45 && numeroBola <= 60) {
-    ball.classList.add("bola", "bola-g");
-    limpiarClaseColor(bolaSelec);
-    bolaSelec.classList.add("bola-selec", "bola-g");
+    letra = "G";
+    colorClass = "bola-g";
     index = 3;
   } else if (numeroBola > 60 && numeroBola <= 75) {
-    ball.classList.add("bola", "bola-o");
-    limpiarClaseColor(bolaSelec);
-    bolaSelec.classList.add("bola-selec", "bola-o");
+    letra = "O";
+    colorClass = "bola-o";
     index = 4;
+  }
+
+  ball.classList.add("bola", colorClass);
+
+  if (bolaSelec) {
+    limpiarClaseColor(bolaSelec);
+    bolaSelec.classList.add("bola-selec", colorClass);
+
+    const hostLetra = document.getElementById("host-bola-letra");
+    const hostNumero = document.getElementById("host-bola-numero");
+    if (hostLetra && hostNumero) {
+      hostLetra.textContent = letra;
+      hostNumero.textContent = numeroBola;
+    } else {
+      bolaSelec.innerHTML = `<span class="bola-letra">${letra}</span><span class="bola-numero">${numeroBola}</span>`;
+    }
+
+    // Efecto de pop/rebote al actualizar la bola
+    bolaSelec.classList.remove("bola-pop");
+    void bolaSelec.offsetWidth;
+    bolaSelec.classList.add("bola-pop");
   }
 
 

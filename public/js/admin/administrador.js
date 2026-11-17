@@ -87,7 +87,7 @@ function renderUsers() {
                             title="Editar Usuario">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-warning" onclick="sendPasswordReset('${user.email}')" 
+                    <button class="btn btn-sm btn-outline-warning" onclick="changeUserPassword(${user.id_usuario}, '${user.username.replace(/'/g, "\\'")}')"
                             title="Cambiar Contraseña">
                         <i class="fas fa-key"></i>
                     </button>
@@ -273,53 +273,74 @@ async function editUser(userId) {
   }
 }
 
-async function sendPasswordReset(email) {
-  const result = await Swal.fire({
-    title: "¿Enviar cambio de contraseña?",
-    text: `Se enviará un enlace de cambio de contraseña a: ${email}`,
-    icon: "question",
+async function changeUserPassword(userId, username) {
+  const { value: formValues } = await Swal.fire({
+    title: 'Cambiar Contraseña',
+    html: `
+      <p class="text-muted mb-3">Usuario: <strong>${username}</strong></p>
+      <div class="mb-3 text-start">
+        <label class="form-label">Nueva Contraseña</label>
+        <input type="password" id="swal-new-password" class="form-control"
+               placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+      </div>
+      <div class="mb-2 text-start">
+        <label class="form-label">Confirmar Contraseña</label>
+        <input type="password" id="swal-confirm-password" class="form-control"
+               placeholder="Repite la nueva contraseña" autocomplete="new-password">
+      </div>
+    `,
+    icon: 'warning',
+    focusConfirm: false,
     showCancelButton: true,
-    confirmButtonText: "Sí, Enviar",
-    cancelButtonText: "Cancelar",
-  })
+    confirmButtonText: '<i class="fas fa-key me-1"></i>Cambiar Contraseña',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#f59e0b',
+    preConfirm: () => {
+      const newPassword = document.getElementById('swal-new-password').value;
+      const confirmPassword = document.getElementById('swal-confirm-password').value;
 
-  if (result.isConfirmed) {
-    try {
-      // Lógica real para enviar el email de cambio de contraseña
-      const response = await fetch(`/send-password-reset`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
-        throw new Error(data.error || "No se pudo enviar el enlace de cambio de contraseña");
+      if (!newPassword || newPassword.length < 6) {
+        Swal.showValidationMessage('La contraseña debe tener al menos 6 caracteres');
+        return false;
       }
+      if (newPassword !== confirmPassword) {
+        Swal.showValidationMessage('Las contraseñas no coinciden');
+        return false;
+      }
+      return { newPassword };
+    },
+  });
 
-      Swal.fire({
-        icon: "success",
-        title: "¡Enlace Enviado!",
-        html: `
-          <p>Se ha enviado un enlace de cambio de contraseña a:</p>
-          <strong>${email}</strong>
-          <br><br>
-          <small class="text-muted">El enlace expirará en 24 horas</small>
-        `,
-        confirmButtonText: "Entendido",
-      })
-    } catch (error) {
-      console.error("Error sending password reset:", error)
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error.message || "No se pudo enviar el enlace de cambio de contraseña",
-      })
+  if (!formValues) return;
+
+  try {
+    const response = await fetch(`/api/usuarios/${userId}/password`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newPassword: formValues.newPassword }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al cambiar la contraseña');
     }
+
+    Swal.fire({
+      icon: 'success',
+      title: '¡Contraseña Actualizada!',
+      text: `La contraseña de ${username} fue cambiada correctamente.`,
+      timer: 2500,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.message || 'No se pudo cambiar la contraseña',
+    });
   }
 }
 

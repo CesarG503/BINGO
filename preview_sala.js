@@ -210,18 +210,55 @@ app.get('/join/:roomId', (req, res) => {
   res.redirect(`/?redirect=/room/user/${roomId}&roomId=${roomId}&fromQR=1`);
 });
 
+// Función para resolver la URL base del juego/QR de forma dinámica y configurable
+function getBaseUrl(req) {
+  const customQrUrl = process.env.QR_BASE_URL || process.env.APP_URL;
+  if (customQrUrl && typeof customQrUrl === 'string' && customQrUrl.trim() !== '') {
+    return customQrUrl.trim().replace(/\/+$/, '');
+  }
+
+  if (req && req.query) {
+    const queryOrigin = req.query.origin || req.query.baseUrl;
+    if (queryOrigin && typeof queryOrigin === 'string' && /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(queryOrigin.trim())) {
+      return queryOrigin.trim().replace(/\/+$/, '');
+    }
+  }
+
+  const envApiUrl = process.env.API_BASE_URL && typeof process.env.API_BASE_URL === 'string'
+    ? process.env.API_BASE_URL.trim().replace(/\/+$/, '')
+    : null;
+
+  const reqHost = req ? (req.headers && req.headers['x-forwarded-host'] || (typeof req.get === 'function' ? req.get('host') : req.headers && req.headers.host)) : null;
+
+  if (envApiUrl) {
+    const isEnvLocalhost = /localhost|127\.0\.0\.1/i.test(envApiUrl);
+    const isReqLocalhost = !reqHost || /localhost|127\.0\.0\.1/i.test(reqHost);
+    if (!isEnvLocalhost || isReqLocalhost) {
+      return envApiUrl;
+    }
+  }
+
+  if (req && reqHost) {
+    const protoHeader = req.headers && req.headers['x-forwarded-proto'] || (typeof req.protocol === 'string' ? req.protocol : 'http');
+    const protocol = protoHeader.split(',')[0].trim();
+    return `${protocol}://${reqHost}`;
+  }
+
+  return envApiUrl || `http://localhost:${PORT}`;
+}
+
 // Endpoint API para obtener el QR dinámicamente si se requiere
 app.get('/api/qr/:roomId', async (req, res) => {
   const { roomId } = req.params;
-  const apiBaseUrl = process.env.API_BASE_URL || `http://${req.get('host')}`;
-  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  const baseUrl = getBaseUrl(req);
+  const joinUrl = `${baseUrl}/join/${roomId}`;
   try {
     const qrDataUrl = await QRCode.toDataURL(joinUrl, {
-      width: 300,
+      width: 320,
       margin: 1,
       color: { dark: '#0f172a', light: '#ffffff' }
     });
-    res.json({ qr_code: qrDataUrl, join_url: joinUrl });
+    res.json({ qr_code: qrDataUrl, join_url: joinUrl, api_base_url: baseUrl });
   } catch (err) {
     res.status(500).json({ error: 'Error generating QR' });
   }
@@ -248,12 +285,12 @@ app.get('/room/user/:roomId', (req, res) => {
 app.get('/room/host/:roomId', async (req, res) => {
   res.cookie('isHost', '1', { path: '/' });
   const roomId = req.params.roomId;
-  const apiBaseUrl = process.env.API_BASE_URL || `http://${req.get('host')}`;
-  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  const baseUrl = getBaseUrl(req);
+  const joinUrl = `${baseUrl}/join/${roomId}`;
   let qrCodeData = '';
   try {
     qrCodeData = await QRCode.toDataURL(joinUrl, {
-      width: 300,
+      width: 320,
       margin: 1,
       color: { dark: '#0f172a', light: '#ffffff' }
     });
@@ -263,7 +300,7 @@ app.get('/room/host/:roomId', async (req, res) => {
 
   res.render('host_room', { 
     id_room: roomId,
-    api_base_url: apiBaseUrl,
+    api_base_url: baseUrl,
     join_url: joinUrl,
     qr_code: qrCodeData
   }, (err, html) => {
