@@ -70,7 +70,7 @@ function renderUsers() {
             <div class="user-card fade-in">
                 <div class="d-flex align-items-center mb-3">
                         ${user.img_id
-                          ? `<img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${user.img_id}" alt="${user.username}" class="avatar-img me-3">`
+                          ? `<img src="/img/Flork/${user.img_id}.jpg" alt="${user.username}" class="avatar-img me-3">`
                           : `<div class="user-avatar me-3">${user.username.charAt(0).toUpperCase()}</div>`  
                           }
                     <div class="flex-grow-1">
@@ -187,7 +187,7 @@ function openCreditModal(userId) {
 
   const userAvatarDiv = document.querySelector('#avatarContainer');
   userAvatarDiv.innerHTML = user.img_id
-    ? `<img src="https://bingo-api.mixg-studio.workers.dev/api/profile/${user.img_id}" alt="${user.username}" class="avatar-img me-3">`
+    ? `<img src="/img/Flork/${user.img_id}.jpg" alt="${user.username}" class="avatar-img me-3">`
     : `<div class="user-avatar me-3">${user.username.charAt(0).toUpperCase()}</div>`;
 
   document.getElementById("modalUsername").textContent = user.username

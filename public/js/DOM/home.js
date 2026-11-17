@@ -155,10 +155,27 @@ function showCartonesSelection(roomId) {
   renderUserCartones()
 
   // Event listeners para los botones
-  document.getElementById("confirmCartonesBtn").addEventListener("click", () => {
+  document.getElementById("confirmCartonesBtn").addEventListener("click", async () => {
     if (selectedCartones.length >= MIN_CARTONES && selectedCartones.length <= MAX_CARTONES) {
-      // Guardar cartones seleccionados en localStorage para usarlos en la sala
-      localStorage.setItem("selectedCartones", JSON.stringify(selectedCartones))
+      //Guardar cartones seleccionados en la base de datos y redirigir a la sala
+      const response = await fetch(`/api/partidas/${roomId}/registrarse`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ cartones: selectedCartones }),
+      })
+
+      if (!response.ok) {
+        console.error("Error registrando cartones:", text)
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No se pudieron registrar tus cartones. Inténtalo de nuevo.",
+        })
+        return
+      }
       window.location.href = `/room/user/${roomId}`
     }
   })

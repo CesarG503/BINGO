@@ -50,7 +50,8 @@ router.get("/:id/usuarios", authenticateToken, async (req, res) => {
 
 router.post("/:id/registrarse", authenticateToken, async (req, res) => {
   const { id } = req.params
-  console.log(`Usuario ${req.user.uid} intentando unirse a la partida ${id}`)
+  const { cartones } = req.body
+  //console.log(`Usuario ${req.user.uid} intentando unirse a la partida ${id}`)
   try {
     // Verificar si el usuario ya está en la partida
     const checkUser = await pool.query(`SELECT * FROM partida_usuario WHERE id_partida = $1 AND id_usuario = $2`, [
@@ -68,17 +69,40 @@ router.post("/:id/registrarse", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado" })
     }
 
+    //Verificar que la partida está activa
+    const partidaEstado = await pool.query("SELECT estado FROM Partidas WHERE id_partida = $1", [id])
+    if (partidaEstado.rows.length === 0) {
+      return res.status(404).json({ error: "Partida no encontrada" })
+    }
+    
+    if (partidaEstado.rows[0].estado !== 0) {
+      return res.status(403).json({ error: "No se puede registrar si la partida ya está activa" })
+    }
+
     // Verificar que la partida existe
     const partidaCheck = await pool.query("SELECT id_partida FROM Partidas WHERE id_partida = $1", [id])
     if (partidaCheck.rows.length === 0) {
       return res.status(404).json({ error: "Partida no encontrada" })
     }
+     
+    //Verificar que el carton existe y pertenece al usuario
+    for (const id_carton of cartones) {
+      const cartonCheck = await pool.query(
+        `SELECT c.id_carton FROM cartones c
+                 JOIN carton_usuario cu ON c.id_carton = cu.id_carton
+                 WHERE c.id_carton = $1 AND cu.id_usuario = $2`,
+        [id_carton, req.user.uid],
+      )
+      if (cartonCheck.rows.length === 0) {
+        return res.status(404).json({ error: `Cartón ${id_carton} no encontrado o no pertenece al usuario` })
+      }
+    }
 
     // Insertar el usuario en la partida
     await pool.query(
-      `INSERT INTO partida_usuario (id_partida, id_usuario) 
-             VALUES ($1, $2) RETURNING *`,
-      [id, req.user.uid],
+      `INSERT INTO partida_usuario (id_partida, id_usuario, id_cartones) 
+             VALUES ($1, $2, $3) RETURNING *`,
+      [id, req.user.uid, JSON.stringify(cartones)],
     )
     res.status(201).json({ registrado: true })
   } catch (err) {
@@ -125,6 +149,7 @@ router.get("/:id/usuario/cartones", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "Usuario no encontrado en la partida" })
     }
 
+    console.log("Cartones del usuario:", result.rows[0].id_cartones)
     res.json({ id_cartones: result.rows[0].id_cartones })
   } catch (err) {
     console.error("Error obteniendo cartones del usuario:", err)
@@ -217,13 +242,24 @@ router.delete("/:id", authenticateToken, validateRole(0), async (req, res) => {
     }
 
    
-    await pool.query(`DELETE FROM partida_usuario WHERE id_partida = $1`, [id])
-
+    const deleteds = await pool.query(`DELETE FROM partida_usuario WHERE id_partida = $1 RETURNING *`, [id])
+    if(deleteds.rowCount > 0){
+      for (const row of deleteds.rows) {
+        if (row.id_cartones) {
+          const id_cartones = row.id_cartones
+          for (const id_carton of id_cartones) {
+            await pool.query(`DELETE FROM carton_usuario WHERE id_carton = $1`, [id_carton])
+            await pool.query(`DELETE FROM Cartones WHERE id_carton = $1`, [id_carton])
+          }
+        }
+      }
+    }
     
     const result = await pool.query(`DELETE FROM Partidas WHERE id_partida = $1 RETURNING *`, [id])
     if (result.rowCount === 0) {
       return res.status(404).json({ error: "Partida no encontrada" })
     }
+
     const apiDelete = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id}/eliminar`)
     if (!apiDelete.ok) {
       console.error("Error al eliminar la partida en la API externa")

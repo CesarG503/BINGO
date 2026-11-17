@@ -1,7 +1,7 @@
 import getCookieValue from "/js/util/get_cookie.js"
 import { iniciarRuletazo, addBallGrid } from "/js/game/game.js"
 
-const btnEliminar = document.querySelector("#btn-eliminar-sala a")
+const btnEliminar = document.querySelector("#btn-eliminar-sala")
 const btnCerrar = document.querySelector("#btn-cerrar-sala")
 const btnIniciar = document.querySelector("#btn-iniciar-sala a")
 const idRoom = document.getElementById("id-room")
@@ -17,7 +17,7 @@ const fondo = [
   "bg-danger",
 ];
 
-let socket
+export let socket
 
 async function getSala() {
   const response = await fetch(`/api/partidas/${idRoom.textContent}`)
@@ -38,7 +38,7 @@ async function getUsuario() {
 }
 
 async function getNuevoNumero(id_room, id_host) {
-  const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}/extraer`)
+  const response = await fetch(`/api/juego/extraer/${id_room}`)
   if (!response.ok) {
     console.error("Error al obtener un nuevo número")
     return
@@ -52,25 +52,126 @@ export function emitirNumeroNuevo(numero, id_room, id_host) {
 }
 
 async function renderNumerosLlamados(id_room) {
-  const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}`)
+  const response = await fetch(`/api/juego/estado/${id_room}`)
   if (!response.ok) {
     console.error("Error al obtener los números llamados")
     return
   }
 
   const data = await response.json()
-  data.partida.numbers.forEach((numero) => {
+  data.numbers.forEach((numero) => {
     addBallGrid(numero)
   })
 }
 
 async function renderUsuariosEnSala() {
-  const usuarios = await usuariosEnSala()
+  const usuarios = await usuariosEnSala();
   if (!usuarios) {
-    console.error("No se pudieron obtener los usuarios en la sala")
-    return
+    console.error("No se pudieron obtener los usuarios en la sala");
+    return;
   }
-  jugadores.textContent = usuarios.length
+  
+  // Actualizar el contador de jugadores
+  const contadorJugadores = document.getElementById("n-jugadores");
+  if(contadorJugadores){
+    contadorJugadores.textContent = usuarios.length;
+  }
+  const countNumber = document.getElementById("count-number");
+  if (countNumber) {
+    countNumber.textContent = `${usuarios.length} Jugador${usuarios.length === 1 ? '' : 'es'}`;
+  }
+
+  // Renderizar la lista detallada de jugadores
+  const jugadores_content = document.getElementById("jugadores_content");
+  if (!jugadores_content) {
+    console.error('No se encontró el contenedor con id "jugadores_content" en el DOM.');
+    return;
+  }
+  jugadores_content.innerHTML = ""; // Limpiar la lista antes de renderizar
+
+  let currentUser = null;
+  try {
+    currentUser = await getUsuario();
+  } catch (e) {}
+
+  let sala = null;
+  try {
+    sala = await getSala();
+  } catch (e) {}
+
+  usuarios.forEach((usuario) => {
+    const isHost = sala && (sala.host === usuario.id_usuario || usuario.rol === 0);
+    const isMe = currentUser && (currentUser.id_usuario === usuario.id_usuario);
+
+    const chip = document.createElement("div");
+    chip.className = `player-chip ${isHost ? 'is-host' : ''} ${isMe ? 'is-me' : ''}`;
+    chip.setAttribute("data-username", (usuario.username || "").toLowerCase());
+    chip.title = `${usuario.username}${isHost ? ' (Host)' : ''}${isMe ? ' (Tú)' : ''}`;
+
+    const img = document.createElement("img");
+    img.className = "player-chip-avatar";
+    img.src = usuario.img_id ? `/img/Flork/${usuario.img_id}.jpg` : "/img/Flork/1.jpg";
+    img.alt = usuario.username || "Jugador";
+    img.onerror = () => { img.src = "/img/Flork/1.jpg"; };
+
+    const info = document.createElement("div");
+    info.className = "player-chip-info";
+
+    const name = document.createElement("span");
+    name.className = "player-chip-name";
+    name.textContent = usuario.username || "Sin nombre";
+
+    info.appendChild(name);
+
+    if (isHost) {
+      const badge = document.createElement("span");
+      badge.className = "player-chip-badge badge-host";
+      badge.innerHTML = "👑 Host";
+      info.appendChild(badge);
+    } else if (isMe) {
+      const badge = document.createElement("span");
+      badge.className = "player-chip-badge badge-me";
+      badge.textContent = "Tú";
+      info.appendChild(badge);
+    }
+
+    chip.appendChild(img);
+    chip.appendChild(info);
+    jugadores_content.appendChild(chip);
+  });
+
+  // Configurar buscador en tiempo real si aún no está enlazado
+  const searchInput = document.getElementById("player-search");
+  if (searchInput && !searchInput.dataset.bound) {
+    searchInput.dataset.bound = "true";
+    searchInput.addEventListener("input", (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      const chips = jugadores_content.querySelectorAll(".player-chip");
+      let visible = 0;
+      chips.forEach((c) => {
+        const uName = c.getAttribute("data-username") || "";
+        if (!term || uName.includes(term)) {
+          c.style.display = "flex";
+          visible++;
+        } else {
+          c.style.display = "none";
+        }
+      });
+
+      let noMatch = document.getElementById("no-players-search-msg");
+      if (visible === 0) {
+        if (!noMatch) {
+          noMatch = document.createElement("div");
+          noMatch.id = "no-players-search-msg";
+          noMatch.className = "no-players-match";
+          noMatch.textContent = "No se encontraron jugadores que coincidan.";
+          jugadores_content.appendChild(noMatch);
+        }
+      } else if (noMatch) {
+        noMatch.remove();
+      }
+    });
+  }
 }
 
 async function usuariosEnSala() {
@@ -159,8 +260,7 @@ async function inicializar() {
 
   //Validacion de host
   if (sala.host !== usuario.id_usuario) {
-    alert("No tienes permiso para administrar esta sala.")
-    menssaje("Error", "La sala ya finalizo.", "error");
+    await menssaje("Error", "No tienes permiso para administrar esta sala.", "error");
     window.location.href = "/"
     return
   }
@@ -168,7 +268,7 @@ async function inicializar() {
   else if (sala.estado === 1) {
     activarControles(sala.id_partida, usuario.id_usuario)
   } else if (sala.estado !== 0) {
-    menssaje("Error", "La sala ya finalizo.", "error");
+    await menssaje("Error", "La sala ya finalizo.", "error");
     window.location.href = "/"
     return
   }
@@ -177,7 +277,7 @@ async function inicializar() {
 
   const token = getCookieValue("token")
   if (!token) {
-    menssaje("Error","Error inesperado, no posees un usuario valido.","error");
+    await menssaje("Error","Error inesperado, no posees un usuario valido.","error");
   }
   socket = io({ auth: { token } }) // Usar la variable global
 
@@ -195,39 +295,37 @@ async function inicializar() {
     activarControles(sala.id_partida, usuario.id_usuario)
   })
 
+  socket.on("ganador", (data) => {
+    jugadorGanador(data.ganador, data.carton, data.numerosSeleccionados, data.numerosGanadores);
+  });
+
   if (btnIniciar) {
     btnIniciar.addEventListener("click", () => {
       iniciarSala(sala.id_partida, usuario.id_usuario)
     })
   }
   if (btnEliminar) {
-    btnEliminar.addEventListener("click", async () => eliminarSala(sala.id_partida, usuario.id_usuario))
+
+    btnEliminar.addEventListener("click", async () => {
+      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
+      if (confirmar) {
+        eliminarSala(sala.id_partida, usuario.id_usuario);
+      }
+    });
   }
   if (btnCerrar) {
-    btnCerrar.addEventListener("click", () => eliminarSala(sala.id_partida, usuario.id_usuario))
+
+    btnCerrar.addEventListener("click", async () => {
+      const confirmar = await cuestion("¿Estás seguro de eliminar la sala?");
+      if (confirmar) {
+        eliminarSala(sala.id_partida, usuario.id_usuario);
+      }
+    })
   }
 }
 
-// Escuchar el botón
-// Evento principal
-document.getElementById('btnGanador').addEventListener('click', () => {
-  // Datos de ejemplo
-  const arreglo = [
-    [11, 26, 41, 56, 71],
-    [12, 27, 42, 57, 72],
-    [13, 28, "FREE", 58, 73],
-    [14, 29, 44, 59, 74],
-    [15, 30, 45, 60, 75],
-  ];
-  const numerosSeleccionados = [13, 28, 58, 74, 75, 11, 73, 26, 27, 29, 30];
-  const numerosGanadores = [15,29,57,71];
-
-  jugadorGanador('Juan', arreglo, numerosSeleccionados, numerosGanadores);
-});
-
-
 // Mostrar alerta de ganador
-function jugadorGanador(nombre, carton, numerosSeleccionados, numerosGanadores = []) {
+function jugadorGanador(usuario, carton, numerosSeleccionados, numerosGanadores = []) {
   Swal.fire({
     title: "<strong>🎉 ¡Bingo! 🎉</strong>",
     width: 700,
@@ -236,16 +334,17 @@ function jugadorGanador(nombre, carton, numerosSeleccionados, numerosGanadores =
     color: "#fff",
     html: `
       <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
-        <img src="https://bingo-api.mixg-studio.workers.dev/api/profile/3"
+        <img src="/img/Flork/${usuario.img_id}.jpg"
              alt="Ganador"
              style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
         <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>
-        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${nombre}</h1>
+        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${usuario.username}</h1>
         <div id="carton-render"></div>
       </div>
     `,
     showCloseButton: true,
     showConfirmButton: false,
+    allowOutsideClick: false,
     didOpen: () => {
       const contenedor = document.getElementById("carton-render");
       // Pintar el cartón del ganador
@@ -355,13 +454,55 @@ function pintarGanadores(cartonElement, numerosGanadores = []) {
 }
 
 
-function menssaje(titulo, texto, icono = null) {
-  Swal.fire({
+async function menssaje(titulo, texto, icono = null) {
+  await Swal.fire({
     title: titulo,
     text: texto,
     icon: icono,
   });
 }
-    
+
+async function cuestion(texto) {
+  const swalWithBootstrapButtons = Swal.mixin({
+    customClass: {
+      confirmButton: "btn btn-success",
+      cancelButton: "btn btn-danger",
+    },
+    buttonsStyling: false,
+  });
+
+  const result = await swalWithBootstrapButtons.fire({
+    title: "¿Estás seguro?",
+    text: texto,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "No, cancelar",
+    reverseButtons: true,
+  });
+
+  return result.isConfirmed;
+}
+
+// Cargar o regenerar QR si no viene renderizado del servidor
+async function checkOrGenerateQR() {
+  const qrImg = document.getElementById("qr-code-img");
+  if (qrImg && (!qrImg.getAttribute("src") || qrImg.getAttribute("src") === "")) {
+    try {
+      const idPartida = idRoom.textContent.trim();
+      const response = await fetch(`/api/qr/${idPartida}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.qr_code) {
+          qrImg.src = data.qr_code;
+        }
+      }
+    } catch (e) {
+      console.warn("No se pudo cargar el QR secundario:", e);
+    }
+  }
+}
+
+checkOrGenerateQR();
     
 inicializar()

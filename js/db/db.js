@@ -14,9 +14,7 @@ const pool = new Pool({
   port: 5432
   */
   connectionString: process.env.DATA_BASE_URL,
-  ssl: {
-     rejectUnauthorized: false, // << ESTA LÍNEA SOLUCIONA EL ERROR
-  },
+  ssl: false
 });
 
 pool.connect((err) => {

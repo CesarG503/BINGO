@@ -8,7 +8,7 @@ const idRoom = document.getElementById("idRoom")
 
 const btnBingo = document.getElementById("btnBingo")
 
-btnBingo.addEventListener("click", () => {
+btnBingo.addEventListener("click", async () => {
   const tabla = document.querySelector(".swiper-slide-active table");
   if (!tabla) {
     console.warn("No se encontró la tabla activa.");
@@ -38,9 +38,9 @@ btnBingo.addEventListener("click", () => {
 
     carton.push(fila);
   });
+  const send_usuario = await getUsuario();
 
-  console.log("Cartón completo:", carton);
-  console.log("Números seleccionados:", seleccionados);
+  callBingo(carton, seleccionados, idRoom.textContent, send_usuario);
 });
 
 
@@ -109,7 +109,7 @@ async function loadCartonesFromPartida(id_room) {
 async function unirseSala() {
   const token = getCookieValue("token")
   if (!token) {
-    mensaje("Error", "no posees un usuario valido", "error");
+    await menssaje("Error", "no posees un usuario valido", "error");
     return
   }
   const usuario = await getUsuario()
@@ -132,29 +132,38 @@ async function unirseSala() {
   }
 
   const registrado = await usuarioRegistrado(sala.id_partida)
-
   if (sala.estado === 1 && registrado) {
     // Si la partida ya comenzó, cargar cartones desde la BD
     const cartonesLoaded = await loadCartonesFromPartida(sala.id_partida)
     if (!cartonesLoaded) {
-      // Si no hay cartones guardados, cargar desde localStorage
-      await loadSelectedCartones()
+      await menssaje("Error", "No se pudieron cargar tus cartones para esta partida.", 'error');
+      window.location.href = "/"
+      return
     }
     activarControles(sala.id_partida)
   } else if (sala.estado !== 0) {
-    menssaje("Error", "La sala ya ha comenzado o ya finalizo.", 'error');
+    await menssaje("Error", "La sala ya ha comenzado o ya finalizo.", 'error');
     window.location.href = "/"
     return
   } else {
     // Cargar cartones desde localStorage para sala en espera
     await loadSelectedCartones()
+    if (localStorage.getItem("penalizacion")) {
+      localStorage.removeItem("penalizacion") 
+    }
+    crearLocalStorage();
   }
 
-  const registro = await registrarseSala(sala.id_partida)
+  const registro = await getRegistro(sala.id_partida)
 
-  if (!registro) {
+  if (!registro.registrado) {
     console.error("Error al registrarse en la sala")
     return
+  }
+
+  let timing = localStorage.getItem("penalizacion")
+  if(timing){
+    penalizacion(timing);
   }
 
   socket = io({ auth: { token } }) // Usar la variable global
@@ -168,8 +177,8 @@ async function unirseSala() {
     })
   }
 
-  socket.on("salaEliminada", (err) => {
-    menssaje("error", "La sala ha sido cerrada por el administrador.", 'error');
+  socket.on("salaEliminada", async (err) => {
+    await menssaje("error", "La sala ha sido cerrada por el administrador.", 'error');
     socket.disconnect()
     window.location.href = "/"
   })
@@ -182,11 +191,17 @@ async function unirseSala() {
     renderUsuariosEnSala(sala.id_partida)
   })
 
-  socket.on("inicioSala", async () => {
+  socket.on("inicioSala", async (data) => {
     // Guardar cartones en la BD cuando inicie la partida
-    await saveCartonesToPartida(sala.id_partida)
+    //await saveCartonesToPartida(sala.id_partida)
     activarControles(sala.id_partida)
+    if (data && data.patron) {
+      renderPatronGanador(data.patron)
+    }
   })
+  socket.on("mostrarPatron", (data) => {
+    if (data && data.patron) renderPatronGanador(data.patron)
+  });
 
   socket.on("nuevoNumero", (numero) => {
     renderNuevoNumero(numero)
@@ -201,20 +216,30 @@ async function unirseSala() {
     hayGanador(data);
   });
 
+  socket.on("errorCarton",(data)=>{
+    penalizacion(30);
+  });
+
   renderUsuariosEnSala(sala.id_partida)
 }
 
 async function loadSelectedCartones() {
-  const storedCartones = localStorage.getItem("selectedCartones")
-  if (storedCartones) {
-    selectedCartones = JSON.parse(storedCartones)
+  const response = await fetch(`/api/partidas/${idRoom.textContent}/usuario/cartones`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    console.error("Error al cargar los cartones seleccionados")
+    return
+  }
+  const data = await response.json()
+  if (data.id_cartones && data.id_cartones.length > 0) {
+    selectedCartones = data.id_cartones
     await displaySelectedCartones()
   }
 }
 
 async function displaySelectedCartones() {
   if (selectedCartones.length === 0) return
-
   try {
     const cartonesData = []
     for (const cartonId of selectedCartones) {
@@ -332,16 +357,15 @@ function renderGameCartones(cartonesData) {
       } else {
         carton = []
       }
-
+      // Usar el id real del cartón para el id y data-id-carton de la tabla
       return `
         <li class="card-item swiper-slide">
           <div class="carton-preview">
             <div class="text-center mb-3">
               <h5 class="text-white mb-1">Cartón #${index + 1}</h5>
-              <!-- ID DEL CARTON -->
-              <small class="text-muted" {">ID: ${cartonData.id_carton}</small>
+              <small class="text-muted">ID: ${cartonData.id_carton}</small>
             </div>
-            <table id="carton-${index} class="tabla-numeros">
+            <table id="carton-${cartonData.id_carton}" data-id-carton="${cartonData.id_carton}" class="tabla-numeros">
               <thead>
                 <tr>
                   <th class="bg-primary"><div class="bola bola-b">B</div></th>
@@ -388,7 +412,6 @@ function renderGameCartones(cartonesData) {
     if (window.gameCartonesSwiper) {
       window.gameCartonesSwiper.destroy(true, true)
     }
-    // Determinar cuántos cartones mostrar simultáneamente (máximo 3)
     let slidesToShow = 1;
     const totalCartones = cartonesData.length;
     if (totalCartones >= 3) {
@@ -426,28 +449,8 @@ function renderGameCartones(cartonesData) {
     });
   }
 
-  if (!window.numerosSeleccionados) window.numerosSeleccionados = {};
-  container.removeEventListener('click', window._cartonCellClickHandler || (()=>{}));
-  window._cartonCellClickHandler = function(e) {
-    const target = e.target;
-    if (!target.classList.contains('seleccionable')) return;
-    const li = target.closest('li.card-item.swiper-slide');
-    if (!li) return;
-    const idCarton = li.querySelector('small.text-muted')?.textContent?.replace('ID: ','').trim();
-    if (!idCarton) return;
-    if (target.textContent === 'FREE') return;
-    if (!window.numerosSeleccionados[idCarton]) window.numerosSeleccionados[idCarton] = [];
-    target.classList.toggle('selected');
-    const number = target.getAttribute('data-number');
-    const row = target.parentElement.rowIndex;
-    const col = target.cellIndex;
-    if (target.classList.contains('selected')) {
-      window.numerosSeleccionados[idCarton].push({ number: Number(number), row, col });
-    } else {
-      window.numerosSeleccionados[idCarton] = window.numerosSeleccionados[idCarton].filter(n => !(n.row === row && n.col === col));
-    }
-  };
-  container.addEventListener('click', window._cartonCellClickHandler);
+  // Pintar las celdas seleccionadas según localStorage
+  pintarCartones();
 }
 
 async function getUsuario() {
@@ -479,14 +482,14 @@ async function usuarioRegistrado(id_room) {
     console.error("Error al verificar si el usuario es miembro de la sala")
     return false
   }
-
+  
   const data = await response.json()
   return data.registrado
 }
 
-async function registrarseSala(id_room) {
-  const response = await fetch(`/api/partidas/${id_room}/registrarse`, {
-    method: "POST",
+async function getRegistro(id_room) {
+  const response = await fetch(`/api/partidas/${id_room}/registrado`, {
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
@@ -516,7 +519,11 @@ async function renderUsuariosEnSala(id_room) {
     return
   }
 
-  console.log("Usuarios recibidos para renderizar:", usuarios)
+  // Actualizar contador de jugadores
+  const countNumber = document.getElementById("count-number") || document.getElementById("n-jugadores");
+  if (countNumber) {
+    countNumber.textContent = `${usuarios.length} Jugador${usuarios.length === 1 ? '' : 'es'}`;
+  }
 
   // Usar el contenedor correcto para los jugadores
   const jugadores_content = document.getElementById("jugadores_content")
@@ -526,43 +533,108 @@ async function renderUsuariosEnSala(id_room) {
   }
   jugadores_content.innerHTML = "" // Limpiar la lista antes de renderizar
 
+  let currentUser = null
+  try {
+    currentUser = await getUsuario()
+  } catch (e) {}
+
+  let sala = null
+  try {
+    sala = await getSala(id_room)
+  } catch (e) {}
+
   usuarios.forEach((usuario) => {
-    const cuadro_jugador = document.createElement("div")
-    const datos_jugador = document.createElement("a")
-    const img = document.createElement("img")
-    const span = document.createElement("span")
+    const isHost = sala && (sala.host === usuario.id_usuario || usuario.rol === 0);
+    const isMe = currentUser && (currentUser.id_usuario === usuario.id_usuario);
 
-    cuadro_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2")
-    datos_jugador.classList.add("btn-custom", "w-100", "perfil")
+    const chip = document.createElement("div");
+    chip.className = `player-chip ${isHost ? 'is-host' : ''} ${isMe ? 'is-me' : ''}`;
+    chip.setAttribute("data-username", (usuario.username || "").toLowerCase());
+    chip.title = `${usuario.username}${isHost ? ' (Host)' : ''}${isMe ? ' (Tú)' : ''}`;
 
-    img.src = `https://bingo-api.mixg-studio.workers.dev/api/profile/${usuario.img_id}`
-    img.alt = usuario.username
-    span.textContent = usuario.username
+    const img = document.createElement("img");
+    img.className = "player-chip-avatar";
+    img.src = usuario.img_id ? `/img/Flork/${usuario.img_id}.jpg` : "/img/Flork/1.jpg";
+    img.alt = usuario.username || "Jugador";
+    img.onerror = () => { img.src = "/img/Flork/1.jpg"; };
 
-    datos_jugador.appendChild(img)
-    datos_jugador.appendChild(span)
-    cuadro_jugador.appendChild(datos_jugador)
-    jugadores_content.appendChild(cuadro_jugador)
-  })
+    const info = document.createElement("div");
+    info.className = "player-chip-info";
+
+    const name = document.createElement("span");
+    name.className = "player-chip-name";
+    name.textContent = usuario.username || "Sin nombre";
+
+    info.appendChild(name);
+
+    if (isHost) {
+      const badge = document.createElement("span");
+      badge.className = "player-chip-badge badge-host";
+      badge.innerHTML = "👑 Host";
+      info.appendChild(badge);
+    } else if (isMe) {
+      const badge = document.createElement("span");
+      badge.className = "player-chip-badge badge-me";
+      badge.textContent = "Tú";
+      info.appendChild(badge);
+    }
+
+    chip.appendChild(img);
+    chip.appendChild(info);
+    jugadores_content.appendChild(chip);
+  });
+
+  // Configurar buscador en tiempo real si aún no está enlazado
+  const searchInput = document.getElementById("player-search");
+  if (searchInput && !searchInput.dataset.bound) {
+    searchInput.dataset.bound = "true";
+    searchInput.addEventListener("input", (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      const chips = jugadores_content.querySelectorAll(".player-chip");
+      let visible = 0;
+      chips.forEach((c) => {
+        const uName = c.getAttribute("data-username") || "";
+        if (!term || uName.includes(term)) {
+          c.style.display = "flex";
+          visible++;
+        } else {
+          c.style.display = "none";
+        }
+      });
+
+      let noMatch = document.getElementById("no-players-search-msg");
+      if (visible === 0) {
+        if (!noMatch) {
+          noMatch = document.createElement("div");
+          noMatch.id = "no-players-search-msg";
+          noMatch.className = "no-players-match";
+          noMatch.textContent = "No se encontraron jugadores que coincidan.";
+          jugadores_content.appendChild(noMatch);
+        }
+      } else if (noMatch) {
+        noMatch.remove();
+      }
+    });
+  }
 }
 
 async function renderNumerosLlamados(id_room) {
-  const response = await fetch(`https://bingo-api.mixg-studio.workers.dev/api/partida/${id_room}`)
+  const response = await fetch(`/api/juego/estado/${id_room}`)
   if (!response.ok) {
     console.error("Error al obtener los números llamados")
     return
   }
   const data = await response.json()
   numerosLlamados.innerHTML = "" // Limpiar la lista antes de renderizar
-  data.partida.numbers.forEach((numero) => {
+  data.numbers.forEach((numero) => {
     const span = document.createElement("span")
     span.textContent = numero
     span.className = "called-number"
     numerosLlamados.insertBefore(span, numerosLlamados.firstChild);
   })
 
-  if (data.partida.numbers.length > 0 && numeroActual.textContent === "--") {
-    numeroActual.textContent = data.partida.numbers[data.partida.numbers.length - 1]
+  if (data.numbers.length > 0 && numeroActual.textContent === "--") {
+    numeroActual.textContent = data.numbers[data.numbers.length - 1]
   }
 }
 
@@ -591,7 +663,7 @@ async function abandonarSala() {
   if (result.success) {
     socket.emit("abandonarSala", idRoom.textContent)
     socket.disconnect()
-    mensaje("Upps", 'Has abandonado la sala', 'error')
+    await menssaje("Upps", 'Has abandonado la sala', 'error')
     window.location.href = "/index"
   } else {
     console.error("No se pudo abandonar la sala")
@@ -603,30 +675,34 @@ async function activarControles(id_partida) {
   tablero.removeAttribute("hidden")
   crearLocalStorage();
   renderNumerosLlamados(id_partida)
-  guardarNumero(0, 39) // Ejemplo de guardar un número en el primer arreglo
-  guardarNumero(0, 60) // Ejemplo de guardar un número en el primer arreglo
-  guardarNumero(0, 64) // Ejemplo de guardar un número en el primer arreglo
-  guardarNumero(1, 16) // Ejemplo de guardar otro número en el segundo arreglo
-  guardarNumero(2, 29) // Ejemplo de guardar otro número en el tercer arreglo
-
   pintarCartones()
 }
 
-// Aun no se como guardar las que ya fueron seleccionadas
 document.getElementById("cardList").addEventListener("click", (e) => {
   const target = e.target;
   console.log(target);
+  if (!target.classList.contains("seleccionable")) return;
+  if (target.textContent === "FREE") return;
 
-  if (!e.target.classList.contains("seleccionable")) return;
+  const tabla = target.closest("table");
+  if (!tabla) return;
+  let idCarton = tabla.getAttribute("data-id-carton");
+  if (!idCarton && tabla.id && tabla.id.startsWith("carton-")) {
+    idCarton = tabla.id.replace("carton-", "");
+  }
+  if (!idCarton) return;
+
+  const numero = Number(target.getAttribute("data-number"));
+  if (isNaN(numero)) return;
+  //console.log(target);
+
   target.classList.toggle("bolaSeleccionada");
-  
 
-  // if (bolasSeleccionadas.includes(parseInt(target.innerText))) {
-  //   console.log("Se puede seleccionar la bola");
-  //   target.classList.add(fondo[asignarColor(parseInt(target.innerText))]);
-  // } else {
-  //   console.log("Bola no seleccionable");
-  // }
+  if (target.classList.contains("bolaSeleccionada")) {
+    guardarNumero(idCarton, numero);
+  } else {
+    eliminarNumero(idCarton, numero);
+  }
 });
 
 // ###############################
@@ -637,72 +713,42 @@ document.getElementById("cardList").addEventListener("click", (e) => {
 
 
 function crearLocalStorage() {
-  // Inicializar si no existe
   if (!localStorage.getItem("misArreglos")) {
-    const inicial = [[], [], [], [], []]; // 5 arreglos vacíos
-    localStorage.setItem("misArreglos", JSON.stringify(inicial));
+    localStorage.setItem("misArreglos", JSON.stringify({}));
   }
-
 }
 
 function guardarNumero(indice, numeroBola) {
-  // Obtener los arreglos o inicializar si no existen
-  let misArreglos = JSON.parse(localStorage.getItem("misArreglos")) || [
-    [],
-    [],
-    [],
-    [],
-    [],
-  ];
+  let misArreglos = JSON.parse(localStorage.getItem("misArreglos")) || {};
 
-  // Verificar que el índice esté dentro del rango
-  if (indice < 0 || indice >= misArreglos.length) {
-    console.error("Índice fuera de rango");
-    return;
+  if (!misArreglos[indice]) {
+    misArreglos[indice] = [];
   }
 
-  // Verificar que el número no exista en ese arreglo
-  if (misArreglos[indice].includes(numeroBola)) {
-    console.warn(`El número ${numeroBola} ya está en el arreglo ${indice}`);
-    return;
+  if (!misArreglos[indice].includes(numeroBola)) {
+    misArreglos[indice].push(numeroBola);
   }
 
-  // Agregar el número
-  misArreglos[indice].push(numeroBola);
-
-  // Guardar nuevamente en localStorage
   localStorage.setItem("misArreglos", JSON.stringify(misArreglos));
-
-  console.log(`Número ${numeroBola} guardado en el arreglo ${indice}`);
 }
 
 
 function pintarCartones() {
-  // Obtener datos desde localStorage
   const misArreglos = JSON.parse(localStorage.getItem("misArreglos"));
 
-  if (!Array.isArray(misArreglos)) {
-    console.warn("No hay datos válidos en localStorage.");
-    return;
-  }
+  if (!misArreglos || typeof misArreglos !== 'object') return;
 
-  // Recorrer cada tabla tipo carton-0, carton-1, etc.
-  misArreglos.forEach((numerosSeleccionados, index) => {
-    const tabla = document.getElementById(`carton-${index}`);
-    if (!tabla) return;
+  document.querySelectorAll("table[data-id-carton]").forEach((tabla) => {
+    const id = tabla.getAttribute("data-id-carton");
+    const numeros = misArreglos[id];
+    if (!Array.isArray(numeros)) return;
 
-    const celdas = tabla.querySelectorAll("td");
-
-    celdas.forEach((td) => {
-      const valor = td.innerText.trim();
-
-      // Pintar si el valor está en la lista
-      if (numerosSeleccionados.includes(Number(valor))) {
-        td.style.backgroundColor = "#ffe082"; // dorado suave
-        td.style.color = "#000";
-        td.style.fontWeight = "bold";
-        td.style.border = "2px solid #fdd835";
-        td.style.borderRadius = "4px";
+    tabla.querySelectorAll("td.seleccionable").forEach((td) => {
+      const num = parseInt(td.getAttribute("data-number"));
+      if (numeros.includes(num)) {
+        td.classList.add("selected", "bolaSeleccionada");
+      } else {
+        td.classList.remove("selected", "bolaSeleccionada");
       }
     });
   });
@@ -711,46 +757,27 @@ function pintarCartones() {
 function eliminarDB() {
   localStorage.removeItem("misArreglos");
   console.log("Base de datos eliminada.");
+
 }
 
 function eliminarNumero(indice, numero) {
-  // Obtener los datos del localStorage
-  let misArreglos = JSON.parse(localStorage.getItem("misArreglos"));
+  let misArreglos = JSON.parse(localStorage.getItem("misArreglos")) || {};
+  if (!Array.isArray(misArreglos[indice])) return;
 
-  if (!Array.isArray(misArreglos)) {
-    console.warn("No hay datos válidos en localStorage.");
-    return;
-  }
-
-  if (indice < 0 || indice >= misArreglos.length) {
-    console.error("Índice fuera de rango.");
-    return;
-  }
-
-  // Filtrar para eliminar el número
-  misArreglos[indice] = misArreglos[indice].filter((n) => n !== numero);
-
-  // Guardar de nuevo en localStorage
+  misArreglos[indice] = misArreglos[indice].filter(n => n !== numero);
   localStorage.setItem("misArreglos", JSON.stringify(misArreglos));
-
-  console.log(`Número ${numero} eliminado del arreglo ${indice}`);
 }
-
 
 async function eresGanador(data){
   ganador = true;
-  console.log(data);
   const usuario = data.ganador;
-  const mensaje = `¡${usuario.username}! Eres el ganador de la partida.`
-  mensaje(usuario, mensaje,)
-  socket.disconnect()
+
+  await messageGanador(data, usuario, true);
 }
 
 async function hayGanador(data){
   const usuario = data.ganador
-  const mensaje = `¡${usuario.username}! Ha ganado la partida.`
-  mensaje('usuario', mensaje, 'success')
-  socket.disconnect()
+  await messageGanador(data, usuario)
 }
 
 function callBingo(carton, seleccionados, id_room, usuario) {
@@ -762,12 +789,91 @@ function callBingo(carton, seleccionados, id_room, usuario) {
   })
 }
 
-function menssaje(titulo, texto, icono = null) {
+async function messageGanador(data, usuario, you = false) {
+  const mensaje = you ? "<strong>🎉 ¡Bingo! 🎉</strong>" : `<strong>${usuario.username}, ha ganado el juego.</strong>`;
   Swal.fire({
+    title: mensaje,
+    width: 700,
+    padding: "2.5em",
+    background: "#1A1A1A",
+    color: "#fff",
+    html: `
+      <div id="contenido-ganador" style="display: flex; flex-direction: column; align-items: center; color: #fff;">
+        <img src="/img/Flork/${usuario.img_id}.jpg"
+             alt="Ganador"
+             style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.2);" />
+        <p style="font-size: 1.2em; margin: 0;">El jugador ganador es:</p>
+        <h1 style="margin: 10px 0 20px; font-size: 2.2em; color: #48e;">${usuario.username}</h1>
+        <div id="carton-render"></div>
+      </div>
+    `,
+    showCloseButton: true,
+    showConfirmButton: false,
+    allowOutsideClick: false,
+  });
+}
+
+function renderPatronGanador(patron) {
+  const tabla = document.getElementById('tabla-bingo-patron');
+  if (!tabla) return;
+
+  const celdas = tabla.querySelectorAll('tbody td');
+
+  // Limpiar el patrón anterior
+  celdas.forEach(celda => {
+    if (!celda.classList.contains('free-space')) {
+        celda.classList.remove('seleccionadotd');
+    }
+  });
+
+  const filas = tabla.querySelectorAll('tbody tr');
+
+  for (let i = 0; i < patron.length; i++) {
+    const celdasFila = filas[i].querySelectorAll('td');
+    for (let j = 0; j < patron[i].length; j++) {
+      if (patron[i][j] === '1') {
+        if (i === 2 && j === 2) continue;
+        celdasFila[j].classList.add('seleccionadotd');
+      }
+    }
+  }
+}
+
+async function menssaje(titulo, texto, icono = null) {
+  await Swal.fire({
     title: titulo,
     text: texto,
     icon: icono,
   });
+}
+
+function penalizacion(tiempo){
+  mensajeTiempo("error", "Penalizacion", "Has sido penalizado por llamar Bingo sin tenerlo completo o correcto.");
+  let tiempoRestante = tiempo;
+
+const intervalo = setInterval(function() {
+  if (tiempoRestante <= 0) {
+    clearInterval(intervalo);
+    btnBingo.disabled = false; 
+    btnBingo.textContent = "Bingo";
+    localStorage.removeItem("penalizacion");
+  } else {
+    localStorage.setItem("penalizacion", tiempoRestante);
+    btnBingo.disabled = true; 
+    btnBingo.textContent = tiempoRestante + " segundos restantes";
+    tiempoRestante--;
+  }
+}, 1000);
+}
+
+async function mensajeTiempo(icon, titulo, texto) {
+  await Swal.fire({
+  icon: icon,
+  title: titulo,
+  text: texto,
+  showConfirmButton: false,
+  timer: 1500
+});
 }
 
 unirseSala()

@@ -29,6 +29,49 @@ function clearFields(form) {
 }
 
 
+// Detectar parámetros de redirección y salas desde QR o enlace directo
+document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirectParam = urlParams.get("redirect");
+  let roomId = urlParams.get("roomId");
+  const fromQR = urlParams.get("fromQR");
+  const expired = urlParams.get("expired");
+
+  if (!roomId && redirectParam) {
+    const match = redirectParam.match(/\/room\/user\/([^/?]+)/);
+    if (match) roomId = match[1];
+  }
+
+  if (roomId) {
+    sessionStorage.setItem("bingo_redirect", redirectParam || `/room/user/${roomId}`);
+    const alertBox = document.getElementById("join-room-alert");
+    const roomSpan = document.getElementById("alert-room-id");
+    if (alertBox) {
+      if (roomSpan) roomSpan.textContent = roomId;
+      alertBox.style.display = "block";
+    }
+
+    if (fromQR) {
+      Swal.fire({
+        title: '¡Te estás uniendo a la Sala!',
+        html: `Escaneaste el código para la partida <b class="text-warning">${roomId}</b>.<br><br>Inicia sesión con tu cuenta o crea una nueva para entrar directamente.`,
+        icon: 'info',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00f0ff'
+      });
+    }
+  }
+
+  if (expired) {
+    Swal.fire({
+      title: 'Sesión Expirada',
+      text: 'Tu sesión anterior ha expirado. Por favor ingresa tus datos nuevamente.',
+      icon: 'warning',
+      confirmButtonText: 'Aceptar'
+    });
+  }
+});
+
 document.getElementById('sign-in-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = e.target.email.value;
@@ -52,7 +95,12 @@ document.getElementById('sign-in-form').addEventListener('submit', async (e) => 
     document.cookie = `token=${data.token}; ${expires} path=/;`; // Almacenar la cookie con el token
     messageElement.textContent = 'Inicio de sesion Exitoso!';
     messageElement.style.color = 'green';
-    window.location.href = '/index'; // redirigir a la pagina principal con la sesion iniciada 
+    
+    // Redirección inteligente si venía de un QR o enlace de sala
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectUrl = urlParams.get('redirect') || sessionStorage.getItem('bingo_redirect') || '/index';
+    sessionStorage.removeItem('bingo_redirect');
+    window.location.href = redirectUrl;
   } else {
     messageElement.textContent = 'Correo o contraseña Incorrectos.';
     messageElement.style.color = 'red';
@@ -207,20 +255,23 @@ function soloLetras(e) {
 function validarPassword2(input) {
   const valor = input.value;
   const mensaje = document.getElementById('error-password');
-  const confirm = document.getElementById('password-Confirm');
+  const confirm = document.getElementById('passwordConfirm');
 
-  const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{5,}$/;
+  const regex = /^.{5,}$/;
 
   if (!regex.test(valor)) {
-    confirm.disabled = true;
-    confirm.value = '';
-    mensaje.textContent = 'La contraseña debe tener al menos 5 caracteres, una mayúscula, un número y un carácter especial.';
+    if (confirm) {
+      confirm.disabled = true;
+      confirm.value = '';
+    }
+    mensaje.textContent = 'La contraseña debe tener al menos 5 caracteres.';
     mensaje.classList.add('invalid');
     mensaje.classList.remove('valid');
   } else {
+    mensaje.textContent = '';
     mensaje.classList.add('valid');
     mensaje.classList.remove('invalid');
-    confirm.disabled = false;
+    if (confirm) confirm.disabled = false;
   }
 }
 

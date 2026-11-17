@@ -8,22 +8,7 @@
 - **Fetch API**: Para realizar las solicitudes HTTP.
 
 
-# Comandos: Creación del Proyecto
-
-### Inicializar el proyecto
-```bash
-npm init -y
-```
-
-### Instalar **Express**, **pg**, **bcrypt**, **CORS**, **jsonwebtoken** y **body-parser**
-```bash
-npm install express pg cors bcrypt jsonwebtoken body-parser
-```
-
-### Probar la API ejecutando puerto: 3000
-```bash
-npm run dev
-```
+# Comandos: Ejecucion del proyecto
 
 ### Descargar todas las dependencias del proyecto
 En la ruta inicial donde esta el archivo `package.json`, usa:
@@ -31,6 +16,10 @@ En la ruta inicial donde esta el archivo `package.json`, usa:
 npm install
 ```
 
+### Probar la API ejecutando puerto: 3000
+```bash
+npm run dev
+```
 
 # Uso de las dependencias
 
@@ -46,7 +35,7 @@ npm install
 
 - **conexion.js**: Usar ```node server.js``` en la terminal para arrancar el proyecto 
 - **npm run dev**: Usar el Script de node para ejecutar el servidor
-- **db.js**: <span style="color:red;">EDITA ESTE ARCHIVO</span> (Archivo de configuracion del servidor)
+- **db.js**: (Archivo de configuracion del servidor)
 
 - **js / crud**: Colocar aqui todos los modelos de las tablas para manejar las operaciones CRUD
 

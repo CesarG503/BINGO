@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/tiendaUser.css">
     <link rel="stylesheet" href="/css/perfil.css">
     <link rel="stylesheet" href="/css/gameCliente.css">
+    <link rel="stylesheet" href="/css/game.css">
    
 </head>
 <body class="bg-dark text-light">
@@ -68,21 +69,31 @@
                 </div>
             </div>
 
-            <!-- Lista de jugadores -->
+            <!-- Lista de jugadores (Diseño Compacto Escalable) -->
             <div class="row justify-content-center mb-5">
                 <div class="col-lg-8">
-                    <div class="players-card">
+                    <div class="players-card shadow-lg">
                         <div class="players-header">
-                            <h4 class="text-white mb-0">
-                                <i class="fas fa-users me-2 text-info"></i>Jugadores en la Sala
-                            </h4>
+                            <div class="players-header-flex">
+                                <div class="players-header-title">
+                                    <h4 class="text-white mb-0 fs-5">
+                                        <i class="fas fa-users me-2 text-info"></i>Jugadores en la Sala
+                                    </h4>
+                                    <span id="n-jugadores-badge" class="players-count-badge">
+                                        <i class="fas fa-circle text-success" style="font-size: 8px;"></i>
+                                        <span id="count-number">0</span>
+                                    </span>
+                                </div>
+                                <div class="player-search-wrapper">
+                                    <input type="text" id="player-search" class="players-search-box" placeholder="🔍 Buscar jugador..." autocomplete="off">
+                                </div>
+                            </div>
                         </div>
-                        <div class="players-body">
-                            <div id="jugadores" class="players-grid">
-                                <!-- Los jugadores se cargan dinámicamente -->
-                                    <div class="row g-2 justify-content-center" id="jugadores_content">
-
-                                    </div>
+                        <div class="players-body p-3">
+                            <div class="players-scroll-wrapper">
+                                <div id="jugadores_content" class="players-compact-grid">
+                                    <!-- Los jugadores se cargan dinámicamente -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -126,6 +137,40 @@
             </div>
 
 
+            <!-- Número actual y Patrón Ganador -->
+            <div class="row justify-content-center align-items-center mb-4">
+                <!-- Número Actual -->
+                <div class="col-md-6 col-lg-4 mb-4 mb-md-0">
+                    <div class="current-number-card text-center">
+                        <h3 class="text-white mb-2">Número Actual</h3>
+                        <div class="current-number" id="numero-actual">--</div>
+                    </div>
+                </div>
+                <!-- Patrón Ganador -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="formaParaGanar">
+                        <h4 class="text-white mb-3 text-center">Patrón Ganador</h4>
+                        <table class="tabla-bingo-patron border border-2 mx-auto" id="tabla-bingo-patron">
+                            <thead>
+                                <tr>
+                                    <th class="bg-primary-subtle"><div class="bola bola-b">B</div></th>
+                                    <th class="bg-success-subtle"><div class="bola bola-i">I</div></th>
+                                    <th class="bg-info-subtle"><div class="bola bola-n">N</div></th>
+                                    <th class="bg-warning-subtle"><div class="bola bola-g">G</div></th>
+                                    <th class="bg-danger-subtle"><div class="bola bola-o">O</div></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                                <tr><td></td><td></td><td class="free-space">FREE</td><td></td><td></td></tr>
+                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                                <tr><td></td><td></td><td></td><td></td><td></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
             <!-- Números llamados -->
             <div class="row justify-content-center mb-5">
                 <div class="col-lg-10">
@@ -173,7 +218,7 @@
 
             <div class="text-center my-3">
                 <button class="btn btn-danger btn-lg" id="btnBingo">
-                    Bingoo!!
+                    BINGO!
                 </button>
             </div>
 

@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 
-export const authenticateToken = (req, res, next) => {
+const authenticateToken = (req, res, next) => {
   let token;
   const authHeader = req.headers['authorization'];
   if (authHeader) {
@@ -8,15 +8,21 @@ export const authenticateToken = (req, res, next) => {
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
-  if (!token) return res.redirect("/");
+  if (!token) {
+    if (req.originalUrl && req.originalUrl.startsWith('/room/user/')) {
+      return res.redirect(`/?redirect=${encodeURIComponent(req.originalUrl)}&fromQR=1`);
+    }
+    return res.redirect("/");
+  }
 
   jwt.verify(token, 'secret_key', (err, user) => {
     if (err){ 
       if (err.name === 'TokenExpiredError') {
         res.clearCookie('token'); // Elimina la cookie del token
-        return res.redirect('/'); // Redirige al login
       }
-      console.log('User authenticated:')
+      if (req.originalUrl && req.originalUrl.startsWith('/room/user/')) {
+        return res.redirect(`/?redirect=${encodeURIComponent(req.originalUrl)}&expired=1`);
+      }
       return res.redirect('/');
     }
     req.user = user;
@@ -24,7 +30,7 @@ export const authenticateToken = (req, res, next) => {
   });
 };
 
-export function validateRole(role) {
+function validateRole(role) {
   return (req, res, next) => {
     const user = req.user;
     if (!user) {
@@ -38,7 +44,7 @@ export function validateRole(role) {
   };
 }
 
-export const authenticateSocket = (socket, next) => {
+const authenticateSocket = (socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) return res.sendStatus(401);
 
@@ -53,3 +59,5 @@ export const authenticateSocket = (socket, next) => {
     next();
   });
 }
+
+module.exports = { authenticateToken, validateRole, authenticateSocket };

@@ -7,16 +7,20 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { authenticateToken, authenticateSocket, validateRole } = require('./js/authenthicated'); // Importar la función de autenticación
 const { Server } = require('socket.io');
+const fs = require('fs');
 const path = require('path'); // Importar path para manejar rutas de archivos
 const pool = require('./js/db/db'); // Importar la conexión a la base de datos
 const usuariosRouter = require('./js/crud/usuarios');// Importar las rutas de Entrenadores.js
 const partidasRouter = require('./js/crud/partidas'); // Importar las rutas de Partida.js
+const partidaDB = require('./js/db/partida');
 const cartonesRouter = require("./js/crud/cartones")
 const cartonUsuarioRouter = require("./js/crud/carton_usuario")
+const juegoRouter = require("./js/api/juego")
 const nodemiler = require('nodemailer');
 const crypto = require("crypto")
 const { Email } = require('./js/email/email');
-const {validarCarton} = require('./js/bingo_validate');
+const {validarCarton,validarCartonConReferencia} = require('./js/bingo_validate');
+const QRCode = require('qrcode');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -55,12 +59,20 @@ app.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
   try {
+    // Obtener una imagen de perfil aleatoria
+    const directoryPath = path.join(__dirname, 'public', 'img', 'Flork');
+    const files = fs.readdirSync(directoryPath);
+    const imageFiles = files.filter(file => file.endsWith('.jpg'));
+    const randomImage = imageFiles[Math.floor(Math.random() * imageFiles.length)];
+    const img_id = randomImage.replace('.jpg', '');
+
     const result = await pool.query(
-      'INSERT INTO Usuarios (username, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [username, email, hashedPassword]
+      'INSERT INTO Usuarios (username, email, password, img_id) VALUES ($1, $2, $3, $4) RETURNING *',
+      [username, email, hashedPassword, img_id]
     );
     res.json({ success: true, user: result.rows[0] });
   } catch (err) {
+    console.error('Error registering user:', err);
     res.status(500).json({ error: 'Error registering user' });
   }
 });
@@ -80,6 +92,32 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Error logging in' });
   }
+});
+
+// Ruta para que el Host/Admin guarde el patrón ganador.
+app.post('/api/partida/patron/:idPartida', authenticateToken, validateRole(0), async (req, res) => {
+    const { idPartida } = req.params;
+    const { patron } = req.body; // El frontend envía { patron: [["1","0",...], ...] }
+
+    // *** NUEVA LÍNEA DE DEPURACIÓN ***
+    console.log('Patrón recibido (tipo):', typeof patron);
+    console.log('Patrón recibido (valor):', patron);
+    console.log('Patrón recibido (JSON String):', JSON.stringify(patron));
+    // **********************************
+
+    // Validación básica
+    if (!patron || !Array.isArray(patron) || patron.length !== 5 || patron.some(row => row.length !== 5)) {
+        return res.status(400).json({ message: 'Patrón no válido. Debe ser una matriz 5x5.' });
+    }
+
+    try {
+        // Usar la función de acceso a datos que creamos
+        await partidaDB.guardarPatronGanador(idPartida, patron); 
+        res.status(200).json({ message: 'Patrón ganador guardado con éxito.' });
+    } catch (error) {
+        console.error('Error al guardar el patrón ganador:', error);
+        res.status(500).json({ message: 'Error interno del servidor al guardar el patrón.' });
+    }
 });
 
 // Configurar la ruta raíz para servir login.html
@@ -122,6 +160,10 @@ app.get('/admin', authenticateToken, validateRole(0), (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'administrador.html'));
 });
 
+app.get('/logs', authenticateToken, validateRole(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'logs.html'));
+});
+
 app.get('/perfil', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'perfil.html'));
 });
@@ -135,14 +177,71 @@ app.get('/home', authenticateToken, (req, res) => {
   }
 });
 
+//Ruta pára unirse a una sala como admin
+/*app.get('/room/join', authenticateToken, validateRole(0), (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'home.html'));
+});*/
+
 app.get('/room/user/:roomId', authenticateToken, async (req, res) => {
   const roomId = req.params.roomId;
   res.render('user_room', { id_room: roomId });
 });
 
+// Ruta inteligente para unirse por enlace directo o escaneo de código QR
+app.get('/join/:roomId', async (req, res) => {
+  const { roomId } = req.params;
+  const token = req.cookies && req.cookies.token;
+  if (token) {
+    try {
+      jwt.verify(token, 'secret_key');
+      // Usuario autenticado -> va directamente a la sala de juego
+      return res.redirect(`/room/user/${roomId}`);
+    } catch (e) {
+      res.clearCookie('token');
+    }
+  }
+  // Usuario no autenticado -> redirigir a login con aviso de sala y redirección automática
+  return res.redirect(`/?redirect=/room/user/${roomId}&roomId=${roomId}&fromQR=1`);
+});
+
+// Endpoint API para obtener el código QR de una sala
+app.get('/api/qr/:roomId', async (req, res) => {
+  const { roomId } = req.params;
+  const apiBaseUrl = process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  try {
+    const qrDataUrl = await QRCode.toDataURL(joinUrl, {
+      width: 320,
+      margin: 1,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    });
+    res.json({ qr_code: qrDataUrl, join_url: joinUrl, api_base_url: apiBaseUrl });
+  } catch (err) {
+    console.error('Error generating QR:', err);
+    res.status(500).json({ error: 'Error generating QR code' });
+  }
+});
+
 app.get('/room/host/:roomId', authenticateToken, validateRole(0), async (req, res) => {
   const roomId = req.params.roomId;
-  res.render('host_room', { id_room: roomId });
+  const apiBaseUrl = process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  let qrCodeData = '';
+  try {
+    qrCodeData = await QRCode.toDataURL(joinUrl, {
+      width: 320,
+      margin: 1,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    });
+  } catch (err) {
+    console.error('Error generando QR para host_room:', err);
+  }
+  res.render('host_room', { 
+    id_room: roomId, 
+    api_base_url: apiBaseUrl, 
+    join_url: joinUrl, 
+    qr_code: qrCodeData 
+  });
 });
 
 // ruta cambio de contraseña
@@ -313,6 +412,24 @@ app.use("/api/carton-usuario", cartonUsuarioRouter)
 // Usar ruta del CRUD partidas.js
 app.use('/api/partidas', partidasRouter);
 
+const logTransaccionesRouter = require("./js/crud/log_transacciones")
+app.use("/api/log-transacciones", logTransaccionesRouter)
+
+app.get('/api/profile-images', (req, res) => {
+  const directoryPath = path.join(__dirname, 'public', 'img', 'Flork');
+  fs.readdir(directoryPath, (err, files) => {
+    if (err) {
+      console.error('Error reading profile images directory:', err);
+      return res.status(500).json({ error: 'Unable to scan images directory' });
+    }
+    const imageFiles = files.filter(file => file.endsWith('.jpg')).map(file => file.replace('.jpg', ''));
+    res.json(imageFiles);
+  });
+});
+
+//rutas para API de juego
+app.use('/api/juego', juegoRouter);
+
 //Inicializar Socket.IO
 const io = new Server(server);
 
@@ -343,12 +460,27 @@ io.on('connection', (socket) => {
     socket.leave(data.id_room);
   });
 
-  socket.on('iniciarSala', (data) => {
+  socket.on('iniciarSala', async (data) => {
     if (socket.user.rol !== 0 || socket.user.uid !== data.host) {
       console.log(`Usuario sin permiso accedio para iniciar la sala ${data.id_room}`);
       return socket.emit('error', 'No tienes permiso para iniciar la sala');
     }
-    io.to(data.id_room).emit('inicioSala');
+    try {
+      const patron = await partidaDB.obtenerPatronGanador(data.id_room);
+      io.to(data.id_room).emit('inicioSala', { patron });
+    } catch (error) {
+      console.error('Error al obtener el patrón y emitir inicioSala:', error);
+      // Emitir de todas formas para que el juego comience, pero sin el patrón
+      io.to(data.id_room).emit('inicioSala', { patron: null });
+    }
+  });
+
+  socket.on('patronActualizado', (data) => {
+    if (socket.user.rol !== 0) {
+      return socket.emit('error', 'No tienes permiso para actualizar el patrón.');
+    }
+    // Re-emitir el patrón a todos en la sala, incluyendo al host
+    io.to(data.id_room).emit('mostrarPatron', { patron: data.patron });
   });
 
   socket.on('getNuevoNumero', (data) => {
@@ -363,13 +495,14 @@ io.on('connection', (socket) => {
   socket.on('callBingo', async (data) => {
     // Validar el cartón del usuario
     const numerosGanadores = await validarCarton(data.carton, data.numerosSeleccionados, data.id_room);
-    if (numerosGanadores.length === 0 || numerosGanadores.length < 4) {
+    if (numerosGanadores.length === 0) {
       return socket.emit('errorCarton', 'Cartón inválido o no hay bingo');
     }
 
     const newData = {
       ganador: data.ganador,
       numerosGanadores: numerosGanadores,
+      numerosSeleccionados: data.numerosSeleccionados,
       carton: data.carton,
       id_room: data.id_room,
     }

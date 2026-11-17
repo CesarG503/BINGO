@@ -6,7 +6,7 @@ btnUnirse.addEventListener("click", unirseSala);
 
 async function createRoom(event) {
     event.preventDefault();
-    const room = await fetch("https://bingo-api.mixg-studio.workers.dev/api/partida/nueva");
+    const room = await fetch("/api/juego/crear");
     const roomData = await room.json();
 
     if(!roomData || !roomData["id"]){

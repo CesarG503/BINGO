@@ -21,7 +21,15 @@ CREATE TABLE Partidas (
     numeros_llamados JSON DEFAULT '[]',
     estado INT DEFAULT 0, 
     host INT NOT NULL REFERENCES Usuarios(id_usuario),
-    ganador INT REFERENCES Usuarios(id_usuario)
+    ganador INT REFERENCES Usuarios(id_usuario),
+     -- COLUMNA AGREGADA DIRECTAMENTE A CREATE TABLE
+    patron_ganador JSONB DEFAULT '[
+        ["0", "0", "0", "0", "0"],
+        ["0", "0", "0", "0", "0"],
+        ["0", "0", "1", "0", "0"],
+        ["0", "0", "0", "0", "0"],
+        ["0", "0", "0", "0", "0"]
+    ]' -- Matriz 5x5 corregida
 );
 
 CREATE TABLE partida_usuario (
