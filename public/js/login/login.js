@@ -29,6 +29,49 @@ function clearFields(form) {
 }
 
 
+// Detectar parámetros de redirección y salas desde QR o enlace directo
+document.addEventListener("DOMContentLoaded", () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirectParam = urlParams.get("redirect");
+  let roomId = urlParams.get("roomId");
+  const fromQR = urlParams.get("fromQR");
+  const expired = urlParams.get("expired");
+
+  if (!roomId && redirectParam) {
+    const match = redirectParam.match(/\/(?:room\/user|join)\/([^/?]+)/);
+    if (match) roomId = match[1];
+  }
+
+  if (roomId) {
+    sessionStorage.setItem("bingo_redirect", redirectParam || `/room/user/${roomId}`);
+    const alertBox = document.getElementById("join-room-alert");
+    const roomSpan = document.getElementById("alert-room-id");
+    if (alertBox) {
+      if (roomSpan) roomSpan.textContent = roomId;
+      alertBox.style.display = "block";
+    }
+
+    if (fromQR) {
+      Swal.fire({
+        title: '¡Te estás uniendo a la Sala!',
+        html: `Escaneaste el código para la partida <b class="text-warning">${roomId}</b>.<br><br>Inicia sesión con tu cuenta o crea una nueva para entrar directamente.`,
+        icon: 'info',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00f0ff'
+      });
+    }
+  }
+
+  if (expired) {
+    Swal.fire({
+      title: 'Sesión Expirada',
+      text: 'Tu sesión anterior ha expirado. Por favor ingresa tus datos nuevamente.',
+      icon: 'warning',
+      confirmButtonText: 'Aceptar'
+    });
+  }
+});
+
 document.getElementById('sign-in-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = e.target.email.value;
@@ -52,14 +95,11 @@ document.getElementById('sign-in-form').addEventListener('submit', async (e) => 
     document.cookie = `token=${data.token}; ${expires} path=/;`; // Almacenar la cookie con el token
     messageElement.textContent = 'Inicio de sesion Exitoso!';
     messageElement.style.color = 'green';
-
+    // Redirección inteligente si venía de un QR o enlace de sala
     const urlParams = new URLSearchParams(window.location.search);
-    const redirect = urlParams.get('redirect');
-    if (redirect && redirect.startsWith('/') && !redirect.startsWith('//') && !redirect.startsWith('/\\')) {
-      window.location.href = redirect;
-    } else {
-      window.location.href = '/index'; // redirigir a la pagina principal con la sesion iniciada 
-    }
+    const redirectUrl = urlParams.get('redirect') || sessionStorage.getItem('bingo_redirect') || '/index';
+    sessionStorage.removeItem('bingo_redirect');
+    window.location.href = redirectUrl;
   } else {
     messageElement.textContent = 'Correo o contraseña Incorrectos.';
     messageElement.style.color = 'red';

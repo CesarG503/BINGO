@@ -519,6 +519,12 @@ async function renderUsuariosEnSala(id_room) {
     return
   }
 
+  // Actualizar contador de jugadores
+  const countNumber = document.getElementById("count-number") || document.getElementById("n-jugadores");
+  if (countNumber) {
+    countNumber.textContent = `${usuarios.length} Jugador${usuarios.length === 1 ? '' : 'es'}`;
+  }
+
   // Usar el contenedor correcto para los jugadores
   const jugadores_content = document.getElementById("jugadores_content")
   if (!jugadores_content) {
@@ -527,24 +533,89 @@ async function renderUsuariosEnSala(id_room) {
   }
   jugadores_content.innerHTML = "" // Limpiar la lista antes de renderizar
 
+  let currentUser = null
+  try {
+    currentUser = await getUsuario()
+  } catch (e) {}
+
+  let sala = null
+  try {
+    sala = await getSala(id_room)
+  } catch (e) {}
+
   usuarios.forEach((usuario) => {
-    const cuadro_jugador = document.createElement("div")
-    const datos_jugador = document.createElement("a")
-    const img = document.createElement("img")
-    const span = document.createElement("span")
+    const isHost = sala && (sala.host === usuario.id_usuario || usuario.rol === 0);
+    const isMe = currentUser && (currentUser.id_usuario === usuario.id_usuario);
 
-    cuadro_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2")
-    datos_jugador.classList.add("btn-custom", "w-100", "perfil")
+    const chip = document.createElement("div");
+    chip.className = `player-chip ${isHost ? 'is-host' : ''} ${isMe ? 'is-me' : ''}`;
+    chip.setAttribute("data-username", (usuario.username || "").toLowerCase());
+    chip.title = `${usuario.username}${isHost ? ' (Host)' : ''}${isMe ? ' (Tú)' : ''}`;
 
-    img.src = `/img/Flork/${usuario.img_id}.jpg`
-    img.alt = usuario.username
-    span.textContent = usuario.username
+    const img = document.createElement("img");
+    img.className = "player-chip-avatar";
+    img.src = usuario.img_id ? `/img/Flork/${usuario.img_id}.jpg` : "/img/Flork/1.jpg";
+    img.alt = usuario.username || "Jugador";
+    img.onerror = () => { img.src = "/img/Flork/1.jpg"; };
 
-    datos_jugador.appendChild(img)
-    datos_jugador.appendChild(span)
-    cuadro_jugador.appendChild(datos_jugador)
-    jugadores_content.appendChild(cuadro_jugador)
-  })
+    const info = document.createElement("div");
+    info.className = "player-chip-info";
+
+    const name = document.createElement("span");
+    name.className = "player-chip-name";
+    name.textContent = usuario.username || "Sin nombre";
+
+    info.appendChild(name);
+
+    if (isHost) {
+      const badge = document.createElement("span");
+      badge.className = "player-chip-badge badge-host";
+      badge.innerHTML = "👑 Host";
+      info.appendChild(badge);
+    } else if (isMe) {
+      const badge = document.createElement("span");
+      badge.className = "player-chip-badge badge-me";
+      badge.textContent = "Tú";
+      info.appendChild(badge);
+    }
+
+    chip.appendChild(img);
+    chip.appendChild(info);
+    jugadores_content.appendChild(chip);
+  });
+
+  // Configurar buscador en tiempo real si aún no está enlazado
+  const searchInput = document.getElementById("player-search");
+  if (searchInput && !searchInput.dataset.bound) {
+    searchInput.dataset.bound = "true";
+    searchInput.addEventListener("input", (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      const chips = jugadores_content.querySelectorAll(".player-chip");
+      let visible = 0;
+      chips.forEach((c) => {
+        const uName = c.getAttribute("data-username") || "";
+        if (!term || uName.includes(term)) {
+          c.style.display = "flex";
+          visible++;
+        } else {
+          c.style.display = "none";
+        }
+      });
+
+      let noMatch = document.getElementById("no-players-search-msg");
+      if (visible === 0) {
+        if (!noMatch) {
+          noMatch = document.createElement("div");
+          noMatch.id = "no-players-search-msg";
+          noMatch.className = "no-players-match";
+          noMatch.textContent = "No se encontraron jugadores que coincidan.";
+          jugadores_content.appendChild(noMatch);
+        }
+      } else if (noMatch) {
+        noMatch.remove();
+      }
+    });
+  }
 }
 
 async function renderNumerosLlamados(id_room) {

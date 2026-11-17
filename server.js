@@ -21,46 +21,10 @@ const nodemiler = require('nodemailer');
 const crypto = require("crypto")
 const { Email } = require('./js/email/email');
 const {validarCarton,validarCartonConReferencia} = require('./js/bingo_validate');
+const QRCode = require('qrcode');
 
 const dotenv = require('dotenv');
 dotenv.config();
-
-function getServerLanIp() {
-  try {
-    const interfaces = os.networkInterfaces();
-    const candidates = [];
-    for (const name of Object.keys(interfaces)) {
-      const ifaceList = interfaces[name];
-      if (!ifaceList) continue;
-      for (const iface of ifaceList) {
-        if ((iface.family === 'IPv4' || iface.family === 4) && !iface.internal) {
-          candidates.push({ name, address: iface.address, mac: iface.mac || '' });
-        }
-      }
-    }
-
-    const wifi = candidates.find(c => /wi-?fi|wlan/i.test(c.name));
-    if (wifi) return wifi.address;
-
-    const physicalEth = candidates.find(c =>
-      /eth|en\d/i.test(c.name) &&
-      !c.mac.startsWith('0a:00:27') &&
-      !/virtual|vbox|docker|veth|tailscale|hyper-v/i.test(c.name)
-    );
-    if (physicalEth) return physicalEth.address;
-
-    const privateIp = candidates.find(c =>
-      /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(c.address) &&
-      !/tailscale/i.test(c.name) &&
-      !c.mac.startsWith('0a:00:27')
-    );
-    if (privateIp) return privateIp.address;
-
-    return candidates.length > 0 ? candidates[0].address : 'localhost';
-  } catch (e) {
-    return 'localhost';
-  }
-}
 
 const app = express();
 app.set('trust proxy', 1);
@@ -79,130 +43,6 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(cookieParser());
-
-app.use((req, res, next) => {
-  const originalRedirect = res.redirect.bind(res);
-  res.redirect = function (firstArg, secondArg) {
-    let status = 302;
-    let targetUrl = '';
-
-    if (typeof firstArg === 'number') {
-      status = firstArg;
-      targetUrl = secondArg;
-    } else {
-      targetUrl = firstArg;
-      if (typeof secondArg === 'number') {
-        status = secondArg;
-      }
-    }
-
-    const acceptHeader = req.headers && req.headers.accept ? req.headers.accept : '';
-    const isJsonRequest = Boolean(req.xhr || acceptHeader.includes('application/json'));
-
-    if (isJsonRequest) {
-      return originalRedirect(status, targetUrl);
-    }
-
-    res.status(status || 302);
-    res.setHeader('Location', targetUrl);
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-
-    const safeTargetUrl = String(targetUrl)
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    const jsonTargetUrl = JSON.stringify(targetUrl).replace(/</g, '\\u003c');
-
-    const htmlBody = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0;url=${safeTargetUrl}">
-  <title>Redirigiendo...</title>
-  <script>window.location.replace(${jsonTargetUrl});</script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background-color: #0b0f19;
-      color: #00f2ff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .sci-fi-card {
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(0, 242, 255, 0.4);
-      box-shadow: 0 0 30px rgba(0, 242, 255, 0.25);
-      border-radius: 14px;
-      padding: 36px 28px;
-      max-width: 440px;
-      width: 100%;
-      text-align: center;
-    }
-    .spinner {
-      width: 52px;
-      height: 52px;
-      margin: 0 auto 24px auto;
-      border: 4px solid rgba(0, 242, 255, 0.15);
-      border-top-color: #00f2ff;
-      border-radius: 50%;
-      animation: spin 0.85s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    h1 {
-      font-size: 1.35rem;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      color: #ffffff;
-      text-shadow: 0 0 10px rgba(0, 242, 255, 0.6);
-    }
-    p {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      margin-bottom: 24px;
-    }
-    .btn-redirect {
-      display: inline-block;
-      padding: 12px 28px;
-      background: linear-gradient(135deg, #00f2ff 0%, #0077ff 100%);
-      color: #050b14;
-      font-size: 0.95rem;
-      font-weight: 700;
-      text-decoration: none;
-      border-radius: 8px;
-      box-shadow: 0 4px 18px rgba(0, 242, 255, 0.4);
-      letter-spacing: 0.5px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .btn-redirect:active {
-      transform: scale(0.97);
-    }
-  </style>
-</head>
-<body>
-  <div class="sci-fi-card">
-    <div class="spinner"></div>
-    <h1>Conectando al Sistema</h1>
-    <p>Redirigiendo de forma segura a tu destino...</p>
-    <a href="${safeTargetUrl}" class="btn-redirect">Continuar a la sala</a>
-  </div>
-</body>
-</html>`;
-
-    return res.end(htmlBody);
-  };
-  next();
-});
 
 // Configurar el servidor para servir archivos estáticos desde el directorio public
 app.use(express.static(path.join(__dirname, 'public')));
@@ -363,7 +203,13 @@ app.get('/home', authenticateToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'src', 'home.html'));
 });*/
 
-app.get('/join/:roomId', authenticateToken, async (req, res) => {
+app.get('/room/user/:roomId', authenticateToken, async (req, res) => {
+  const roomId = req.params.roomId;
+  res.render('user_room', { id_room: roomId });
+});
+
+// Ruta inteligente para unirse por enlace directo o escaneo de código QR
+app.get('/join/:roomId', async (req, res) => {
   const { roomId } = req.params;
   const roomIdRegex = /^[a-zA-Z0-9_-]{1,20}$/;
 
@@ -371,53 +217,87 @@ app.get('/join/:roomId', authenticateToken, async (req, res) => {
     return res.redirect('/home?error=invalid_room');
   }
 
-  try {
-    const partidaResult = await pool.query('SELECT * FROM Partidas WHERE id_partida = $1', [roomId]);
-    if (partidaResult.rows.length === 0) {
-      return res.redirect('/home?error=room_not_found');
+  const token = req.cookies && req.cookies.token;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, 'secret_key');
+      const userId = decoded.uid;
+
+      const partidaResult = await pool.query('SELECT * FROM Partidas WHERE UPPER(id_partida) = UPPER($1)', [roomId]);
+      if (partidaResult.rows.length === 0) {
+        return res.redirect('/home?error=room_not_found');
+      }
+
+      const partida = partidaResult.rows[0];
+
+      // Si es el host -> va a su pantalla de host
+      if (String(partida.host) === String(userId)) {
+        return res.redirect(`/room/host/${partida.id_partida}`);
+      }
+
+      // Si ya está registrado con cartones en la partida -> va directo a la sala
+      const usuarioPartidaResult = await pool.query(
+        'SELECT 1 FROM partida_usuario WHERE UPPER(id_partida) = UPPER($1) AND id_usuario = $2',
+        [partida.id_partida, userId]
+      );
+
+      if (usuarioPartidaResult.rows.length > 0) {
+        return res.redirect(`/room/user/${partida.id_partida}`);
+      }
+
+      if (Number(partida.estado) !== 0) {
+        return res.redirect('/home?error=room_started');
+      }
+
+      // Si aún no ha seleccionado cartones -> va a la selección de cartones
+      return res.redirect(`/home?join=${encodeURIComponent(partida.id_partida)}`);
+    } catch (e) {
+      res.clearCookie('token');
     }
-
-    const partida = partidaResult.rows[0];
-
-    if (String(partida.host) === String(req.user.uid)) {
-      return res.redirect(`/room/host/${roomId}`);
-    }
-
-    const usuarioPartidaResult = await pool.query(
-      'SELECT 1 FROM partida_usuario WHERE id_partida = $1 AND id_usuario = $2',
-      [roomId, req.user.uid]
-    );
-
-    if (usuarioPartidaResult.rows.length > 0) {
-      return res.redirect(`/room/user/${roomId}`);
-    }
-
-    if (Number(partida.estado) !== 0) {
-      return res.redirect('/home?error=room_started');
-    }
-
-    return res.redirect(`/home?join=${roomId}`);
-  } catch (error) {
-    console.error('Error al procesar acceso a la sala:', error);
-    return res.redirect('/home?error=server_error');
   }
+
+  // Usuario no autenticado -> redirigir a login con aviso de sala y redirección automática
+  return res.redirect(`/?redirect=/join/${encodeURIComponent(roomId)}&roomId=${encodeURIComponent(roomId)}&fromQR=1`);
 });
 
-app.get('/room/user/:roomId', authenticateToken, async (req, res) => {
-  const roomId = req.params.roomId;
-  res.render('user_room', { id_room: roomId });
+// Endpoint API para obtener el código QR de una sala
+app.get('/api/qr/:roomId', async (req, res) => {
+  const { roomId } = req.params;
+  const apiBaseUrl = process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  try {
+    const qrDataUrl = await QRCode.toDataURL(joinUrl, {
+      width: 320,
+      margin: 1,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    });
+    res.json({ qr_code: qrDataUrl, join_url: joinUrl, api_base_url: apiBaseUrl });
+  } catch (err) {
+    console.error('Error generating QR:', err);
+    res.status(500).json({ error: 'Error generating QR code' });
+  }
 });
 
 app.get('/room/host/:roomId', authenticateToken, validateRole(0), async (req, res) => {
   const roomId = req.params.roomId;
-  const roomIdRegex = /^[a-zA-Z0-9_-]{1,20}$/;
-  if (!roomId || !roomIdRegex.test(roomId)) {
-    return res.redirect('/home?error=invalid_room');
+  const apiBaseUrl = process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  let qrCodeData = '';
+  try {
+    qrCodeData = await QRCode.toDataURL(joinUrl, {
+      width: 320,
+      margin: 1,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    });
+  } catch (err) {
+    console.error('Error generando QR para host_room:', err);
   }
-  const modo = (typeof req.query.modo === 'string' && /^[a-zA-Z0-9_-]{1,20}$/.test(req.query.modo))
-    ? req.query.modo
-    : 'normal';
-  res.render('host_room', { id_room: roomId, modo: modo, lan_ip: getServerLanIp() });
+  res.render('host_room', { 
+    id_room: roomId, 
+    api_base_url: apiBaseUrl, 
+    join_url: joinUrl, 
+    qr_code: qrCodeData 
+  });
 });
 
 // ruta cambio de contraseña

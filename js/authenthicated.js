@@ -1,23 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-const getLoginRedirectUrl = (req) => {
-  const targetUrl = req.originalUrl || req.url;
-  if (targetUrl && typeof targetUrl === 'string') {
-    if (
-      targetUrl.startsWith('/') &&
-      !targetUrl.startsWith('//') &&
-      !targetUrl.startsWith('/\\') &&
-      !targetUrl.startsWith('/ ') &&
-      !/[\r\n]/.test(targetUrl)
-    ) {
-      if (targetUrl.startsWith('/join/') || targetUrl.startsWith('/room/')) {
-        return `/?redirect=${encodeURIComponent(targetUrl)}`;
-      }
-    }
-  }
-  return '/';
-};
-
 const authenticateToken = (req, res, next) => {
   let token;
   const authHeader = req.headers['authorization'];
@@ -26,16 +8,22 @@ const authenticateToken = (req, res, next) => {
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
-  if (!token) return res.redirect(getLoginRedirectUrl(req));
+  if (!token) {
+    if (req.originalUrl && (req.originalUrl.startsWith('/room/user/') || req.originalUrl.startsWith('/join/'))) {
+      return res.redirect(`/?redirect=${encodeURIComponent(req.originalUrl)}&fromQR=1`);
+    }
+    return res.redirect("/");
+  }
 
   jwt.verify(token, 'secret_key', (err, user) => {
     if (err) { 
       if (err.name === 'TokenExpiredError') {
         res.clearCookie('token'); // Elimina la cookie del token
-        return res.redirect(getLoginRedirectUrl(req)); // Redirige al login
       }
-      res.clearCookie('token');
-      return res.redirect(getLoginRedirectUrl(req));
+      if (req.originalUrl && (req.originalUrl.startsWith('/room/user/') || req.originalUrl.startsWith('/join/'))) {
+        return res.redirect(`/?redirect=${encodeURIComponent(req.originalUrl)}&expired=1`);
+      }
+      return res.redirect('/');
     }
     req.user = user;
     next();

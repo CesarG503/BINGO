@@ -69,21 +69,31 @@
                 </div>
             </div>
 
-            <!-- Lista de jugadores -->
+            <!-- Lista de jugadores (Diseño Compacto Escalable) -->
             <div class="row justify-content-center mb-5">
                 <div class="col-lg-8">
-                    <div class="players-card">
+                    <div class="players-card shadow-lg">
                         <div class="players-header">
-                            <h4 class="text-white mb-0">
-                                <i class="fas fa-users me-2 text-info"></i>Jugadores en la Sala
-                            </h4>
+                            <div class="players-header-flex">
+                                <div class="players-header-title">
+                                    <h4 class="text-white mb-0 fs-5">
+                                        <i class="fas fa-users me-2 text-info"></i>Jugadores en la Sala
+                                    </h4>
+                                    <span id="n-jugadores-badge" class="players-count-badge">
+                                        <i class="fas fa-circle text-success" style="font-size: 8px;"></i>
+                                        <span id="count-number">0</span>
+                                    </span>
+                                </div>
+                                <div class="player-search-wrapper">
+                                    <input type="text" id="player-search" class="players-search-box" placeholder="🔍 Buscar jugador..." autocomplete="off">
+                                </div>
+                            </div>
                         </div>
-                        <div class="players-body">
-                            <div id="jugadores" class="players-grid">
-                                <!-- Los jugadores se cargan dinámicamente -->
-                                    <div class="row g-2 justify-content-center" id="jugadores_content">
-
-                                    </div>
+                        <div class="players-body p-3">
+                            <div class="players-scroll-wrapper">
+                                <div id="jugadores_content" class="players-compact-grid">
+                                    <!-- Los jugadores se cargan dinámicamente -->
+                                </div>
                             </div>
                         </div>
                     </div>

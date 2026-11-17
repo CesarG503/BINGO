@@ -1,26 +1,24 @@
-<!DOCTYPE html>
-<html lang="es">
+  <!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bingo - Sala de Espera</title>
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
   <!-- Animate CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/css/sci-fi.css">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/gh/Mixgyt/RetroSci-Fi_library/dist/js/retrosci-fi.js" defer></script>
   <link rel="stylesheet" href="/css/gameCliente.css">
   <link rel="stylesheet" href="/css/game.css">
-  <link rel="stylesheet" href="/css/panel_espera.css">
   <link rel="stylesheet" href="/css/perfil.css">
+  <title>Bingo</title>
 </head>
-<body>
+<body class="bg-dark text-light">
 
   <nav class="navbar bg-secondary estilo-brillo border border-secondary hover-neon rounded-3 px-3 py-2 d-flex justify-content-between align-items-center position-sticky top-0 z-3">
+  
     <!-- Marca y Logo -->
     <div class="d-flex align-items-center gap-3">
       <span class="navbar-brand fs-4 fw-bold text-white">Bingo</span>
@@ -32,248 +30,299 @@
     </div>
   </nav>
   
-  <!-- Pantalla de lobby -->
-  <div id="waiting-room" class="esperando">
-    <div class="w-100 d-flex justify-content-start px-4">
-      <button id="btn-eliminar-sala" class="btn-custom logout" style="max-width: 75px;">
-        <img src="/img/atras.png" alt="Atrás">
-      </button>
-    </div>
+<!-- Pantalla de lobby (Mismo formato y clase waiting-room que vista jugador) -->
+  <div id="waiting-room" class="waiting-room">
+    <div class="container" style="max-width: 1080px;">
 
-    <div class="text-center my-2">
-      <p class="text-white-50 mb-1 fs-5">Esperando que jugadores se unan a la partida...</p>
-      <p id="id-room" hidden><%= id_room %></p>
-      <p id="modo-partida" hidden><%= typeof modo !== "undefined" ? modo : "normal" %></p>
-      <span id="server-lan-ip" hidden><%= typeof lan_ip !== 'undefined' ? lan_ip : '' %></span>
-      <p id="lan-ip" hidden><%= typeof lan_ip !== "undefined" ? lan_ip : "" %></p>
-      <h2 class="display-6 fw-bold text-white mb-1">
-        ID Partida: <span class="text-warning text-glow font-monospace"><%= id_room %></span>
-      </h2>
-      <p class="fs-4 text-white-50 mb-2">
-        Jugadores: <span id="n-jugadores" class="text-warning fw-bold">0</span>
-      </p>
+      <!-- RECUADROS PRINCIPALES (Mismo formato y estilo que Jugadores en la Sala) -->
+      <div class="row g-4 mb-4 justify-content-center align-items-stretch">
+        
+        <!-- Tarjeta 1: CÓDIGO DE LA SALA & BOTÓN INICIAR -->
+        <div class="col-lg-7">
+          <div class="players-card shadow-lg h-100 d-flex flex-column">
+            <div class="players-header py-3 px-4 d-flex justify-content-between align-items-center">
+              <h4 class="text-white mb-0 fs-5">
+                <i class="fas fa-gamepad me-2 text-warning"></i>Código de la Sala
+              </h4>
+              <span class="badge bg-primary-neon rounded-pill px-3 py-1 fs-6">
+                👥 <span id="n-jugadores">0</span> Conectados
+              </span>
+            </div>
+            
+            <div class="players-body p-4 text-center d-flex flex-column justify-content-center align-items-center flex-grow-1">
+              <!-- ID de la sala en grande -->
+              <div id="id-room-display" class="user-select-all text-warning fw-bold my-3" 
+                   style="font-family: 'Courier New', Courier, monospace; font-size: clamp(3rem, 6vw, 4.5rem); letter-spacing: 6px; text-shadow: 0 0 25px rgba(251, 191, 36, 0.7); line-height: 1;">
+                <%= id_room %>
+              </div>
+              <span id="id-room" hidden><%= id_room %></span>
 
-      <!-- Botón opcional para activar/alternar Código QR -->
-      <div class="my-2" id="contenedor-btn-activar-qr">
-        <button id="btn-toggle-qr" class="btn <%= (typeof modo !== 'undefined' && modo === 'qr') ? 'btn-info text-dark' : 'btn-outline-info' %> rounded-pill px-4 py-2 estilo-brillo shadow" type="button">
-          <i class="fas fa-qrcode me-2"></i><span id="btn-toggle-qr-text"><%= (typeof modo !== 'undefined' && modo === 'qr') ? 'Ocultar Código QR' : 'Activar Código QR' %></span>
-        </button>
-      </div>
-    </div>
+              <!-- BOTÓN INICIAR PARTIDA -->
+              <div id="btn-iniciar-sala" class="mt-3">
+                <a class="btn btn-success btn-lg px-5 py-3 rounded-pill fw-bold d-inline-flex align-items-center gap-2 shadow-lg" 
+                   style="font-size: 1.3rem; background: linear-gradient(135deg, #10b981, #059669); border: none; cursor: pointer; transition: transform 0.2s;"
+                   onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                  <img src="/img/iniciar.png" alt="Iniciar" style="width: 28px; height: 28px;">
+                  <span>Iniciar Partida</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <!-- Contenedor con dos columnas: Código QR y Jugadores -->
-    <div class="container-fluid px-3 px-md-5 my-2" style="max-width: 1400px; width: 100%;">
-      <div class="row g-4 justify-content-center align-items-stretch" id="waiting-room-layout">
-
-        <!-- Tarjeta QR Neón -->
-        <div class="col-12 col-md-5 col-xl-4 <%= (typeof modo !== 'undefined' && modo === 'qr') ? '' : 'd-none' %>" id="card-qr-container">
-          <div class="players-card h-100 d-flex flex-column border border-info border-opacity-50 shadow-neon">
-            <div class="players-header text-center py-3">
-              <h4 class="text-white mb-0 fs-5 fw-bold text-uppercase">
-                <i class="fas fa-qrcode me-2 text-info"></i>Escanear para Entrar
+        <!-- Tarjeta 2: CÓDIGO QR -->
+        <div class="col-lg-5">
+          <div class="players-card shadow-lg h-100 d-flex flex-column">
+            <div class="players-header py-3 px-4 text-center">
+              <h4 class="text-white mb-0 fs-5">
+                <i class="fas fa-qrcode me-2 text-info"></i>Código QR
               </h4>
             </div>
-            <div class="players-body d-flex flex-column justify-content-between flex-grow-1 p-3 p-xl-4 text-center">
-              <div>
-                <p class="text-white-50 small mb-2">
-                  Apunta la cámara de tu celular para unirte al juego:
-                </p>
-
-                <div class="d-flex justify-content-center my-3">
-                  <div class="qr-box bg-white p-3 rounded-4 shadow border border-2 border-info d-inline-block">
-                    <div id="qrcode-display" class="d-flex justify-content-center align-items-center" style="min-width: 180px; min-height: 180px;"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-3">
-                <div class="input-group mb-2">
-                  <input type="text" id="qr-room-url" class="form-control form-control-sm bg-dark text-info border-secondary font-monospace" readonly value="" placeholder="Generando enlace...">
-                  <button class="btn btn-outline-info btn-sm px-3" type="button" id="btn-copy-link" title="Copiar enlace">
-                    <i class="fas fa-copy me-1"></i> Copiar
-                  </button>
-                </div>
-                <button class="btn btn-info w-100 fw-bold text-dark py-2 estilo-brillo shadow" type="button" id="btn-zoom-qr" data-bs-toggle="modal" data-bs-target="#modalZoomQR">
-                  <i class="fas fa-expand me-2"></i>Ampliar QR / Proyector
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tarjeta Jugadores en Sala -->
-        <div class="<%= (typeof modo !== 'undefined' && modo === 'qr') ? 'col-12 col-md-7 col-xl-6' : 'col-12 col-md-10 col-lg-8' %>" id="card-players-container">
-          <div class="players-card h-100 d-flex flex-column border border-info border-opacity-50 shadow-neon">
-            <div class="players-header d-flex justify-content-between align-items-center py-3">
-              <h4 class="text-white mb-0 fs-5 fw-bold text-uppercase">
-                <i class="fas fa-users me-2 text-info"></i>Jugadores en la Sala
-              </h4>
-              <span class="badge bg-warning text-dark fs-6" id="badge-n-jugadores">0</span>
-            </div>
-            <div class="players-body flex-grow-1 p-3 p-xl-4 overflow-auto" style="min-height: 280px; max-height: 380px;">
-              <div id="jugadores" class="players-grid">
-                <!-- Los jugadores se cargan dinámicamente -->
-                <div class="row g-2 justify-content-center" id="jugadores_content">
-                  <div class="col-12 text-center py-4 text-white-50">
-                    <div class="spinner-border text-info spinner-border-sm me-2" role="status"></div>
-                    Esperando a que se conecten jugadores...
-                  </div>
-                </div>
+            
+            <div class="players-body p-4 text-center d-flex flex-column align-items-center justify-content-center flex-grow-1">
+              <div class="p-3 bg-white rounded-4 shadow-lg d-inline-block my-auto">
+                <img id="qr-code-img" src="<%= typeof qr_code !== 'undefined' ? qr_code : '' %>" 
+                     alt="Código QR para unirse" 
+                     style="width: 210px; height: 210px; display: block; object-fit: contain;">
               </div>
             </div>
           </div>
         </div>
 
       </div>
-    </div>
 
-    <!-- Botón Iniciar Sala -->
-    <div id="btn-iniciar-sala" class="col-6 col-sm-4 col-md-3 col-lg-2 my-3">
-      <a class="btn-custom w-100 perfil text-decoration-none">
-        <img src="/img/iniciar.png" alt="Iniciar">
-        <span>Iniciar</span>
-      </a>
+      <!-- Lista de jugadores (Diseño Compacto Escalable) -->
+      <div class="row justify-content-center mb-4">
+          <div class="col-12">
+              <div class="players-card shadow-lg">
+                  <div class="players-header py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                      <div class="d-flex align-items-center gap-3">
+                          <h4 class="text-white mb-0 fs-5">
+                              <i class="fas fa-users me-2 text-info"></i>Jugadores Conectados en la Sala
+                          </h4>
+                          <span id="n-jugadores-badge" class="players-count-badge">
+                              <i class="fas fa-circle text-success" style="font-size: 8px;"></i>
+                              <span id="count-number">0</span>
+                          </span>
+                      </div>
+                      <div class="player-search-wrapper ms-sm-auto">
+                          <input type="text" id="player-search" class="players-search-box" placeholder="🔍 Buscar jugador..." autocomplete="off">
+                      </div>
+                  </div>
+                  <div class="players-body p-3">
+                      <div class="players-scroll-wrapper">
+                          <div id="jugadores_content" class="players-compact-grid">
+                              <!-- Los jugadores se cargan dinámicamente -->
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+
     </div>
   </div>
-
-  <!-- Modal Ampliar QR / Proyector -->
-  <div class="modal fade" id="modalZoomQR" tabindex="-1" aria-labelledby="modalZoomQRLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content bg-dark text-white border border-2 border-info shadow-lg" style="box-shadow: 0 0 35px rgba(0, 212, 255, 0.45); border-radius: 16px;">
-        <div class="modal-header border-secondary px-4 py-3">
-          <h5 class="modal-title text-info fw-bold d-flex align-items-center" id="modalZoomQRLabel">
-            <i class="fas fa-qrcode me-2 text-warning fs-4"></i>
-            <span>Acceso Rápido - Sala: <span class="text-warning font-monospace"><%= id_room %></span></span>
-          </h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body text-center p-4 p-md-5">
-          <p class="fs-5 text-white-50 mb-4">
-            Escanea con cualquier celular para entrar de inmediato a esta partida
-          </p>
-
-          <div class="d-flex justify-content-center my-3">
-            <div class="bg-white p-3 p-md-4 rounded-4 shadow-lg border border-3 border-info d-inline-block">
-              <div id="qrcode-modal-display" class="d-flex justify-content-center align-items-center" style="min-width: 320px; min-height: 320px;"></div>
-            </div>
-          </div>
-          <div class="mt-3">
-            <div class="badge bg-secondary text-info fs-5 px-3 py-2 font-monospace mb-2">
-              ID: <%= id_room %>
-            </div>
-            <p class="text-white-50 font-monospace small mb-0" id="qr-modal-url-text"></p>
-          </div>
-        </div>
-        <div class="modal-footer border-secondary px-4 py-3 justify-content-between">
-          <button type="button" class="btn btn-outline-info" id="btn-copy-modal-link">
-            <i class="fas fa-copy me-1"></i> Copiar Enlace
-          </button>
-          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
-            Cerrar
-          </button>
+<!-- Pantalla de juego -->
+<div id="game-controls" class="visually-hidden">
+  <div class="interfaz container mx-auto grid border border-2 border-neon-complete border-info mt-3">
+    <div class="container contenedor g-col-10 " >
+      <!-- RULETAZO CON LOS NUMEROS-->
+      <div class="canva mx-auto">
+        <div class="carrusel" id="carrusel">
+          <div class="bola bola-o ">¡</div>
+          <div class="bola bola-g ">¡</div>
+          <div class="bola bola-b ">B</div>
+          <div class="bola bola-i ">I</div>
+          <div class="bola bola-n ">N</div>
+          <div class="bola bola-g ">G</div>
+          <div class="bola bola-o ">O</div>
+          <div class="bola bola-i">!</div>
+          <div class="bola bola-b">!</div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Pantalla de juego -->
-  <div id="game-controls" class="visually-hidden">
-    <div class="interfaz container mx-auto grid border border-2 border-neon-complete border-info mt-3">
-      <div class="container contenedor g-col-10">
-        <!-- RULETAZO CON LOS NUMEROS-->
-        <div class="canva mx-auto">
-          <div class="carrusel" id="carrusel">
-            <div class="bola bola-o ">¡</div>
-            <div class="bola bola-g ">¡</div>
-            <div class="bola bola-b ">B</div>
-            <div class="bola bola-i ">I</div>
-            <div class="bola bola-n ">N</div>
-            <div class="bola bola-g ">G</div>
-            <div class="bola bola-o ">O</div>
-            <div class="bola bola-i">!</div>
-            <div class="bola bola-b">!</div>
-          </div>
-        </div>
-        <!-- TUBO -->
-        <div class="tubo row">
+      <!-- TUBO -->
+      <div class="tubo row">
           <div class="tubo-css"></div>
-        </div>
-        <!-- TABLA CON LOS NUMEROS -->
-        <div class="container numeros">
-          <table class="tabla-numeros border border-3">
-            <tbody id="tableBall">
+      </div>
+      <!-- TABLA CON LOS NUMEROS -->
+      <div class="container numeros">
+        <table class="tabla-numeros border border-3 ">
+          <tbody id="tableBall"> <!--EL navegador me agregar el tbody :)-->
+            <tr class="">
+              <td class="bg-primary-subtle">
+                <div class="bola bola-b">B</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="">
+              <td class="bg-success-subtle">
+                <div class="bola bola-i">I</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="">
+              <td class="bg-info-subtle">
+                <div class="bola bola-n">N</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="">
+              <td class="bg-warning-subtle">
+                <div class="bola bola-g">G</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="">
+              <td class="bg-danger-subtle">
+                <div class="bola bola-o">O</div>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  
+   <div class="g-col-2">
+      <div class="botones">
+        <div class="formaParaGanar" >
+          <table class="tabla-bingo-patron border border-2" id="tabla-bingo-patron">
+            <thead>
               <tr>
-                <td class="bg-primary-subtle">
-                  <div class="bola bola-b">B</div>
-                </td>
-                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                <th class="bg-primary-subtle"><div class="bola bola-b">B</div></th>
+                <th class="bg-success-subtle"><div class="bola bola-i">I</div></th>
+                <th class="bg-info-subtle"><div class="bola bola-n">N</div></th>
+                <th class="bg-warning-subtle"><div class="bola bola-g">G</div></th>
+                <th class="bg-danger-subtle"><div class="bola bola-o">O</div></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
               </tr>
               <tr>
-                <td class="bg-success-subtle">
-                  <div class="bola bola-i">I</div>
-                </td>
-                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
               </tr>
               <tr>
-                <td class="bg-info-subtle">
-                  <div class="bola bola-n">N</div>
-                </td>
-                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+                <td class="free-space">FREE</td>
+                <td></td>
+                <td></td>
               </tr>
               <tr>
-                <td class="bg-warning-subtle">
-                  <div class="bola bola-g">G</div>
-                </td>
-                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
               </tr>
               <tr>
-                <td class="bg-danger-subtle">
-                  <div class="bola bola-o">O</div>
-                </td>
-                <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
-    
-      <div class="g-col-2">
-        <div class="botones">
-          <div class="formaParaGanar">
-            <table class="tabla-bingo-patron border border-2" id="tabla-bingo-patron">
-              <thead>
-                <tr>
-                  <th class="bg-primary-subtle"><div class="bola bola-b">B</div></th>
-                  <th class="bg-success-subtle"><div class="bola bola-i">I</div></th>
-                  <th class="bg-info-subtle"><div class="bola bola-n">N</div></th>
-                  <th class="bg-warning-subtle"><div class="bola bola-g">G</div></th>
-                  <th class="bg-danger-subtle"><div class="bola bola-o">O</div></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td class="free-space">FREE</td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td></td><td></td><td></td></tr>
-              </tbody>
-            </table>
-          </div>
           <button class="btn btn-warning btn-lg" id="btn-confirmar-patron">Confirmar Forma</button>
+
           <div class="bola-selec bola-i" id="bola-selec">Bola</div>
           <button class="btn btn-success btn-lg" id="btn-new-number">NUEVA BOLA</button>
-        </div>
+  
       </div>
-    </div>
+   </div>
   </div>
+</div>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="/js/game/formaParaganar.js" type="module"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-  <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
-  <script src="/js/util/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="/js/room/host_connection.js" type="module"></script>
+<script src="/js/game/formaParaganar.js" type="module"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+<script src="/js/room/host_connection.js" type="module">
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

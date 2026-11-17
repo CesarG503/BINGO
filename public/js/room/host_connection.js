@@ -19,243 +19,6 @@ const fondo = [
 
 export let socket
 
-let currentJoinUrl = "";
-let qrListenersAttached = false;
-
-function getServerLanIpValue() {
-  const serverLanIpEl = document.getElementById("server-lan-ip");
-  let ip = serverLanIpEl ? serverLanIpEl.textContent.trim() : "";
-  if (!ip) {
-    const fallbackEl = document.getElementById("lan-ip");
-    ip = fallbackEl ? fallbackEl.textContent.trim() : "";
-  }
-  if (ip && ip !== "localhost" && ip !== "127.0.0.1" && ip !== "::1") {
-    return ip;
-  }
-  return "";
-}
-
-function isHostLocalhost() {
-  const hostname = window.location.hostname;
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
-}
-
-function ensureAbsoluteUrl(url) {
-  if (!url || typeof url !== "string") {
-    return window.location.origin + "/";
-  }
-  const trimmed = url.trim();
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed;
-  }
-  if (trimmed.startsWith("//")) {
-    return `${window.location.protocol}${trimmed}`;
-  }
-  if (trimmed.startsWith("/")) {
-    return `${window.location.origin}${trimmed}`;
-  }
-  return `${window.location.origin}/join/${encodeURIComponent(trimmed)}`;
-}
-
-function computeJoinUrl() {
-  const roomIdElement = document.getElementById("id-room");
-  const roomId = roomIdElement ? roomIdElement.textContent.trim() : "";
-  if (!roomId) return "";
-
-  const protocol = window.location.protocol.startsWith("http") ? window.location.protocol : "http:";
-  const port = window.location.port ? `:${window.location.port}` : "";
-  const detectedLanIp = getServerLanIpValue();
-
-  let hostToUse = window.location.hostname;
-  if (isHostLocalhost() && detectedLanIp) {
-    hostToUse = detectedLanIp;
-  }
-
-  hostToUse = hostToUse.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
-  if (hostToUse.includes(":")) {
-    hostToUse = hostToUse.split(":")[0];
-  }
-
-  const rawUrl = `${protocol}//${hostToUse}${port}/join/${encodeURIComponent(roomId)}`;
-  return ensureAbsoluteUrl(rawUrl);
-}
-
-function renderQRCode(containerId, url, size) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const absoluteUrl = ensureAbsoluteUrl(url);
-  container.innerHTML = "";
-  try {
-    if (typeof QRCode !== "undefined") {
-      new QRCode(container, {
-        text: absoluteUrl,
-        width: size,
-        height: size,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H,
-      });
-    }
-  } catch (err) {
-    console.error(`Error al generar código QR en #${containerId}:`, err);
-  }
-}
-
-function initQRCode() {
-  const roomIdElement = document.getElementById("id-room");
-  const roomId = roomIdElement ? roomIdElement.textContent.trim() : "";
-  if (!roomId) {
-    return;
-  }
-
-  currentJoinUrl = computeJoinUrl();
-
-  const inputUrl = document.getElementById("qr-room-url");
-  if (inputUrl) {
-    inputUrl.value = currentJoinUrl;
-  }
-
-  const modalUrlText = document.getElementById("qr-modal-url-text");
-  if (modalUrlText) {
-    modalUrlText.textContent = currentJoinUrl;
-  }
-
-  renderQRCode("qrcode-display", currentJoinUrl, 180);
-
-  const modalQrDisplay = document.getElementById("qrcode-modal-display");
-  if (modalQrDisplay) {
-    renderQRCode("qrcode-modal-display", currentJoinUrl, 320);
-  }
-
-  setupQRCodeListeners();
-}
-
-function setupQRCodeListeners() {
-  if (qrListenersAttached) {
-    return;
-  }
-  qrListenersAttached = true;
-
-  async function copiarEnlaceActual() {
-    const urlToCopy = currentJoinUrl || computeJoinUrl();
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(urlToCopy);
-      } else {
-        const aux = document.createElement("input");
-        aux.setAttribute("value", urlToCopy);
-        document.body.appendChild(aux);
-        aux.select();
-        document.execCommand("copy");
-        document.body.removeChild(aux);
-      }
-      Swal.fire({
-        icon: "success",
-        title: "Enlace copiado",
-        text: "El enlace de acceso se ha copiado al portapapeles.",
-        timer: 1800,
-        showConfirmButton: false,
-        background: "#1A1A1A",
-        color: "#fff",
-      });
-    } catch (err) {
-      console.error("Error al copiar enlace:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Error al copiar",
-        text: "No se pudo copiar automáticamente. Por favor copia el texto manualmente.",
-        background: "#1A1A1A",
-        color: "#fff",
-      });
-    }
-  }
-
-  const btnCopy = document.getElementById("btn-copy-link");
-  if (btnCopy) {
-    btnCopy.addEventListener("click", copiarEnlaceActual);
-  }
-
-  const btnCopyModal = document.getElementById("btn-copy-modal-link");
-  if (btnCopyModal) {
-    btnCopyModal.addEventListener("click", copiarEnlaceActual);
-  }
-
-  const modalZoomEl = document.getElementById("modalZoomQR");
-  if (modalZoomEl) {
-    modalZoomEl.addEventListener("shown.bs.modal", () => {
-      renderQRCode("qrcode-modal-display", currentJoinUrl, 320);
-    });
-  }
-}
-
-function setupModoView() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const modoParam = urlParams.get("modo");
-  const modoElement = document.getElementById("modo-partida");
-  const modoActual = (modoParam || (modoElement ? modoElement.textContent.trim() : "") || "normal").toLowerCase();
-
-  const cardQr = document.getElementById("card-qr-container");
-  const cardPlayers = document.getElementById("card-players-container");
-  const btnToggle = document.getElementById("btn-toggle-qr");
-  const btnToggleText = document.getElementById("btn-toggle-qr-text");
-
-  function setNormalMode() {
-    if (cardQr) {
-      cardQr.classList.add("d-none");
-      cardQr.classList.remove("animate__animated", "animate__fadeIn");
-    }
-    if (cardPlayers) {
-      cardPlayers.className = "col-12 col-md-10 col-lg-8";
-    }
-    if (btnToggleText) {
-      btnToggleText.textContent = "Activar Código QR";
-    }
-    if (btnToggle) {
-      btnToggle.classList.remove("btn-info", "text-dark");
-      btnToggle.classList.add("btn-outline-info");
-    }
-  }
-
-  function setQRMode() {
-    if (cardQr) {
-      cardQr.classList.remove("d-none");
-      cardQr.classList.add("animate__animated", "animate__fadeIn");
-    }
-    if (cardPlayers) {
-      cardPlayers.className = "col-12 col-md-7 col-xl-6";
-    }
-    if (btnToggleText) {
-      btnToggleText.textContent = "Ocultar Código QR";
-    }
-    if (btnToggle) {
-      btnToggle.classList.remove("btn-outline-info");
-      btnToggle.classList.add("btn-info", "text-dark");
-    }
-    initQRCode();
-  }
-
-  if (modoActual === "qr") {
-    setQRMode();
-  } else {
-    setNormalMode();
-  }
-
-  // Asegurar inicialización de datos QR y listeners en ambos modos
-  initQRCode();
-
-  if (btnToggle) {
-    btnToggle.addEventListener("click", () => {
-      const isHidden = cardQr && cardQr.classList.contains("d-none");
-      if (isHidden) {
-        setQRMode();
-      } else {
-        setNormalMode();
-      }
-    });
-  }
-}
-
 async function getSala() {
   const response = await fetch(`/api/partidas/${idRoom.textContent}`)
   if (!response.ok) {
@@ -313,9 +76,9 @@ async function renderUsuariosEnSala() {
   if(contadorJugadores){
     contadorJugadores.textContent = usuarios.length;
   }
-  const badgeJugadores = document.getElementById("badge-n-jugadores");
-  if(badgeJugadores){
-    badgeJugadores.textContent = usuarios.length;
+  const countNumber = document.getElementById("count-number");
+  if (countNumber) {
+    countNumber.textContent = `${usuarios.length} Jugador${usuarios.length === 1 ? '' : 'es'}`;
   }
 
   // Renderizar la lista detallada de jugadores
@@ -326,32 +89,89 @@ async function renderUsuariosEnSala() {
   }
   jugadores_content.innerHTML = ""; // Limpiar la lista antes de renderizar
 
+  let currentUser = null;
+  try {
+    currentUser = await getUsuario();
+  } catch (e) {}
+
+  let sala = null;
+  try {
+    sala = await getSala();
+  } catch (e) {}
+
   usuarios.forEach((usuario) => {
-    const datos_jugador = document.createElement("a");
+    const isHost = sala && (sala.host === usuario.id_usuario || usuario.rol === 0);
+    const isMe = currentUser && (currentUser.id_usuario === usuario.id_usuario);
+
+    const chip = document.createElement("div");
+    chip.className = `player-chip ${isHost ? 'is-host' : ''} ${isMe ? 'is-me' : ''}`;
+    chip.setAttribute("data-username", (usuario.username || "").toLowerCase());
+    chip.title = `${usuario.username}${isHost ? ' (Host)' : ''}${isMe ? ' (Tú)' : ''}`;
+
     const img = document.createElement("img");
-    const span = document.createElement("span");
+    img.className = "player-chip-avatar";
+    img.src = usuario.img_id ? `/img/Flork/${usuario.img_id}.jpg` : "/img/Flork/1.jpg";
+    img.alt = usuario.username || "Jugador";
+    img.onerror = () => { img.src = "/img/Flork/1.jpg"; };
 
-    datos_jugador.classList.add("col-6", "col-sm-4", "col-md-3", "col-lg-2", "btn-custom", "w-100", "perfil");
+    const info = document.createElement("div");
+    info.className = "player-chip-info";
 
-    if (usuario.img_id) {
-      img.src = `/img/Flork/${usuario.img_id}.jpg`;
-    } else {
-      // Fallback a un avatar con inicial si no hay img_id
-      const avatarDiv = document.createElement('div');
-      avatarDiv.className = 'user-avatar';
-      avatarDiv.textContent = usuario.username.charAt(0).toUpperCase();
-      datos_jugador.appendChild(avatarDiv);
+    const name = document.createElement("span");
+    name.className = "player-chip-name";
+    name.textContent = usuario.username || "Sin nombre";
+
+    info.appendChild(name);
+
+    if (isHost) {
+      const badge = document.createElement("span");
+      badge.className = "player-chip-badge badge-host";
+      badge.innerHTML = "👑 Host";
+      info.appendChild(badge);
+    } else if (isMe) {
+      const badge = document.createElement("span");
+      badge.className = "player-chip-badge badge-me";
+      badge.textContent = "Tú";
+      info.appendChild(badge);
     }
-    
-    img.alt = usuario.username;
-    span.textContent = usuario.username;
 
-    if (usuario.img_id) {
-        datos_jugador.appendChild(img);
-    }
-    datos_jugador.appendChild(span);
-    jugadores_content.appendChild(datos_jugador);
+    chip.appendChild(img);
+    chip.appendChild(info);
+    jugadores_content.appendChild(chip);
   });
+
+  // Configurar buscador en tiempo real si aún no está enlazado
+  const searchInput = document.getElementById("player-search");
+  if (searchInput && !searchInput.dataset.bound) {
+    searchInput.dataset.bound = "true";
+    searchInput.addEventListener("input", (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      const chips = jugadores_content.querySelectorAll(".player-chip");
+      let visible = 0;
+      chips.forEach((c) => {
+        const uName = c.getAttribute("data-username") || "";
+        if (!term || uName.includes(term)) {
+          c.style.display = "flex";
+          visible++;
+        } else {
+          c.style.display = "none";
+        }
+      });
+
+      let noMatch = document.getElementById("no-players-search-msg");
+      if (visible === 0) {
+        if (!noMatch) {
+          noMatch = document.createElement("div");
+          noMatch.id = "no-players-search-msg";
+          noMatch.className = "no-players-match";
+          noMatch.textContent = "No se encontraron jugadores que coincidan.";
+          jugadores_content.appendChild(noMatch);
+        }
+      } else if (noMatch) {
+        noMatch.remove();
+      }
+    });
+  }
 }
 
 async function usuariosEnSala() {
@@ -453,7 +273,6 @@ async function inicializar() {
     return
   }
 
-  setupModoView()
   renderUsuariosEnSala()
 
   const token = getCookieValue("token")
@@ -508,7 +327,7 @@ async function inicializar() {
 // Mostrar alerta de ganador
 function jugadorGanador(usuario, carton, numerosSeleccionados, numerosGanadores = []) {
   Swal.fire({
-    title: "<strong>¡Bingo!</strong>",
+    title: "<strong>🎉 ¡Bingo! 🎉</strong>",
     width: 700,
     padding: "2.5em",
     background: "#1A1A1A",
@@ -534,6 +353,7 @@ function jugadorGanador(usuario, carton, numerosSeleccionados, numerosGanadores 
     },
   });
 }
+
 
 // Crear el HTML del cartón
 function generarCartonHTML(cartonData, index = 0, numerosSeleccionados = [], numerosGanadores = []) {
@@ -608,6 +428,7 @@ function generarCartonHTML(cartonData, index = 0, numerosSeleccionados = [], num
   return container;
 }
 
+
 function pintarGanadores(cartonElement, numerosGanadores = []) {
   const celdas = cartonElement.querySelectorAll("td[data-valor]");
 
@@ -631,6 +452,7 @@ function pintarGanadores(cartonElement, numerosGanadores = []) {
     }
   });
 }
+
 
 async function menssaje(titulo, texto, icono = null) {
   await Swal.fire({
@@ -662,4 +484,25 @@ async function cuestion(texto) {
   return result.isConfirmed;
 }
 
+// Cargar o regenerar QR si no viene renderizado del servidor
+async function checkOrGenerateQR() {
+  const qrImg = document.getElementById("qr-code-img");
+  if (qrImg && (!qrImg.getAttribute("src") || qrImg.getAttribute("src") === "")) {
+    try {
+      const idPartida = idRoom.textContent.trim();
+      const response = await fetch(`/api/qr/${idPartida}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.qr_code) {
+          qrImg.src = data.qr_code;
+        }
+      }
+    } catch (e) {
+      console.warn("No se pudo cargar el QR secundario:", e);
+    }
+  }
+}
+
+checkOrGenerateQR();
+    
 inicializar()
