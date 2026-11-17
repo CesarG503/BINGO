@@ -20,6 +20,7 @@ const nodemiler = require('nodemailer');
 const crypto = require("crypto")
 const { Email } = require('./js/email/email');
 const {validarCarton,validarCartonConReferencia} = require('./js/bingo_validate');
+const QRCode = require('qrcode');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -186,9 +187,61 @@ app.get('/room/user/:roomId', authenticateToken, async (req, res) => {
   res.render('user_room', { id_room: roomId });
 });
 
+// Ruta inteligente para unirse por enlace directo o escaneo de código QR
+app.get('/join/:roomId', async (req, res) => {
+  const { roomId } = req.params;
+  const token = req.cookies && req.cookies.token;
+  if (token) {
+    try {
+      jwt.verify(token, 'secret_key');
+      // Usuario autenticado -> va directamente a la sala de juego
+      return res.redirect(`/room/user/${roomId}`);
+    } catch (e) {
+      res.clearCookie('token');
+    }
+  }
+  // Usuario no autenticado -> redirigir a login con aviso de sala y redirección automática
+  return res.redirect(`/?redirect=/room/user/${roomId}&roomId=${roomId}&fromQR=1`);
+});
+
+// Endpoint API para obtener el código QR de una sala
+app.get('/api/qr/:roomId', async (req, res) => {
+  const { roomId } = req.params;
+  const apiBaseUrl = process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  try {
+    const qrDataUrl = await QRCode.toDataURL(joinUrl, {
+      width: 320,
+      margin: 1,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    });
+    res.json({ qr_code: qrDataUrl, join_url: joinUrl, api_base_url: apiBaseUrl });
+  } catch (err) {
+    console.error('Error generating QR:', err);
+    res.status(500).json({ error: 'Error generating QR code' });
+  }
+});
+
 app.get('/room/host/:roomId', authenticateToken, validateRole(0), async (req, res) => {
   const roomId = req.params.roomId;
-  res.render('host_room', { id_room: roomId });
+  const apiBaseUrl = process.env.API_BASE_URL || `${req.protocol}://${req.get('host')}`;
+  const joinUrl = `${apiBaseUrl}/join/${roomId}`;
+  let qrCodeData = '';
+  try {
+    qrCodeData = await QRCode.toDataURL(joinUrl, {
+      width: 320,
+      margin: 1,
+      color: { dark: '#0f172a', light: '#ffffff' }
+    });
+  } catch (err) {
+    console.error('Error generando QR para host_room:', err);
+  }
+  res.render('host_room', { 
+    id_room: roomId, 
+    api_base_url: apiBaseUrl, 
+    join_url: joinUrl, 
+    qr_code: qrCodeData 
+  });
 });
 
 // ruta cambio de contraseña

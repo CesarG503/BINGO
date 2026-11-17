@@ -1,19 +1,4 @@
- .esperando {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%) !important;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999; 
-    font-size: 1.5rem;
-}
-
+/* panel_espera.css */
 .swal2-container {
   z-index: 10000; 
 }

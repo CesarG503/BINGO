@@ -8,15 +8,21 @@ const authenticateToken = (req, res, next) => {
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
-  if (!token) return res.redirect("/");
+  if (!token) {
+    if (req.originalUrl && req.originalUrl.startsWith('/room/user/')) {
+      return res.redirect(`/?redirect=${encodeURIComponent(req.originalUrl)}&fromQR=1`);
+    }
+    return res.redirect("/");
+  }
 
   jwt.verify(token, 'secret_key', (err, user) => {
     if (err){ 
       if (err.name === 'TokenExpiredError') {
         res.clearCookie('token'); // Elimina la cookie del token
-        return res.redirect('/'); // Redirige al login
       }
-      console.log('User authenticated:')
+      if (req.originalUrl && req.originalUrl.startsWith('/room/user/')) {
+        return res.redirect(`/?redirect=${encodeURIComponent(req.originalUrl)}&expired=1`);
+      }
       return res.redirect('/');
     }
     req.user = user;
