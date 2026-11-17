@@ -47,7 +47,7 @@
   font-size: 1.2em;
   font-weight: bold;
   text-align: center;
-  color: black;
+  color: black !important;
   text-shadow: 1px 1px 2px white;
 
   box-shadow:
@@ -243,7 +243,7 @@ table .bola {
   font-size: 3em;
   font-weight: bold;
   text-align: center;
-  color: black;
+  color: black !important;
   text-shadow: 1px 1px 2px white;
 
   box-shadow:
@@ -465,3 +465,54 @@ table .bola {
 .seleccionadotd.free-space {
     background-color: #ffc107 !important;
 }
+
+/* ==========================================================================
+   BARRA DE NAVEGACIÓN Y PANEL SUPERIOR (SALA DE ESPERA Y PARTIDA DEL HOST)
+   ========================================================================== */
+.navbar.bg-secondary {
+  background: #1a1a1a !important;
+  background-color: #1a1a1a !important;
+  border-color: rgba(220, 201, 169, 0.4) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ==========================================================================
+   COLORES EXACTOS RETRO-SCI-FI PARA ENCABEZADOS Y BINGOS
+   ========================================================================== */
+.tabla-numeros td.bg-primary-subtle,
+.tabla-bingo-patron th.bg-primary-subtle {
+  background: rgba(88, 80.4, 67.6, 1) !important;
+  color: #fff !important;
+}
+
+.tabla-numeros td.bg-success-subtle,
+.tabla-bingo-patron th.bg-success-subtle {
+  background: rgba(31.2, 41.6, 32.4, 1) !important;
+  color: #fff !important;
+}
+
+.tabla-numeros td.bg-info-subtle,
+.tabla-bingo-patron th.bg-info-subtle {
+  background: rgba(30, 52.8, 55.2, 1) !important;
+  color: #fff !important;
+}
+
+.tabla-numeros td.bg-warning-subtle,
+.tabla-bingo-patron th.bg-warning-subtle {
+  background: rgba(100.4, 78, 35.6, 1) !important;
+  color: #fff !important;
+}
+
+.tabla-numeros td.bg-danger-subtle,
+.tabla-bingo-patron th.bg-danger-subtle {
+  background: rgba(92.4, 0.4, 1.2, 1) !important;
+  color: #fff !important;
+}
+
+.tabla-numeros td {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+

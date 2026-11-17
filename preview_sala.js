@@ -127,6 +127,15 @@ app.get('/api/juego/estado/:id', (req, res) => {
   res.json({ numeros_llamados: [] });
 });
 
+app.put('/api/partidas/:id/estado', (req, res) => {
+  res.json({ success: true });
+});
+
+app.get('/api/juego/extraer/:id', (req, res) => {
+  const num = Math.floor(Math.random() * 75) + 1;
+  res.json({ extraido: num });
+});
+
 app.delete('/api/partidas/:id/abandonar', (req, res) => {
   res.json({ success: true });
 });
@@ -223,6 +232,9 @@ io.on('connection', (socket) => {
       id_room: roomId,
       usuarios: mockUsuarios
     });
+  });
+  socket.on('iniciarSala', (data) => {
+    io.to(data.id_room).emit('inicioSala');
   });
 });
 
